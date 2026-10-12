@@ -23,7 +23,16 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     # ---- Building blocks shared by all lectures -------------------------
-    RED, GREEN, BLUE, GREY = "#b3261e", "#2e7d32", "#1b458f", "#888888"
+    # Palette with fixed roles (figures only; text carries no colour):
+    #   BLUE   the primary object (the particle, the point, the chosen vector)
+    #   RED    the second object it is compared with
+    #   GREEN  a derived quantity (velocity, relative velocity, tangent vector)
+    #   ORANGE a third series, only when three are needed
+    #   GREY   reference geometry (equator, light cone, inertial comparison)
+    #   LIGHT  fills and grids
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    # Figure widths: FULL spans the page, HALF sits beside text or in a pair
+    FULL, HALF = 7.4, 3.6
 
     def header(document, date, running=""):
         """Course header, as on the exercise sheets and exams."""
@@ -51,20 +60,31 @@ def _(mo):
     def theorem(body, title=""):
         return _statement("Theorem", title, body)
 
-    def warning(body):
+    def proposition(body, title=""):
+        return _statement("Proposition", title, body)
+
+    def corollary(body, title=""):
+        return _statement("Corollary", title, body)
+
+    def postulate(body, title=""):
+        return _statement("Postulate", title, body)
+
+    def note(body):
+        """Editorial note of the notebook (not part of the lecture)."""
         return mo.md("**Note.** " + body.strip())
 
-    def arrow(ax, tail, tip, color, label=None, at_tip=False, **kw):
-        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip."""
+    def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
+        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
+        One head size and one line weight for every figure, so arrows look alike across lectures."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>", "color": color, "lw": 2.2, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
-            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=18)
+            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=13)
 
     def plane(ax, lim):
         """Style a 2D axis as a coordinate plane with range [-lim, lim]."""
@@ -73,8 +93,33 @@ def _(mo):
         ax.set_aspect("equal")
         ax.axhline(0, color="black", lw=0.8)
         ax.axvline(0, color="black", lw=0.8)
-        ax.grid(True, color="#cfe3f5", lw=0.6)
+        ax.grid(True, color=LIGHT, lw=0.6)
         ax.set_axisbelow(True)
+
+    def blank(w, h, xlim, ylim):
+        """A figure with one bare axis (no frame) for sketches."""
+        from matplotlib.figure import Figure as _Figure
+
+        fig = _Figure(figsize=(w, h), layout="constrained")
+        ax = fig.subplots()
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        return fig, ax
+
+    def blob(cx, cy, rx, ry, wobble=0.07, seed=0, n=400):
+        """Closed organic curve around (cx, cy): an ellipse with a few low harmonics."""
+        import numpy as _np
+
+        rng = _np.random.default_rng(seed)
+        t = _np.linspace(0, 2 * _np.pi, n)
+        r = 1 + sum(wobble / k * rng.uniform(0.4, 1.0) * _np.cos(k * t + rng.uniform(0, 2 * _np.pi)) for k in (2, 3, 4, 5))
+        return cx + rx * r * _np.cos(t), cy + ry * r * _np.sin(t)
+
+    def table(rows):
+        """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
+        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
 
     def check(field, answer):
         """Feedback mark for a numeric answer typed into a text field."""
@@ -86,50 +131,7 @@ def _(mo):
         except ValueError:
             return "⚠️ enter a number"
 
-    return BLUE, GREEN, GREY, RED, arrow, check, definition, header, plane, theorem, warning
-
-
-@app.cell(hide_code=True)
-def _(BLUE, GREEN, RED):
-    _PIPS = {
-        1: [(2, 2)],
-        2: [(1, 1), (3, 3)],
-        3: [(1, 1), (2, 2), (3, 3)],
-        4: [(1, 1), (1, 3), (3, 1), (3, 3)],
-        5: [(1, 1), (1, 3), (2, 2), (3, 1), (3, 3)],
-        6: [(1, 1), (1, 2), (1, 3), (3, 1), (3, 2), (3, 3)],
-    }
-
-    def die(n, color=BLUE):
-        """A small picture of a die face, for use inside text."""
-        dots = "".join(f'<circle cx="{6 * x}" cy="{6 * y}" r="2" fill="{color}"/>' for x, y in _PIPS[n])
-        return (
-            '<svg viewBox="0 0 24 24" style="display:inline-block;width:1.25em;height:1.25em;vertical-align:-0.25em">'
-            f'<rect x="1.5" y="1.5" width="21" height="21" rx="4" fill="none" stroke="{color}" stroke-width="1.6"/>{dots}</svg>'
-        )
-
-    def dice(faces, color=BLUE):
-        return ", ".join(die(n, color) for n in faces)
-
-    return dice, die
-
-
-@app.cell(hide_code=True)
-def _(arrow):
-    def cross_axes(ax, xlim, ylim, xlabel=None, ylabel=None):
-        """A bare pair of coordinate axes through the origin."""
-        ax.set_xlim(*xlim)
-        ax.set_ylim(*ylim)
-        ax.set_aspect("equal")
-        ax.axis("off")
-        arrow(ax, (xlim[0], 0), (xlim[1], 0), "black", lw=0.9)
-        arrow(ax, (0, ylim[0]), (0, ylim[1]), "black", lw=0.9)
-        if xlabel:
-            ax.annotate(xlabel, (xlim[1], 0), textcoords="offset points", xytext=(-12, -18), fontsize=13)
-        if ylabel:
-            ax.annotate(ylabel, (0, ylim[1]), textcoords="offset points", xytext=(8, -10), fontsize=13)
-
-    return (cross_axes,)
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
@@ -139,75 +141,147 @@ def _(header):
 
 
 @app.cell(hide_code=True)
+def _(arrow, math):
+    def vector(ax, tail, tip, color, label=None, turn=0, r=15, **kw):
+        """Arrow from `tail` to `tip` (a dot when it has zero length), labelled beyond its tip on a white box;
+        `turn` (degrees) rotates the label about the tip so that coinciding vectors keep separate labels."""
+        dx, dy = tip[0] - tail[0], tip[1] - tail[1]
+        if dx == 0 and dy == 0:
+            ax.plot(*tip, "o", color=color, ms=4, zorder=4)
+            d = math.radians(45 + turn)
+        else:
+            arrow(ax, tail, tip, color, **kw)
+            d = math.atan2(dy, dx) + math.radians(turn)
+        if label:
+            ax.annotate(label, tip, textcoords="offset points", xytext=(r * math.cos(d), r * math.sin(d)), ha="center", va="center", color=color, fontsize=13, zorder=5, bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
+
+    return (vector,)
+
+
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## Last time
 
-    Probability spaces with equally likely outcomes
+    - probability spaces with equally likely outcomes: &nbsp; $P(A) = \dfrac{\# A}{\# S}$ &nbsp; $\leadsto$ &nbsp; calculating probability reduces to counting
+    - basic counting rules ($n$ objects, $r$ positions):
+    - **ordered** without repetitions: &nbsp; $P^n_r = \dfrac{n!}{(n - r)!}$ &nbsp; (ranking of a competition)
+    - **unordered** without repetitions: &nbsp; $C^n_r = \dfrac{n!}{r!\,(n - r)!}$ &nbsp; (hands of poker)
+    - **ordered** with repetitions: &nbsp; $n^r = n \times n \times \cdots \times n$ &nbsp; (passwords of given length)
+    - **unordered** with repetitions: &nbsp; $C^{n + r - 1}_r = \dfrac{(n + r - 1)!}{r!\,(n - 1)!}$ &nbsp; (ice cream cups)
 
-    $$
-    P(A) = \frac{\# A}{\# S} \qquad \leadsto \quad \text{calculating probability reduces to counting}
-    $$
+        $$
+        \text{e.g.} \quad \#\left(\substack{\text{cups of 4 scoops} \\ \text{from 6 flavours}}\right) = C^{6 + 4 - 1}_4 = C^9_4 = \frac{9!}{4!\, 5!} = 126
+        $$
 
-    Basic counting rules: $n$ objects, $r$ positions
+    - **Example** (defective items). 20 items, 3 defective &nbsp; $\leadsto$ &nbsp; pick 4 (samples): &nbsp; $P(\text{at least one is defective}) = \ ?$ &nbsp; (not easy to compute…)
 
-    | | count | example |
-    |:--|:--|:--|
-    | **ordered** without repetitions | $P^n_r = \dfrac{n!}{(n - r)!}$ | ranking of a competition |
-    | **unordered** without repetitions | $C^n_r = \dfrac{n!}{r!\,(n - r)!}$ | hands of poker |
-    | **ordered** with repetitions | $n^r = n \times n \times \cdots \times n$ | passwords of given length |
-    | **unordered** with repetitions | $C^{n + r - 1}_r = \dfrac{(n + r - 1)!}{r!\,(n - 1)!}$ | ice cream cups |
+        $$
+        \{\text{at least 1}\} = \{\text{exactly 1}\} \cup \{\text{exactly 2}\} \cup \{\text{exactly 3}\} = \{\text{none}\}^c
+        \qquad \leadsto \quad \#\{\text{none}\} = C^{17}_4 = \frac{17!}{4!\, 13!}
+        $$
 
-    $$
-    \text{e.g.} \quad \#\left(\substack{\text{cups of 4 scoops} \\ \text{from 6 flavours}}\right) = C^{6 + 4 - 1}_4 = C^9_4 = \frac{9!}{4!\, 5!} = 126
-    $$
+        $$
+        \Longrightarrow \quad P(\text{at least one}) = 1 - \frac{\ \dfrac{17!}{4!\, 13!}\ }{\dfrac{20!}{4!\, 16!}} = 1 - \frac{17!\, 16!}{20!\, 13!} \approx 50.9\%
+        $$
 
-    **Example** (defective items).
-
-    20 items, 3 defective &nbsp; $\leadsto$ &nbsp; pick 4 (samples)
-
-    $$
-    P(\text{at least one is defective}) = \ ? \qquad (\text{not easy to compute…})
-    $$
-
-    $$
-    \{\text{at least 1}\} = \{\text{exactly 1}\} \cup \{\text{exactly 2}\} \cup \{\text{exactly 3}\} = \{\text{none}\}^c
-    \qquad \leadsto \quad \#\{\text{none}\} = C^{17}_4 = \frac{17!}{4!\, 13!}
-    $$
-
-    $$
-    \Longrightarrow \quad P(\text{at least one}) = 1 - \frac{\ \dfrac{17!}{4!\, 13!}\ }{\dfrac{20!}{4!\, 16!}} = 1 - \frac{17!\, 16!}{20!\, 13!} \approx 50.9\%
-    $$
+    **Today:** how knowledge about one event changes the probability of another
     """)
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREEN, RED, definition, mo, np, theorem):
-    _fig = Figure(figsize=(3.6, 2.6), layout="constrained")
-    _ax = _fig.subplots()
-    _g = np.linspace(0, 1, 300)
-    _X, _Y = np.meshgrid(_g * 3.6, _g * 2.5)
-    _A = (_X - 1.2) ** 2 + (_Y - 0.95) ** 2 < 0.72**2
-    _B = (_X > 0.95) & (_X < 3.3) & (_Y > 0.6) & (_Y < 2.3)
-    _ax.contourf(_X, _Y, (_A & _B).astype(float), levels=[0.5, 1.5], colors=[GREEN], alpha=0.45)
-    _th = np.linspace(0, 2 * np.pi, 120)
-    _ax.plot(1.2 + 0.72 * np.cos(_th), 0.95 + 0.72 * np.sin(_th), color=GREEN, lw=1.6)
-    _ax.plot([0.95, 3.3, 3.3, 0.95, 0.95], [0.6, 0.6, 2.3, 2.3, 0.6], color=RED, lw=1.6)
-    _ax.plot([0, 3.6, 3.6, 0, 0], [0, 0, 2.5, 2.5, 0], color=BLUE, lw=1.4)
-    _ax.text(0.2, 1.5, "$A$", color=GREEN, fontsize=14)
-    _ax.text(2.9, 0.75, "$B$", color=RED, fontsize=14)
-    _ax.text(3.2, 0.12, "$S$", color=BLUE, fontsize=14)
-    _ax.set_aspect("equal")
-    _ax.axis("off")
+def _(BLUE, Figure, HALF, LIGHT, RED, table):
+    def outcome_grid(left=0.1):
+        """The 36 outcomes of two dice as a grid of dots: 1st die across, 2nd die up."""
+        fig = Figure(figsize=(HALF, HALF), layout="constrained")
+        ax = fig.subplots()
+        ax.set_xlim(left, 7.1)
+        ax.set_ylim(0.1, 7.1)
+        ax.set_aspect("equal")
+        ax.set_xticks(range(1, 7))
+        ax.set_yticks(range(1, 7))
+        ax.set_xlabel("1st")
+        ax.set_ylabel("2nd")
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
+        for i in range(1, 7):
+            for j in range(1, 7):
+                ax.plot(i, j, "o", ms=3, color="black", zorder=4)
+        return fig, ax
+
+    def strip(ax, k, color, label, across=False):
+        """Outline the outcomes with 1st die = k (or 2nd die = k when `across`), labelled outside the grid."""
+        x = [k - 0.32, k + 0.32, k + 0.32, k - 0.32, k - 0.32]
+        y = [0.6, 0.6, 6.4, 6.4, 0.6]
+        if across:
+            ax.plot(y, x, color=color, lw=1.4)
+            ax.text(6.75, k, label, color=color, fontsize=13, ha="center", va="center")
+        else:
+            ax.plot(x, y, color=color, lw=1.4)
+            ax.text(k, 6.75, label, color=color, fontsize=13, ha="center", va="center")
+
+    def _frac(n, d):
+        from fractions import Fraction
+
+        q = Fraction(n, d)
+        reduced = rf"\dfrac{{{q.numerator}}}{{{q.denominator}}}" if q.denominator != 1 else str(q.numerator)
+        return rf"\dfrac{{{n}}}{{{d}}}" + ("" if q.denominator == d else " = " + reduced)
+
+    def cond_panel(t, verdict=False):
+        """Two-dice outcomes with A = {sum is t} circled and B = {1st is even} outlined;
+        readout of P(A), P(A | B), P(B | A), optionally with the independence verdict."""
+        fig, ax = outcome_grid()
+        for k in (2, 4, 6):
+            strip(ax, k, RED, "$B$")
+        nA = nAB = 0
+        for i in range(1, 7):
+            j = t - i
+            if 1 <= j <= 6:
+                nA += 1
+                nAB += i % 2 == 0
+                ax.plot(i, j, "o", ms=15, mfc=LIGHT if i % 2 == 0 else "white", mec=BLUE, mew=1.4, zorder=3)
+        i0 = max(1, t - 6)  # the circled outcome with the largest 2nd die carries the label
+        ax.text(i0 + (0.45 if i0 % 2 else -0.56), t - i0 + (0.36 if i0 % 2 else 0.3), "$A$", color=BLUE, fontsize=13, ha="center", va="center", zorder=5)
+
+        rows = [
+            (rf"$\textcolor{{{BLUE}}}{{\# A}}$ &nbsp; ($A$ = sum is ${t}$)", rf"$\textcolor{{{BLUE}}}{{{nA}}}$"),
+            (rf"$\textcolor{{{RED}}}{{\# B}}$ &nbsp; ($B$ = 1st is even)", rf"$\textcolor{{{RED}}}{{18}}$"),
+            (r"$\# A \cap B$", rf"${nAB}$"),
+            (r"$P(A) = \dfrac{\# A}{\# S}$", rf"${_frac(nA, 36)}$"),
+            (r"$P(A \mid B) = \dfrac{\# A \cap B}{\# B}$", rf"${_frac(nAB, 18)}$"),
+            (r"$P(B \mid A) = \dfrac{\# A \cap B}{\# A}$", rf"${_frac(nAB, nA)}$"),
+        ]
+        if verdict:
+            same = nAB * 36 == nA * 18
+            rows.append((r"$A, B$ independent", r"yes: $P(A \mid B) = P(A)$" if same else r"no: $P(A \mid B) \neq P(A)$"))
+        return table(rows), fig
+
+    return cond_panel, outcome_grid, strip
+
+
+@app.cell(hide_code=True)
+def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
+    _fig, _ax = blank(HALF, 2.5, (-0.1, 3.7), (-0.1, 2.6))
+    _th = np.linspace(0, 2 * np.pi, 240)
+    _cx, _cy = 1.2 + 0.72 * np.cos(_th), 0.95 + 0.72 * np.sin(_th)
+    _ax.fill(np.maximum(_cx, 0.95), np.maximum(_cy, 0.6), color=LIGHT, lw=0)  # A ∩ B (the corner of B lies inside A)
+    _ax.plot(_cx, _cy, color=BLUE, lw=1.4)
+    _ax.plot([0.95, 3.3, 3.3, 0.95, 0.95], [0.6, 0.6, 2.3, 2.3, 0.6], color=RED, lw=1.4)
+    _ax.plot([0, 3.6, 3.6, 0, 0], [0, 0, 2.5, 2.5, 0], color="black", lw=1.0)
+    _ax.text(0.3, 1.5, "$A$", color=BLUE, fontsize=13, ha="center", va="center")
+    _ax.text(3.05, 0.85, "$B$", color=RED, fontsize=13, ha="center", va="center")
+    _ax.text(3.45, 0.22, "$S$", fontsize=13, ha="center", va="center")
 
     mo.vstack(
         [
             mo.md(
                 r"""
-    ## 3 &nbsp; Conditioning, Independence, and Bayes' Rule (WMS 2.7–2.10)
+    ## I.3 &nbsp; Conditioning, independence, and Bayes' rule (WMS 2.7–2.10)
 
-    The probability of an event might change depending on our knowledge about the occurrence of other events!
+    ### Conditional probability
+
+    $\leadsto$ &nbsp; the probability of an event might change depending on our knowledge about the occurrence of other events!
 
     $$
     \text{roll two fair dice:} \qquad P(\text{sum is 8}) = \tfrac{5}{36}, \qquad P\left(\substack{\text{sum is 8 when} \\ \text{1st dice is even}}\right) = \tfrac{3}{18} = \tfrac{1}{6}
@@ -219,37 +293,26 @@ def _(BLUE, Figure, GREEN, RED, definition, mo, np, theorem):
     The **conditional probability** of an event $A \subseteq S$, given that an event $B$ is known to have occurred, is
 
     $$
-    P(A \mid B) = \frac{P(A \cap B)}{P(B)} \qquad (\text{provided } P(B) > 0)
+    \underbrace{P(A \mid B)}_{\text{probability of } A \text{ given } B} = \frac{P(A \cap B)}{P(B)} \qquad (\text{provided } P(B) > 0)
     $$
-
-    (probability of $A$ given $B$)
-    """
+    """,
+                "Conditional probability",
             ),
-            mo.hstack(
-                [
-                    _fig,
-                    mo.md(
-                        r"""
+            _fig,
+            mo.md(
+                r"""
     Once we know $B$ has occurred
 
     $$
-    \begin{aligned}
-    P(A) \ &\leadsto \ P(A \mid B) = \frac{P(A \cap B)}{P(B)} \\[4pt]
-    P(B) \ &\leadsto \ P(B \mid B) = \frac{P(B \cap B)}{P(B)} = 1 \\[4pt]
-    &\phantom{\leadsto} \ \ P(S \mid B) = \frac{P(S \cap B)}{P(B)} = 1
-    \end{aligned}
+    P(A) \ \leadsto \ P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \qquad
+    P(B) \ \leadsto \ P(B \mid B) = \frac{P(B \cap B)}{P(B)} = 1
     $$
-    """
-                    ),
-                ],
-                widths=[1, 1],
-                gap=2,
-                align="center",
-                wrap=True,
-            ),
-            mo.md(
-                r"""
-    For the purpose of calculating $P(A \mid B)$, we think of $B$ as the “new version” of $S$, and of $A \cap B$ as the “new version” of $A$ inside $B$.
+
+    $$
+    \leadsto \quad P(S \mid B) = \frac{P(S \cap B)}{P(B)} = 1
+    $$
+
+    $\leadsto$ &nbsp; for the purpose of calculating $P(A \mid B)$, we think of $B$ as the “new version” of $S$, and of $A \cap B$ as the “new version” of $A$ inside $B$
     """
             ),
             theorem(
@@ -260,8 +323,9 @@ def _(BLUE, Figure, GREEN, RED, definition, mo, np, theorem):
     - $P(B \mid B) = 1$
     - $P(A_1 \cup A_2 \mid B) = P(A_1 \mid B) + P(A_2 \mid B)$ &nbsp; for $(A_1 \cap B) \cap (A_2 \cap B) = \emptyset$ &nbsp; (also true for countably many)
 
-    i.e. $P(\,\cdot \mid B)$ is a probability measure on events $A \cap B$!
-    """
+    that is, $P(\,\cdot \mid B)$ is a probability measure on events $A \cap B$!
+    """,
+                "Conditional probability is a probability measure",
             ),
             mo.md(
                 r"""
@@ -280,65 +344,20 @@ def _(BLUE, Figure, GREEN, RED, definition, mo, np, theorem):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREEN, RED, mo):
-    from fractions import Fraction
-
-    def _frac(q):
-        return rf"\tfrac{{{q.numerator}}}{{{q.denominator}}}" if q.denominator != 1 else str(q.numerator)
-
-    def cond_panel(slider, verdict=False):
-        """Grid of the two-dice outcomes with A = {sum is t} circled and B = {1st is even} shaded,
-        with P(A), P(A | B), P(B | A); optionally the independence verdict."""
-        t = slider.value
-        fig = Figure(figsize=(4.0, 4.0), layout="constrained")
-        ax = fig.subplots()
-        for x in (1.5, 3.5, 5.5):
-            ax.fill_between([x, x + 1], 0.5, 6.5, color=RED, alpha=0.12, lw=0)
-        nA = nAB = 0
-        for i in range(1, 7):
-            for j in range(1, 7):
-                if i + j == t:
-                    nA += 1
-                    nAB += i % 2 == 0
-                    ax.plot(i, j, "o", ms=17, mfc="none", mec=GREEN, mew=1.8)
-                ax.plot(i, j, "o", ms=4, color=BLUE)
-        ax.set_xlim(0.3, 6.7)
-        ax.set_ylim(0.3, 6.7)
-        ax.set_aspect("equal")
-        ax.set_xticks(range(1, 7))
-        ax.set_yticks(range(1, 7))
-        ax.set_xlabel("1st")
-        ax.set_ylabel("2nd")
-        for s in ("top", "right"):
-            ax.spines[s].set_visible(False)
-
-        pA, pAB, pBA = Fraction(nA, 36), Fraction(nAB, 18), Fraction(nAB, nA)
-        text = (
-            rf"$\textcolor{{{GREEN}}}{{A}}$ (circles), &nbsp; $\textcolor{{{RED}}}{{B = \text{{1st is even}}}}$ (shaded)"
-            + "\n\n"
-            + rf"$$P(A) = {_frac(pA)}, \qquad P(A \mid B) = {_frac(pAB)}, \qquad P(B \mid A) = {_frac(pBA)}$$"
-        )
-        if verdict:
-            text += "\n\n" + (r"$P(A \mid B) = P(A)$ &nbsp; $\Longrightarrow$ &nbsp; $A, B$ independent" if pA == pAB else r"$P(A \mid B) \neq P(A)$ &nbsp; $\Longrightarrow$ &nbsp; $A, B$ not independent")
-        return mo.vstack([slider, mo.hstack([fig, mo.md(text)], widths=[1, 1], gap=2, align="center", wrap=True)])
-
-    return (cond_panel,)
-
-
-@app.cell(hide_code=True)
 def _(mo):
     total = mo.ui.slider(2, 12, 1, value=8, label="$A$: sum is", show_value=True)
     return (total,)
 
 
 @app.cell(hide_code=True)
-def _(cond_panel, total):
-    cond_panel(total)
+def _(cond_panel, mo, total):
+    _table, _fig = cond_panel(total.value)
+    mo.vstack([mo.hstack([total], justify="start", gap=2, wrap=True), _table, _fig])
     return
 
 
 @app.cell(hide_code=True)
-def _(definition, mo, theorem):
+def _(definition, mo):
     mo.vstack(
         [
             mo.md(
@@ -356,26 +375,31 @@ def _(definition, mo, theorem):
     $$
 
     $$
-    \leadsto \quad P\left(\substack{\text{sum is 8 and} \\ \text{1st is even}}\right) = \underbrace{P\left(\substack{\text{sum is 8 given} \\ \text{1st is even}}\right)}_{\text{2nd stage}}\ \underbrace{P(\text{1st is even})}_{\text{1st stage}} \qquad (\text{of the random experiment})
+    \leadsto \quad P\left(\substack{\text{sum is 8 and} \\ \text{1st is even}}\right) = \underbrace{P\left(\substack{\text{sum is 8 given} \\ \text{1st is even}}\right)}_{\text{2nd stage}}\ \underbrace{P(\text{1st is even})}_{\text{1st stage}} \qquad (\text{stages of the random experiment})
     $$
 
-    Generalizations:
+    $\leadsto$ &nbsp; generalizations:
 
     $$
     P(A \cap B \cap C) = P(A \mid B \cap C)\, P(B \cap C) = P(A \mid B \cap C)\, P(B \mid C)\, P(C)
     $$
 
     $$
-    \underbrace{P(A_1 \cap A_2 \cap \cdots \cap A_n)}_{n \text{ stages}} = \underbrace{P(A_1 \mid A_2 \cap \cdots \cap A_n)}_{n\text{th}} \times \underbrace{P(A_2 \mid A_3 \cap \cdots \cap A_n)}_{(n-1)\text{th}} \cdots \underbrace{P(A_{n-1} \mid A_n)}_{\text{2nd}}\ \underbrace{P(A_n)}_{\text{1st}}
+    \begin{aligned}
+    \underbrace{P(A_1 \cap A_2 \cap \cdots \cap A_n)}_{n \text{ stages}} = {} & \underbrace{P(A_1 \mid A_2 \cap \cdots \cap A_n)}_{n\text{th}} \\
+    & \times \underbrace{P(A_2 \mid A_3 \cap \cdots \cap A_n)}_{(n-1)\text{th}} \cdots \underbrace{P(A_{n-1} \mid A_n)}_{\text{2nd}}\ \underbrace{P(A_n)}_{\text{1st}}
+    \end{aligned}
     $$
 
-    **Remark.** Here we see another possible interpretation of probability
+    **Remark.** Here we see another possible interpretation of probability:
 
     from “relative frequency of event occurrences in infinitely many trials of an experiment” (frequentist interpretation)
 
     to “measure of belief in the likelihood of event occurrences in each trial of an experiment” (Bayesian interpretation)
 
-    If $P(A)$ is our original measure of belief about $A$, $P(A \mid B)$ is our updated measure of belief about $A$ given new knowledge about $B$!
+    $\leadsto$ &nbsp; if $P(A)$ is our original measure of belief about $A$, $P(A \mid B)$ is our updated measure of belief about $A$ given new knowledge about $B$!
+
+    ### Independent events
     """
             ),
             definition(
@@ -387,21 +411,22 @@ def _(definition, mo, theorem):
     $$
 
     (knowledge about $B$ does not influence our belief about $A$; the conditional forms require $P(B) > 0$, $P(A) > 0$)
-    """
+    """,
+                "Independent events",
             ),
             mo.md(
                 r"""
     **Example.** two fair dice &nbsp; $\leadsto$ &nbsp; $S = \{(1, 1), \dots, (6, 6)\}$
 
-    $A$ = sum is 7 $= \{(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1)\}$ &nbsp; and &nbsp; $B$ = 1st is even $= \{(2, 1), (2, 2), \dots, (6, 5), (6, 6)\}$ &nbsp; are independent
+    $A$ = sum is 7 $= \{(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1)\}$ &nbsp; and &nbsp; $B$ = 1st is even $= \{(2, 1), (2, 2), \dots, (6, 5), (6, 6)\}$ &nbsp; are independent:
 
     $$
     P(A \mid B) = \frac{P(A \cap B)}{P(B)} = \frac{3/36}{18/36} = \frac{1}{6} = \frac{6}{36} = P(A)
     $$
 
-    If $A$ = “sum is 8”, relative counting changes if we know $B$ = “1st is even” &nbsp; $\Longrightarrow$ &nbsp; $A, B$ not independent
+    $\leadsto$ &nbsp; if $A$ = “sum is 8”, relative counting changes if we know $B$ = “1st is even” &nbsp; $\Longrightarrow$ &nbsp; $A, B$ not independent
 
-    If $A$ = “sum is 7”, relative counting remains same if we know $B$ = “1st is even” &nbsp; $\Longrightarrow$ &nbsp; $A, B$ independent
+    $\leadsto$ &nbsp; if $A$ = “sum is 7”, relative counting remains same if we know $B$ = “1st is even” &nbsp; $\Longrightarrow$ &nbsp; $A, B$ independent
     """
             ),
         ]
@@ -416,8 +441,9 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(cond_panel, total_ind):
-    cond_panel(total_ind, verdict=True)
+def _(cond_panel, mo, total_ind):
+    _table, _fig = cond_panel(total_ind.value, verdict=True)
+    mo.vstack([mo.hstack([total_ind], justify="start", gap=2, wrap=True), _table, _fig])
     return
 
 
@@ -434,25 +460,22 @@ def _(definition, mo, theorem):
     $$
 
     $$
-    A \cap B = \emptyset \ \ \Longrightarrow \ \ P(A \cap B) = 0 \ \ \Longrightarrow \ \ \text{not independent if } P(A) \neq 0 \text{ and } P(B) \neq 0
+    A \cap B = \emptyset \quad \Longrightarrow \quad P(A \cap B) = 0 \quad \Longrightarrow \quad \text{not independent if } P(A) \neq 0 \text{ and } P(B) \neq 0
     $$
     """
             ),
             theorem(
                 r"""
     If $A$ and $B$ are independent, then so are $A$ and $B^c$, &nbsp; $A^c$ and $B$, &nbsp; $A^c$ and $B^c$.
-    """
+    """,
+                "Independence of complements",
             ),
             mo.md(
                 r"""
     **Proof.**
 
     $$
-    \begin{aligned}
-    P(A^c \cap B) &= P(A^c \mid B)\, P(B) \\
-    &= \big( 1 - P(A \mid B) \big)\, P(B) \\
-    &= \big( 1 - P(A) \big)\, P(B) = P(A^c)\, P(B) \qquad \square
-    \end{aligned}
+    P(A^c \cap B) = P(A^c \mid B)\, P(B) = \big( 1 - P(A \mid B) \big)\, P(B) = \big( 1 - P(A) \big)\, P(B) = P(A^c)\, P(B) \qquad \square
     $$
     """
             ),
@@ -461,18 +484,43 @@ def _(definition, mo, theorem):
     $A, B, C \subseteq S$ are **pairwise independent** if
 
     $$
-    P(A \cap B) = P(A)\, P(B), \qquad P(B \cap C) = P(B)\, P(C), \qquad P(C \cap A) = P(C)\, P(A)
+    \underbrace{P(A \cap B) = P(A)\, P(B), \qquad P(B \cap C) = P(B)\, P(C), \qquad P(C \cap A) = P(C)\, P(A)}_{\text{each pair is independent}}
     $$
 
-    (each pair is independent)
-
-    $A, B, C \subseteq S$ **mutually independent** if they are pairwise independent and
+    $A, B, C \subseteq S$ are **mutually independent** if they are pairwise independent and
 
     $$
     P(A \cap B \cap C) = P(A)\, P(B)\, P(C)
     $$
-    """
+    """,
+                "Pairwise and mutual independence",
             ),
+        ]
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(BLUE, GREEN, RED, mo, outcome_grid, strip):
+    _fig, _ax = outcome_grid(left=-0.4)
+    _A, _B, _C = set(), set(), set()
+    for _i in range(1, 7):
+        for _j in range(1, 7):
+            if _i % 2 == 1:
+                _A.add((_i, _j))
+            if _j % 2 == 1:
+                _B.add((_i, _j))
+            if (_i + _j) % 2 == 1:
+                _C.add((_i, _j))
+                _ax.plot(_i, _j, "D", ms=9, mfc="none", mec=GREEN, mew=1.4, zorder=3)
+    for _k in (1, 3, 5):
+        strip(_ax, _k, BLUE, "$A$")
+        strip(_ax, _k, RED, "$B$", across=True)
+    for _k in (2, 4, 6):
+        _ax.text(0.15, _k, "$C$", color=GREEN, fontsize=13, ha="center", va="center")
+
+    mo.vstack(
+        [
             mo.md(
                 r"""
     **Remark.** Pairwise does not imply mutual independence!
@@ -494,8 +542,20 @@ def _(definition, mo, theorem):
     $$
     P(A \cap B \cap C) = 0
     $$
+    """
+            ),
+            _fig,
+            mo.md(
+                rf"""
+    $$
+    \# A = {len(_A)}, \quad \# B = {len(_B)}, \quad \# C = {len(_C)}
+    $$
 
-    Knowledge about $A$ does not affect our belief in $C$; &nbsp; $B$ does not affect our belief in $C$; &nbsp; knowledge about *$A$ and $B$* affects our belief in $C$!
+    $$
+    \# A \cap B = {len(_A & _B)}, \quad \# B \cap C = {len(_B & _C)}, \quad \# C \cap A = {len(_C & _A)}, \qquad \underbrace{{\# A \cap B \cap C = {len(_A & _B & _C)}}}_{{\text{{odd + odd is even}}}}
+    $$
+
+    $\leadsto$ &nbsp; knowledge about $A$ does not affect our belief in $C$; &nbsp; $B$ does not affect our belief in $C$; &nbsp; knowledge about **$A$ and $B$** affects our belief in $C$!
     """
             ),
         ]
@@ -504,66 +564,17 @@ def _(definition, mo, theorem):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREEN, RED, mo):
-    _fig = Figure(figsize=(4.0, 4.0), layout="constrained")
-    _ax = _fig.subplots()
-    _A, _B, _C = set(), set(), set()
-    for _i in range(1, 7):
-        for _j in range(1, 7):
-            if _i % 2 == 1:
-                _A.add((_i, _j))
-                _ax.plot(_i, _j, "o", ms=19, mfc="none", mec=RED, mew=1.6)
-            if _j % 2 == 1:
-                _B.add((_i, _j))
-                _ax.plot(_i, _j, "s", ms=14, mfc="none", mec=GREEN, mew=1.6)
-            if (_i + _j) % 2 == 1:
-                _C.add((_i, _j))
-                _ax.plot(_i, _j, "D", ms=8, mfc="none", mec=BLUE, mew=1.6)
-            _ax.plot(_i, _j, "o", ms=3, color="#555555")
-    _ax.set_xlim(0.3, 6.7)
-    _ax.set_ylim(0.3, 6.7)
-    _ax.set_aspect("equal")
-    _ax.set_xticks(range(1, 7))
-    _ax.set_yticks(range(1, 7))
-    _ax.set_xlabel("1st")
-    _ax.set_ylabel("2nd")
-    for _s in ("top", "right"):
-        _ax.spines[_s].set_visible(False)
-
-    mo.hstack(
-        [
-            _fig,
-            mo.md(
-                rf"$\textcolor{{{RED}}}{{A}}$ = 1st is odd (circles), &nbsp; $\textcolor{{{GREEN}}}{{B}}$ = 2nd is odd (squares), &nbsp; $\textcolor{{{BLUE}}}{{C}}$ = sum is odd (diamonds)"
-                + "\n\n"
-                + rf"$\# A = {len(_A)}, \quad \# B = {len(_B)}, \quad \# C = {len(_C)}$"
-                + "\n\n"
-                + rf"$\#(A \cap B) = {len(_A & _B)}, \quad \#(B \cap C) = {len(_B & _C)}, \quad \#(C \cap A) = {len(_C & _A)}$"
-                + "\n\n"
-                + rf"$\#(A \cap B \cap C) = {len(_A & _B & _C)}$ &nbsp; (odd + odd is even)"
-            ),
-        ],
-        widths=[1, 1],
-        gap=2,
-        align="center",
-        wrap=True,
-    )
-    return
-
-
-@app.cell(hide_code=True)
 def _(mo):
-    mo.md(
-        r"""
-    ## Bayes' Rule
+    mo.md(r"""
+    ### Bayes' rule
 
-    Updating our level of belief in a collection of hypotheses after a new event has occurred
+    $\leadsto$ &nbsp; updating our level of belief in a collection of hypotheses after a new event has occurred
 
     **Example.** A disease affects 1% of a population &nbsp; $\leadsto$ &nbsp; $P(\text{have disease}) = 1\%$ &nbsp; (disease prevalence)
 
-    A test has 90% *sensitivity* &nbsp; $P(+\text{ve} \mid \text{disease})$ &nbsp; (true positive rate) &nbsp; and 95% *specificity* &nbsp; $P(-\text{ve} \mid \text{no disease})$ &nbsp; (true negative rate)
+    A test has 90% **sensitivity** $P(+\text{ve} \mid \text{disease})$ (true positive rate) and 95% **specificity** $P(-\text{ve} \mid \text{no disease})$ (true negative rate)
 
-    What is the probability of having the disease given a positive test?
+    $\leadsto$ &nbsp; what is the probability of having the disease given a positive test?
 
     $$
     \left.\begin{aligned} D &= \text{has disease} \\ D^c &= \text{doesn't have disease} \end{aligned}\right\} \quad P(D) = 1\%, \quad P(D^c) = 99\%
@@ -579,13 +590,12 @@ def _(mo):
 
     $$
     \begin{aligned}
-    \text{Bayes' rule:} \qquad P(D \mid T) &= \frac{P(D \cap T)}{P(T)} = \frac{P(T \mid D)\, P(D)}{P(T)} \\[6pt]
-    &= \frac{P(T \mid D)\, P(D)}{P(T \cap D) + P(T \cap D^c)} = \frac{P(T \mid D)\, P(D)}{P(T \mid D)\, P(D) + P(T \mid D^c)\, P(D^c)} \\[6pt]
+    \text{Bayes' rule:} \qquad P(D \mid T) &= \frac{P(D \cap T)}{P(T)} = \frac{P(T \mid D)\, P(D)}{P(T)} \\[10pt]
+    &= \frac{P(T \mid D)\, P(D)}{P(T \cap D) + P(T \cap D^c)} = \frac{P(T \mid D)\, P(D)}{P(T \mid D)\, P(D) + P(T \mid D^c)\, P(D^c)} \\[10pt]
     &= \frac{0.9 \times 0.01}{0.9 \times 0.01 + 0.05 \times 0.99} = \frac{2}{13} \approx 15.4\%
     \end{aligned}
     $$
-    """
-    )
+    """)
     return
 
 
@@ -598,43 +608,47 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, RED, mo, prev, sens, spec):
+def _(BLUE, FULL, Figure, LIGHT, RED, mo, prev, sens, spec, table):
     _p, _se, _sp = prev.value / 100, sens.value / 100, spec.value / 100
     _tp, _fp = _se * _p, (1 - _sp) * (1 - _p)
-    _post = _tp / (_tp + _fp) if _tp + _fp > 0 else 0.0
+    _post = _tp / (_tp + _fp)  # P(T) > 0 on the whole slider range
 
-    _fig = Figure(figsize=(7.0, 1.5), layout="constrained")
+    _fig = Figure(figsize=(FULL, 1.5), layout="constrained")
     _ax = _fig.subplots()
-    _ax.barh([0], [_tp], color=RED)
-    _ax.barh([0], [_fp], left=[_tp], color=BLUE, alpha=0.6)
+    _ax.fill([0, _tp, _tp, 0], [0, 0, 1, 1], color=LIGHT, lw=0)
+    _ax.plot([_tp, _tp + _fp, _tp + _fp, _tp, _tp], [0, 0, 1, 1, 0], color=RED, lw=1.4)
+    _ax.plot([0, _tp, _tp, 0, 0], [0, 0, 1, 1, 0], color=BLUE, lw=1.4)
+    _ax.text(0, 1.25, r"$P(T \cap D)$", color=BLUE, fontsize=13, ha="left", va="bottom")
+    _ax.text(_tp + _fp, 1.25, r"$P(T \cap D^c)$", color=RED, fontsize=13, ha="right", va="bottom")
+    _ax.set_xlim(-0.01 * (_tp + _fp), 1.01 * (_tp + _fp))
+    _ax.set_ylim(-0.1, 2.0)
     _ax.set_yticks([])
-    _ax.set_xlim(0, max(_tp + _fp, 1e-9))
     _ax.set_xlabel(r"$P(T) = P(T \cap D) + P(T \cap D^c)$")
     for _s in ("top", "right", "left"):
         _ax.spines[_s].set_visible(False)
 
-    _N = 10_000
+    _N = 1_000_000  # every count below is then a whole number for all slider positions
+
+    def _n(v):
+        return f"{round(v):,}".replace(",", r"\,")
+
     _nD = _N * _p
-    _table = "\n".join(
-        [
-            "| out of 10 000 people | |",
-            "|:--|--:|",
-            rf"| have the disease ($D$) | ${_nD:,.0f}$ |",
-            rf"| &nbsp;&nbsp; of which test positive ($T \cap D$) | ${_nD * _se:,.0f}$ |",
-            rf"| do not have the disease ($D^c$) | ${_N - _nD:,.0f}$ |",
-            rf"| &nbsp;&nbsp; of which test positive ($T \cap D^c$) | ${(_N - _nD) * (1 - _sp):,.0f}$ |",
-            rf"| test positive in total ($T$) | ${_N * (_tp + _fp):,.0f}$ |",
-            rf"| $P(D \mid T)$ = positives with the disease / all positives | ${100 * _post:.1f}\%$ |",
-        ]
-    ).replace(",", r"\,")
 
     mo.vstack(
         [
             mo.hstack([prev, sens, spec], justify="start", gap=2, wrap=True),
-            mo.md(rf"$$P(D \mid T) = \frac{{{_se:g} \times {_p:g}}}{{{_se:g} \times {_p:g} + {1 - _sp:.3g} \times {1 - _p:g}}} \approx {100 * _post:.1f}\%$$"),
+            table(
+                [
+                    (r"$P(D \mid T) = \dfrac{P(T \mid D)\, P(D)}{P(T \mid D)\, P(D) + P(T \mid D^c)\, P(D^c)}$", rf"$\dfrac{{{_se:g} \times {_p:g}}}{{{_se:g} \times {_p:g} + {1 - _sp:.3g} \times {1 - _p:g}}} \approx {100 * _post:.1f}\%$"),
+                    (r"out of $1\,000\,000$ people: have the disease ($D$)", rf"${_n(_nD)}$"),
+                    (r"&nbsp;&nbsp; of which test positive ($T \cap D$)", rf"$\textcolor{{{BLUE}}}{{{_n(_nD * _se)}}}$"),
+                    (r"do not have the disease ($D^c$)", rf"${_n(_N - _nD)}$"),
+                    (r"&nbsp;&nbsp; of which test positive ($T \cap D^c$)", rf"$\textcolor{{{RED}}}{{{_n((_N - _nD) * (1 - _sp))}}}$"),
+                    (r"test positive in total ($T$)", rf"${_n(_N * (_tp + _fp))}$"),
+                    (r"$P(D \mid T)$ = positives with the disease / all positives", rf"${100 * _post:.1f}\%$"),
+                ]
+            ),
             _fig,
-            mo.md(rf"$\textcolor{{{RED}}}{{P(T \cap D)}}$ &nbsp; and &nbsp; $\textcolor{{{BLUE}}}{{P(T \cap D^c)}}$"),
-            mo.md(_table),
         ]
     )
     return
@@ -650,14 +664,29 @@ def _(mo):
     $\leadsto$ &nbsp; $\{B_1, B_2, \dots, B_k\}$ is an exhaustive, mutually exclusive collection of events &nbsp; (a **partition** of $S$)
 
     $$
-    P(A) = \sum_{i=1}^{k} P(A \mid B_i)\, P(B_i) \qquad \text{law of total probability}
+    P(A) = \sum_{i=1}^{k} P(A \mid B_i)\, P(B_i) \qquad (\text{law of total probability})
     $$
 
     $$
-    P(B_j \mid A) = \frac{P(A \mid B_j)\, P(B_j)}{\displaystyle\sum_{i=1}^{k} P(A \mid B_i)\, P(B_i)} \qquad \text{Bayes' rule}
+    P(B_j \mid A) = \frac{P(A \mid B_j)\, P(B_j)}{\displaystyle\sum_{i=1}^{k} P(A \mid B_i)\, P(B_i)} \qquad (\text{Bayes' rule})
     $$
 
-    $P(B_i)$ = prior, &nbsp; $P(B_i \mid A)$ = posterior, &nbsp; $P(A \mid B_i)$ = likelihood
+    $P(B_i)$ = **prior**, &nbsp; $P(B_i \mid A)$ = **posterior**, &nbsp; $P(A \mid B_i)$ = **likelihood**
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Summary
+
+    - conditional probability $P(A \mid B) = \dfrac{P(A \cap B)}{P(B)}$ (for $P(B) > 0$): $B$ is the “new version” of $S$, and $P(\,\cdot \mid B)$ is again a probability measure; in general $P(A \mid B) \neq P(B \mid A)$
+    - multiplication by stages: $P(A \cap B) = P(A \mid B)\, P(B)$, and $P(A \cap B \cap C) = P(A \mid B \cap C)\, P(B \mid C)\, P(C)$
+    - $A, B$ independent if $P(A \cap B) = P(A)\, P(B)$ (not the same as mutually exclusive!); pairwise independence does not imply mutual independence
+    - for a partition $\{B_1, \dots, B_k\}$ of $S$: law of total probability $P(A) = \sum_{i} P(A \mid B_i)\, P(B_i)$ and Bayes' rule $P(B_j \mid A) = \dfrac{P(A \mid B_j)\, P(B_j)}{\sum_{i} P(A \mid B_i)\, P(B_i)}$ (posterior from prior and likelihood)
+
+    **Next:** random variables
     """)
     return
 
