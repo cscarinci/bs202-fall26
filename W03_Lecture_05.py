@@ -23,7 +23,16 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     # ---- Building blocks shared by all lectures -------------------------
-    RED, GREEN, BLUE, GREY = "#b3261e", "#2e7d32", "#1b458f", "#888888"
+    # Palette with fixed roles (figures only; text carries no colour):
+    #   BLUE   the primary object (the particle, the point, the chosen vector)
+    #   RED    the second object it is compared with
+    #   GREEN  a derived quantity (velocity, relative velocity, tangent vector)
+    #   ORANGE a third series, only when three are needed
+    #   GREY   reference geometry (equator, light cone, inertial comparison)
+    #   LIGHT  fills and grids
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    # Figure widths: FULL spans the page, HALF sits beside text or in a pair
+    FULL, HALF = 7.4, 3.6
 
     def header(document, date, running=""):
         """Course header, as on the exercise sheets and exams."""
@@ -51,20 +60,31 @@ def _(mo):
     def theorem(body, title=""):
         return _statement("Theorem", title, body)
 
-    def warning(body):
+    def proposition(body, title=""):
+        return _statement("Proposition", title, body)
+
+    def corollary(body, title=""):
+        return _statement("Corollary", title, body)
+
+    def postulate(body, title=""):
+        return _statement("Postulate", title, body)
+
+    def note(body):
+        """Editorial note of the notebook (not part of the lecture)."""
         return mo.md("**Note.** " + body.strip())
 
-    def arrow(ax, tail, tip, color, label=None, at_tip=False, **kw):
-        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip."""
+    def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
+        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
+        One head size and one line weight for every figure, so arrows look alike across lectures."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>", "color": color, "lw": 2.2, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
-            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=18)
+            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=13)
 
     def plane(ax, lim):
         """Style a 2D axis as a coordinate plane with range [-lim, lim]."""
@@ -73,8 +93,33 @@ def _(mo):
         ax.set_aspect("equal")
         ax.axhline(0, color="black", lw=0.8)
         ax.axvline(0, color="black", lw=0.8)
-        ax.grid(True, color="#cfe3f5", lw=0.6)
+        ax.grid(True, color=LIGHT, lw=0.6)
         ax.set_axisbelow(True)
+
+    def blank(w, h, xlim, ylim):
+        """A figure with one bare axis (no frame) for sketches."""
+        from matplotlib.figure import Figure as _Figure
+
+        fig = _Figure(figsize=(w, h), layout="constrained")
+        ax = fig.subplots()
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        return fig, ax
+
+    def blob(cx, cy, rx, ry, wobble=0.07, seed=0, n=400):
+        """Closed organic curve around (cx, cy): an ellipse with a few low harmonics."""
+        import numpy as _np
+
+        rng = _np.random.default_rng(seed)
+        t = _np.linspace(0, 2 * _np.pi, n)
+        r = 1 + sum(wobble / k * rng.uniform(0.4, 1.0) * _np.cos(k * t + rng.uniform(0, 2 * _np.pi)) for k in (2, 3, 4, 5))
+        return cx + rx * r * _np.cos(t), cy + ry * r * _np.sin(t)
+
+    def table(rows):
+        """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
+        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
 
     def check(field, answer):
         """Feedback mark for a numeric answer typed into a text field."""
@@ -86,70 +131,7 @@ def _(mo):
         except ValueError:
             return "⚠️ enter a number"
 
-    return BLUE, GREEN, GREY, RED, arrow, check, definition, header, plane, theorem, warning
-
-
-@app.cell(hide_code=True)
-def _(BLUE, GREEN, RED):
-    _PIPS = {
-        1: [(2, 2)],
-        2: [(1, 1), (3, 3)],
-        3: [(1, 1), (2, 2), (3, 3)],
-        4: [(1, 1), (1, 3), (3, 1), (3, 3)],
-        5: [(1, 1), (1, 3), (2, 2), (3, 1), (3, 3)],
-        6: [(1, 1), (1, 2), (1, 3), (3, 1), (3, 2), (3, 3)],
-    }
-
-    def die(n, color=BLUE):
-        """A small picture of a die face, for use inside text."""
-        dots = "".join(f'<circle cx="{6 * x}" cy="{6 * y}" r="2" fill="{color}"/>' for x, y in _PIPS[n])
-        return (
-            '<svg viewBox="0 0 24 24" style="display:inline-block;width:1.25em;height:1.25em;vertical-align:-0.25em">'
-            f'<rect x="1.5" y="1.5" width="21" height="21" rx="4" fill="none" stroke="{color}" stroke-width="1.6"/>{dots}</svg>'
-        )
-
-    def dice(faces, color=BLUE):
-        return ", ".join(die(n, color) for n in faces)
-
-    return dice, die
-
-
-@app.cell(hide_code=True)
-def _(arrow):
-    def cross_axes(ax, xlim, ylim, xlabel=None, ylabel=None):
-        """A bare pair of coordinate axes through the origin."""
-        ax.set_xlim(*xlim)
-        ax.set_ylim(*ylim)
-        ax.set_aspect("equal")
-        ax.axis("off")
-        arrow(ax, (xlim[0], 0), (xlim[1], 0), "black", lw=0.9)
-        arrow(ax, (0, ylim[0]), (0, ylim[1]), "black", lw=0.9)
-        if xlabel:
-            ax.annotate(xlabel, (xlim[1], 0), textcoords="offset points", xytext=(-12, -18), fontsize=13)
-        if ylabel:
-            ax.annotate(ylabel, (0, ylim[1]), textcoords="offset points", xytext=(8, -10), fontsize=13)
-
-    return (cross_axes,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    def ask(label, field, answer, tol=1e-6):
-        """A labelled answer box with a feedback mark; accepts decimals, decimal commas and percentages."""
-        raw = field.value.strip()
-        mark = ""
-        if raw:
-            try:
-                value = float(raw.rstrip("%").replace(",", ".")) / (100 if raw.endswith("%") else 1)
-                mark = "✅" if abs(value - answer) <= tol else "❌ try again"
-            except ValueError:
-                mark = "⚠️ enter a number"
-        return mo.hstack([mo.md(label), field, mo.md(mark)], justify="start", align="center")
-
-    def box():
-        return mo.ui.text(placeholder="?", debounce=True)
-
-    return ask, box
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
@@ -159,111 +141,127 @@ def _(header):
 
 
 @app.cell(hide_code=True)
-def _(GREEN, RED):
-    def pmf_cdf(fig, xs, pmf, color=RED):
-        """Draw a pmf (left) and its cdf (right) on a figure."""
-        left, right = fig.subplots(1, 2)
-        left.vlines(xs, 0, pmf, color=color, lw=1, alpha=0.4)
-        left.plot(xs, pmf, "o", color=color, ms=5)
-        left.set_title("pmf  $f_X(x)$", fontsize=13)
-        left.set_xticks(xs)
-        left.set_ylim(0, max(pmf) * 1.25)
-        edges = [xs[0] - 1] + list(xs) + [xs[-1] + 1]
-        levels = [0.0]
-        for p in pmf:
-            levels.append(levels[-1] + p)
-        for k, lev in enumerate(levels):
-            right.plot([edges[k], edges[k + 1]], [lev, lev], color=color, lw=1.8)
-            if k > 0:
-                right.plot(edges[k], lev, "o", color=color, ms=5)
-                right.plot(edges[k], levels[k - 1], "o", color=color, ms=5, mfc="white")
-                right.plot([edges[k], edges[k]], [levels[k - 1], lev], ":", color=GREEN, lw=1)
-        right.set_title("cdf  $F_X(x)$", fontsize=13)
-        right.set_xticks(xs)
-        right.set_ylim(-0.05, 1.1)
-        for a in (left, right):
-            for s in ("top", "right"):
-                a.spines[s].set_visible(False)
-        return left, right
+def _(arrow, math):
+    def vector(ax, tail, tip, color, label=None, turn=0, r=15, **kw):
+        """Arrow from `tail` to `tip` (a dot when it has zero length), labelled beyond its tip on a white box;
+        `turn` (degrees) rotates the label about the tip so that coinciding vectors keep separate labels."""
+        dx, dy = tip[0] - tail[0], tip[1] - tail[1]
+        if dx == 0 and dy == 0:
+            ax.plot(*tip, "o", color=color, ms=4, zorder=4)
+            d = math.radians(45 + turn)
+        else:
+            arrow(ax, tail, tip, color, **kw)
+            d = math.atan2(dy, dx) + math.radians(turn)
+        if label:
+            ax.annotate(label, tip, textcoords="offset points", xytext=(r * math.cos(d), r * math.sin(d)), ha="center", va="center", color=color, fontsize=13, zorder=5, bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
 
-    return (pmf_cdf,)
+    return (vector,)
 
 
 @app.cell(hide_code=True)
-def _(Figure, GREEN, RED, definition, mo, pmf_cdf):
-    _fig = Figure(figsize=(8.6, 3.2), layout="constrained")
-    _l, _r = pmf_cdf(_fig, [1, 2, 3, 4], [1 / 16, 3 / 16, 5 / 16, 7 / 16], GREEN)
-    _l.set_yticks([1 / 16, 3 / 16, 5 / 16, 7 / 16], [r"$\frac{1}{16}$", r"$\frac{3}{16}$", r"$\frac{5}{16}$", r"$\frac{7}{16}$"])
-    _r.set_yticks([1 / 16, 1 / 4, 9 / 16, 1], [r"$\frac{1}{16}$", r"$\frac{1}{4}$", r"$\frac{9}{16}$", "$1$"])
+def _(mo):
+    mo.md(r"""
+    ## Last time
 
+    - random variables on probability spaces = measurements on random experiments (WMS 3.1, 3.2)
+    - $(S, \mathcal{E}, P)$ probability space, random variable = function on the sample space $S$: &nbsp; $X : S \longrightarrow \mathbb{R}$
+    - $\leadsto$ &nbsp; $S_X$ = state space $= \mathrm{Im}\, X \subseteq \mathbb{R}$
+    - $\leadsto$ &nbsp; $\mathcal{E}_X$ = algebra of subsets of $\mathbb{R}$
+    - $\leadsto$ &nbsp; $P_X$ = probability distribution $P_X : \mathcal{E}_X \longrightarrow \mathbb{R}$, &nbsp; $P_X(A) = P(X \in A)$ &nbsp; (probability that the measurement of $X$ is valued in $A$)
+
+    **Today:** discrete random variables: pmf, cdf and expectation
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(BLUE):
+    def stems(ax, xs, pmf, color=BLUE):
+        """A pmf: a thin stem with a dot over every point of the state space."""
+        ax.vlines(xs, 0, pmf, color=color, lw=1.0)
+        ax.plot(xs, pmf, "o", color=color, ms=4.5, zorder=3)
+        ax.set_xticks(xs)
+        ax.set_xlim(xs[0] - 0.6, xs[-1] + 0.6)
+        ax.set_ylim(0, max(pmf) * 1.25)
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
+
+    def steps(ax, xs, levels, color=BLUE):
+        """A step cdf: `levels[k]` is the value on the k-th interval cut out by the points `xs`;
+        every step is closed on the left and open on the right."""
+        edges = [xs[0] - 1] + list(xs) + [xs[-1] + 1]
+        for k, lev in enumerate(levels):
+            ax.plot([edges[k], edges[k + 1]], [lev, lev], color=color, lw=1.4)
+            if k > 0:
+                ax.plot(edges[k], lev, "o", color=color, ms=4.5, zorder=3)
+            if k < len(levels) - 1:
+                ax.plot(edges[k + 1], lev, "o", color=color, ms=4.5, mfc="white", zorder=3)
+        ax.set_xlim(edges[0], edges[-1])
+        ax.set_ylim(-0.05, 1.15)
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
+
+    return stems, steps
+
+
+@app.cell(hide_code=True)
+def _(BLUE, FULL, Figure, GREEN, HALF, arrow, definition, mo, stems, steps):
     # Generic step cdf: the jump at x equals f_X(x)
-    _sketch = Figure(figsize=(4.6, 2.6), layout="constrained")
+    _sketch = Figure(figsize=(HALF, 2.4), layout="constrained")
     _ax = _sketch.subplots()
-    _pts, _lev = [1, 2, 3, 4], [0.0, 0.15, 0.35, 0.75, 1.0]
-    _edges = [0] + _pts + [5.2]
-    for _k in range(len(_lev)):
-        _ax.plot([_edges[_k], _edges[_k + 1]], [_lev[_k], _lev[_k]], color=RED, lw=1.8)
-        if _k > 0:
-            _ax.plot(_edges[_k], _lev[_k], "o", color=RED, ms=5)
-            _ax.plot(_edges[_k], _lev[_k - 1], "o", color=RED, ms=5, mfc="white")
-    _ax.annotate("", xy=(3, 0.75), xytext=(3, 0.35), arrowprops={"arrowstyle": "<->", "color": GREEN, "lw": 1.2})
-    _ax.text(3.12, 0.55, "$f_X(x)$", color=GREEN, fontsize=12, va="center")
-    _ax.text(4.3, 1.04, "$y = F_X(x)$", color=RED, fontsize=11)
-    _ax.text(2.88, 0.80, "$F_X(x)$", color=RED, fontsize=10, ha="right")
-    _ax.text(2.88, 0.30, "$F_X(x^-)$", color=RED, fontsize=10, ha="right", va="top")
-    _ax.set_xticks([3], ["$x$"])
+    steps(_ax, [1, 2, 3, 4], [0.0, 0.15, 0.35, 0.75, 1.0])
+    arrow(_ax, (3, 0.55), (3, 0.705), GREEN)
+    arrow(_ax, (3, 0.55), (3, 0.395), GREEN)
+    _ax.text(3.15, 0.55, "$f_X(x)$", color=GREEN, fontsize=12, va="center")
+    _ax.text(4.5, 1.06, "$y = F_X(x)$", color=BLUE, fontsize=12, ha="center", va="bottom")
+    _ax.set_xticks([2, 3], [r"$x^{\!\!-}$", "$x$"])
     _ax.set_yticks([0, 1])
-    _ax.set_xlim(0, 5.3)
-    _ax.set_ylim(-0.05, 1.15)
-    _ax.set_xlabel("$x$")
-    _ax.set_ylabel("$y$")
-    for _s in ("top", "right"):
-        _ax.spines[_s].set_visible(False)
+    _ax.set_ylim(-0.05, 1.3)
+
+    _fig = Figure(figsize=(FULL, 2.9), layout="constrained")
+    _l, _r = _fig.subplots(1, 2)
+    stems(_l, [1, 2, 3, 4], [1 / 16, 3 / 16, 5 / 16, 7 / 16])
+    _l.set_yticks([1 / 16, 3 / 16, 5 / 16, 7 / 16], [r"$\frac{1}{16}$", r"$\frac{3}{16}$", r"$\frac{5}{16}$", r"$\frac{7}{16}$"])
+    _l.set_xlabel("$x$")
+    _l.set_ylabel("$f_X(x)$")
+    steps(_r, [1, 2, 3, 4], [0, 1 / 16, 4 / 16, 9 / 16, 1])
+    _r.set_xticks([1, 2, 3, 4])
+    _r.set_yticks([1 / 16, 1 / 4, 9 / 16, 1], [r"$\frac{1}{16}$", r"$\frac{1}{4}$", r"$\frac{9}{16}$", "$1$"])
+    _r.set_xlabel("$x$")
+    _r.set_ylabel("$F_X(x)$")
 
     mo.vstack(
         [
             mo.md(
                 r"""
-    ## Last time
+    ## II.2 &nbsp; Discrete random variables: pmf, cdf, expectation
 
-    Random Variables on probability spaces = measurements on random experiments (WMS 3.1, 3.2)
-
-    $(S, \mathcal{E}, P)$ probability space
-
-    random variable = function on the sample space $S$
-
-    $$
-    X : S \longrightarrow \mathbb{R}
-    $$
-
-    - $S_X$ = state space $= \mathrm{Im}\, X \subseteq \mathbb{R}$
-    - $\mathcal{E}_X$ = algebra of subsets of $\mathbb{R}$
-    - $P_X$ = probability distribution
-
-    $$
-    P_X : \mathcal{E}_X \longrightarrow \mathbb{R}, \qquad P_X(A) = P(X \in A) \qquad (\text{probability that the measurement of } X \text{ is valued in } A)
-    $$
+    ### pmf and cdf (WMS 3.1, 3.2)
     """
             ),
             definition(
                 r"""
-    A RV $X : S \longrightarrow \mathbb{R}$ is **discrete** if $S_X = \mathrm{Im}\, X$ is a countable set.
-    """
+    A random variable $X : S \longrightarrow \mathbb{R}$ is **discrete** if $S_X = \mathrm{Im}\, X$ is a countable set.
+    """,
+                "Discrete random variable",
             ),
             definition(
                 r"""
-    The **pmf** (probability mass function) of a discrete RV $X : S \longrightarrow \mathbb{R}$ is the function $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ given by
+    The **pmf** (probability mass function) of a discrete random variable $X : S \longrightarrow \mathbb{R}$ is the function $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ given by
 
     $$
-    f_X(x) = P_X(\{x\}) = P(X = x) \qquad (\text{probability that the measurement of } X \text{ is exactly equal to } x)
+    f_X(x) = P_X(\{x\}) = P(X = x)
     $$
-    """
+
+    (probability that the measurement of $X$ is exactly equal to $x$)
+    """,
+                "Probability mass function",
             ),
             mo.md(
                 r"""
     **Remark.** WMS denotes $f_X(x) = p(x)$!
 
-    $f_X$ must satisfy:
+    $\leadsto$ &nbsp; $f_X$ must satisfy:
 
     - $f_X(x) \geq 0$
     - $f_X(x) = 0$ for $x \notin S_X$
@@ -272,16 +270,19 @@ def _(Figure, GREEN, RED, definition, mo, pmf_cdf):
             ),
             definition(
                 r"""
-    The **cdf** (cumulative distribution function) of a RV $X : S \longrightarrow \mathbb{R}$ is the function $F_X : \mathbb{R} \longrightarrow \mathbb{R}$ given by
+    The **cdf** (cumulative distribution function) of a random variable $X : S \longrightarrow \mathbb{R}$ is the function $F_X : \mathbb{R} \longrightarrow \mathbb{R}$ given by
 
     $$
-    F_X(x) = P(X \leq x) \qquad (\text{probability that the measurement of } X \text{ is valued at most } x)
+    F_X(x) = P(X \leq x)
     $$
-    """
+
+    (probability that the measurement of $X$ is valued at most $x$)
+    """,
+                "Cumulative distribution function",
             ),
             mo.md(
                 r"""
-    $F_X$ must satisfy
+    $\leadsto$ &nbsp; $F_X$ must satisfy
 
     - $F_X(x) \geq 0$
     - $F_X(x_1) \leq F_X(x_2)$ for $x_1 \leq x_2 \in \mathbb{R}$
@@ -303,7 +304,8 @@ def _(Figure, GREEN, RED, definition, mo, pmf_cdf):
     f_X(1) &= P(X = 1) = \tfrac{1}{16} && X = 1 \iff (i, j) = (1, 1) \\
     f_X(2) &= P(X = 2) = \tfrac{3}{16} && X = 2 \iff (i, j) = (1, 2), (2, 2), (2, 1) \\
     f_X(3) &= P(X = 3) = \tfrac{5}{16} && X = 3 \iff (i, j) = (1, 3), (2, 3), (3, 3), (3, 2), (3, 1) \\
-    f_X(4) &= P(X = 4) = \tfrac{7}{16} && X = 4 \iff (i, j) = (1, 4), (2, 4), (3, 4), (4, 4), (4, 3), (4, 2), (4, 1)
+    f_X(4) &= P(X = 4) = \tfrac{7}{16} && X = 4 \iff (i, j) = (1, 4), (2, 4), (3, 4), \\
+    & && \phantom{X = 4 \iff (i, j) = {}} (4, 4), (4, 3), (4, 2), (4, 1)
     \end{aligned}
     $$
 
@@ -316,7 +318,7 @@ def _(Figure, GREEN, RED, definition, mo, pmf_cdf):
     F_X(1) &= P(X \leq 1) = \tfrac{1}{16} && X \leq 1 \iff (i, j) = (1, 1) \\
     F_X(2) &= P(X \leq 2) = \tfrac{4}{16} && X \leq 2 \iff (i, j) = (1, 1), (1, 2), (2, 2), (2, 1) \\
     F_X(3) &= P(X \leq 3) = \tfrac{9}{16} && X \leq 3 \iff (i, j) = (1, 1), \dots, (3, 1) \\
-    F_X(4) &= P(X \leq 4) = \tfrac{16}{16} && X \leq 4 \iff (i, j) = (1, 1), \dots, (4, 1) \quad (\text{all outcomes!})
+    F_X(4) &= P(X \leq 4) = \tfrac{16}{16} && X \leq 4 \iff (i, j) = \underbrace{(1, 1), \dots, (4, 1)}_{\text{all outcomes!}}
     \end{aligned}
     $$
 
@@ -337,21 +339,22 @@ def _(definition, mo):
         [
             mo.md(
                 r"""
-    ## Expectation (WMS 3.3)
+    ### Expectation (WMS 3.3)
 
-    pmf of a discrete RV $X : S \longrightarrow \mathbb{R}$ gives the relative frequency of a result $x$ over infinitely many independent measurements
+    $\leadsto$ &nbsp; pmf of a discrete random variable $X : S \longrightarrow \mathbb{R}$ gives the relative frequency of a result $x$ over infinitely many independent measurements
 
-    To study their properties, it is useful to summarize the main characteristics of pmfs into certain numbers (mean, variance, …) &nbsp; $\leadsto$ &nbsp; expectations of $X$
+    $\leadsto$ &nbsp; to study their properties, it is useful to summarize the main characteristics of pmfs into certain numbers (mean, variance, …) &nbsp; $\leadsto$ &nbsp; expectations of $X$
     """
             ),
             definition(
                 r"""
-    Let $X$ be a discrete RV with pmf $f_X$. Given any function $u : \mathbb{R} \longrightarrow \mathbb{R}$, we define the **expectation** of $u(X) = u \circ X : S \longrightarrow \mathbb{R}$ &nbsp; (function of $X$, or composition of $u$ and $X$)
+    Let $X$ be a discrete random variable with pmf $f_X$. Given any function $u : \mathbb{R} \longrightarrow \mathbb{R}$, we define the **expectation** of $u(X) = u \circ X : S \longrightarrow \mathbb{R}$ &nbsp; (function of $X$, or composition of $u$ and $X$)
 
     $$
     E[u(X)] = \sum_{x} u(x)\, f_X(x)
     $$
-    """
+    """,
+                "Expectation",
             ),
             mo.md(
                 r"""
@@ -361,7 +364,7 @@ def _(definition, mo):
     \leadsto \quad E[X] = \sum_{x=1}^{4} x\, f_X(x) = 1 \cdot \tfrac{1}{16} + 2 \cdot \tfrac{3}{16} + 3 \cdot \tfrac{5}{16} + 4 \cdot \tfrac{7}{16} = \tfrac{50}{16} \approx 3.1
     $$
 
-    **Example.** game: pay 3000 won to roll a 6-sided die, get 1000 won times the face value $X$. How much do you expect to win?
+    **Example.** Game: pay 3000 won to roll a 6-sided die, get 1000 won times the face value $X$. How much do you expect to win?
 
     $$
     \text{fair die} \quad \leadsto \quad E[1000 X - 3000] = \sum_{x=1}^{6} (1000 x - 3000) \times \tfrac{1}{6} = 500
@@ -372,27 +375,107 @@ def _(definition, mo):
     $$
     \leadsto \quad E[1000 X - 3000] = \sum_{x=1}^{3} (1000 x - 3000) \times \tfrac{1}{3} + \sum_{x=4}^{6} (1000 x - 3000) \times 0 = -1000
     $$
+    """
+            ),
+        ]
+    )
+    return
 
-    **mean** = expectation of $X$ &nbsp; (measures the “center” of the distribution)
+
+@app.cell(hide_code=True)
+def _(mo):
+    game_preset = mo.ui.dropdown({"fair": (1, 1, 1, 1, 1, 1), "not fair (faces 1–3 only)": (1, 1, 1, 0, 0, 0)}, value="fair", label="die", allow_select_none=False)
+    game_price = mo.ui.slider(0, 10000, 500, value=3000, label="price to play (won)", show_value=True)
+    game_payout = mo.ui.slider(0, 3000, 100, value=1000, label="won per face value", show_value=True)
+    return game_payout, game_preset, game_price
+
+
+@app.cell(hide_code=True)
+def _(game_preset, mo):
+    game_weights = mo.ui.array([mo.ui.slider(0, 10, 1, value=w, label=f"face {i + 1}", show_value=True) for i, w in enumerate(game_preset.value)])
+    game_weight_row = mo.hstack([game_weights[i] for i in range(6)], justify="start", gap=1.5, wrap=True)
+    return game_weight_row, game_weights
+
+
+@app.cell(hide_code=True)
+def _(game_payout, game_preset, game_price, game_weight_row, game_weights, mo, table):
+    from fractions import Fraction as _Fr
+
+    def _tex(q):
+        return str(q.numerator) if q.denominator == 1 else rf"{'-' if q < 0 else ''}\tfrac{{{abs(q.numerator)}}}{{{q.denominator}}}"
+
+    _w = list(game_weights.value)
+    _total = sum(_w)
+    _a, _c = game_payout.value, game_price.value
+    if _total == 0:
+        _pmf_row = _sum_row = "need a non-zero weight"
+    else:
+        _pmf = [_Fr(_wi, _total) for _wi in _w]
+        _E = sum((_a * (_x + 1) - _c) * _f for _x, _f in enumerate(_pmf))
+        _terms = [rf"({_a} \cdot {_x + 1} - {_c}) \cdot {_tex(_f)}" for _x, _f in enumerate(_pmf)]
+        _value = _tex(_E) if _E.denominator == 1 else rf"{_tex(_E)} \approx {float(_E):.2f}"
+        _pmf_row = "$" + r",\ ".join(_tex(_f) for _f in _pmf) + "$"
+        _sum_row = (
+            r"$\begin{aligned} &" + " + ".join(_terms[:3]) + r" \\ &{} + " + " + ".join(_terms[3:]) + r" \\ &= " + _value + r" \text{ won} \end{aligned}$"
+        )
+    mo.vstack(
+        [
+            mo.hstack([game_preset, game_price, game_payout], justify="start", gap=2, wrap=True),
+            game_weight_row,
+            table(
+                [
+                    (r"winnings $u(X)$", rf"${_a}\, X - {_c}$"),
+                    (r"$f_X(1), \dots, f_X(6)$", _pmf_row),
+                    (r"$E[u(X)] = \displaystyle\sum_{x} u(x)\, f_X(x)$", _sum_row),
+                ]
+            ),
+        ]
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(FULL, Figure, mo, stems):
+    _fig = Figure(figsize=(FULL, 2.8), layout="constrained")
+    _l, _r = _fig.subplots(1, 2)
+    stems(_l, [0, 1, 2, 3, 4], [1 / 16, 4 / 16, 6 / 16, 4 / 16, 1 / 16])
+    _l.set_yticks([1 / 16, 4 / 16, 6 / 16], [r"$\frac{1}{16}$", r"$\frac{4}{16}$", r"$\frac{6}{16}$"])
+    _l.text(0.98, 0.98, "fair coin", transform=_l.transAxes, fontsize=13, ha="right", va="top")
+    stems(_r, [0, 1, 2, 3, 4], [16 / 81, 32 / 81, 24 / 81, 8 / 81, 1 / 81])
+    _r.set_yticks([1 / 81, 8 / 81, 16 / 81, 24 / 81, 32 / 81], [r"$\frac{1}{81}$", r"$\frac{8}{81}$", r"$\frac{16}{81}$", r"$\frac{24}{81}$", r"$\frac{32}{81}$"])
+    _r.text(0.98, 0.98, "biased coin", transform=_r.transAxes, fontsize=13, ha="right", va="top")
+    for _a in (_l, _r):
+        _a.set_xlabel("$x$")
+        _a.set_ylabel("$f_X(x)$")
+
+    mo.vstack(
+        [
+            mo.md(
+                r"""
+    $\leadsto$ &nbsp; **mean** = expectation of $X$ &nbsp; (measures the “center” of the distribution)
 
     $$
     \mu_X = E[X] = \sum_{x} x\, f_X(x)
     $$
 
-    **variance** = expectation of $(X - \mu_X)^2$ &nbsp; (measures the “width” of the distribution)
+    $\leadsto$ &nbsp; **variance** = expectation of $(X - \mu_X)^2$ &nbsp; (measures the “width” of the distribution)
 
     $$
-    \sigma_X^2 = E[(X - \mu_X)^2] = \sum_{x} (x - \mu_X)^2\, f_X(x) \qquad (\sigma_X^2 = (\text{std deviation})^2)
+    \underbrace{\sigma_X^2}_{(\text{standard deviation})^2} = E[(X - \mu_X)^2] = \sum_{x} (x - \mu_X)^2\, f_X(x)
     $$
 
-    **skewness** = expectation of $\left( \dfrac{X - \mu_X}{\sigma_X} \right)^3$ &nbsp; (measures “symmetry” around the center)
+    $\leadsto$ &nbsp; **skewness** = expectation of $\left( \dfrac{X - \mu_X}{\sigma_X} \right)^3$ &nbsp; (measures “symmetry” around the center)
 
     $$
     \gamma_X = E\!\left[ \left( \frac{X - \mu_X}{\sigma_X} \right)^{\!3} \right] = \sum_{x} \left( \frac{x - \mu_X}{\sigma_X} \right)^{\!3} f_X(x)
     $$
 
     **Example.** Toss a coin 4 times, $X$ = number of heads
-
+    """
+            ),
+            _fig,
+            mo.md(
+                r"""
     | | fair coin | biased coin |
     |:--|:--|:--|
     | | $P(\{H\}) = P(\{T\}) = \tfrac{1}{2}$ | $P(\{H\}) = \tfrac{1}{3}$, $P(\{T\}) = \tfrac{2}{3}$ |
@@ -415,7 +498,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(Figure, RED, coin, math, mo, p_head, tosses):
+def _(FULL, Figure, GREEN, coin, math, mo, p_head, stems, table, tosses):
     _n = tosses.value
     _p = p_head.value if coin.value is None else coin.value
     _xs = list(range(_n + 1))
@@ -425,110 +508,69 @@ def _(Figure, RED, coin, math, mo, p_head, tosses):
     _var = sum((_x - _mu) ** 2 * _f for _x, _f in zip(_xs, _pmf))
     _skew = sum(((_x - _mu) / math.sqrt(_var)) ** 3 * _f for _x, _f in zip(_xs, _pmf))
 
-    _fig = Figure(figsize=(5.6, 3.2), layout="constrained")
+    def _num(v):
+        return f"{0.0 if abs(v) < 5e-5 else v:.4f}"
+
+    _fig = Figure(figsize=(FULL, 2.7), layout="constrained")
     _ax = _fig.subplots()
-    _ax.vlines(_xs, 0, _pmf, color=RED, lw=1, alpha=0.4)
-    _ax.plot(_xs, _pmf, "o", color=RED, ms=5)
-    _ax.axvline(_mu, color="#555555", lw=1, ls="--")
-    _ax.set_xticks(_xs)
-    _ax.set_ylim(0, max(_pmf) * 1.25)
+    stems(_ax, _xs, _pmf)
+    _top = max(_pmf)
+    _ax.plot(_mu, 1.13 * _top, "v", color=GREEN, ms=6, clip_on=False)  # the mean, marked above the stems
+    _ax.text(_mu, 1.2 * _top, r"$\mu_X$", color=GREEN, fontsize=13, ha="center", va="bottom")
+    _ax.set_ylim(0, 1.45 * _top)
     _ax.set_xlabel("$x$")
-    _ax.set_title(rf"$P(\{{H\}}) = {_p:.3f}$,  dashed line: $\mu_X$", fontsize=11)
-    for _s in ("top", "right"):
-        _ax.spines[_s].set_visible(False)
+    _ax.set_ylabel("$f_X(x)$")
 
-    _table = "\n".join(
-        [
-            "| | |",
-            "|:--|--:|",
-            rf"| $\mu_X = E[X]$ | ${_mu:.4f}$ |",
-            rf"| $\sigma_X^2 = E[(X - \mu_X)^2]$ | ${_var:.4f}$ |",
-            rf"| $\gamma_X$ | ${_skew:.4f}$ |",
-            rf"| $E[X^2]$ | ${_m2:.4f}$ |",
-            rf"| $E[X^2] - E[X]^2$ | ${_m2 - _mu**2:.4f}$ |",
-        ]
-    )
     mo.vstack(
         [
-            mo.hstack([tosses, coin, p_head], justify="start", gap=3, wrap=True),
-            mo.hstack([_fig, mo.md(_table)], widths=[1, 1], gap=2, align="center", wrap=True),
+            mo.hstack([tosses, coin, p_head], justify="start", gap=2, wrap=True),
+            table(
+                [
+                    (r"$P(\{H\})$", rf"${_p:.4f}$"),
+                    (r"$\mu_X = E[X]$", rf"$\textcolor{{{GREEN}}}{{{_num(_mu)}}}$"),
+                    (r"$\sigma_X^2 = E[(X - \mu_X)^2]$", rf"${_num(_var)}$"),
+                    (r"$\gamma_X$", rf"${_num(_skew)}$"),
+                    (r"$E[X^2]$", rf"${_num(_m2)}$"),
+                    (r"$E[X^2] - E[X]^2$", rf"${_num(_m2 - _mu**2)}$"),
+                ]
+            ),
+            _fig,
         ]
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    game_preset = mo.ui.dropdown({"fair": (1, 1, 1, 1, 1, 1), "not fair (faces 1–3 only)": (1, 1, 1, 0, 0, 0)}, value="fair", label="die", allow_select_none=False)
-    game_price = mo.ui.slider(0, 10000, 500, value=3000, label="price to play (won)", show_value=True)
-    game_payout = mo.ui.slider(0, 3000, 100, value=1000, label="won per face value", show_value=True)
-    return game_payout, game_preset, game_price
-
-
-@app.cell(hide_code=True)
-def _(game_preset, mo):
-    game_weights = mo.ui.array([mo.ui.slider(0, 10, 1, value=w, label=f"face {i + 1}", show_value=True) for i, w in enumerate(game_preset.value)])
-    return (game_weights,)
-
-
-@app.cell(hide_code=True)
-def _(game_payout, game_preset, game_price, game_weights, mo):
-    from fractions import Fraction as _Fr
-
-    _w = list(game_weights.value)
-    _total = sum(_w)
-    _a, _c = game_payout.value, game_price.value
-    if _total == 0:
-        _text = mo.md("**Note.** The weights must not all be zero.")
-    else:
-        _pmf = [_Fr(_wi, _total) for _wi in _w]
-        _E = sum((_a * (_x + 1) - _c) * _f for _x, _f in enumerate(_pmf))
-        _terms = " + ".join(rf"({_a}\cdot{_x + 1} - {_c}) \cdot \tfrac{{{_f.numerator}}}{{{_f.denominator}}}" for _x, _f in enumerate(_pmf) if _f)
-        _text = mo.md(
-            rf"$u(X) = {_a}\, X - {_c}$ &nbsp; (winnings)"
-            + "\n\n"
-            + rf"$E[u(X)] = \sum_x u(x)\, f_X(x) = {_terms}$"
-            + "\n\n"
-            + rf"$= {float(_E):,.0f}$ won".replace(",", r"\,")
-        )
-    mo.vstack(
-        [
-            mo.hstack([game_preset, game_price, game_payout], justify="start", gap=2, wrap=True),
-            mo.hstack([game_weights[_i] for _i in range(6)], justify="start", gap=1.5, wrap=True),
-            _text,
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo, theorem):
+def _(corollary, mo, theorem):
     mo.vstack(
         [
             theorem(
                 r"""
-    Let $X$ be a discrete RV, $u, v : \mathbb{R} \longrightarrow \mathbb{R}$ functions and $a, b, c \in \mathbb{R}$ constants
+    Let $X$ be a discrete random variable, $u, v : \mathbb{R} \longrightarrow \mathbb{R}$ functions and $a, b, c \in \mathbb{R}$ constants
 
     $$
     E[a\, u(X) + b\, v(X)] = a\, E[u(X)] + b\, E[v(X)], \qquad E[c] = c
     $$
-    """
+    """,
+                "Linearity of expectation",
+            ),
+            corollary(
+                r"""
+    $$
+    \sigma_X^2 = E[X^2] - E[X]^2
+    $$
+    """,
+                "Variance formula",
             ),
             mo.md(
                 r"""
-    **Corollary.** &nbsp; $\sigma_X^2 = E[X^2] - E[X]^2$
-
     **Proof.**
 
     $$
-    \begin{aligned}
-    E[(X - \mu_X)^2] &= E[X^2 - 2 \mu_X X + \mu_X^2] \\
-    &= E[X^2] - 2 \mu_X E[X] + \mu_X^2 \\
-    &= E[X^2] - E[X]^2 \qquad \square
-    \end{aligned}
+    E[(X - \mu_X)^2] = E[X^2 - 2 \mu_X X + \mu_X^2] = E[X^2] - 2 \mu_X E[X] + \mu_X^2 = E[X^2] - E[X]^2 \qquad \square
     $$
 
-    **Example.** flip a fair coin 4 times, $X$ = # heads
+    **Example.** Flip a fair coin 4 times, $X$ = number of heads
 
     $$
     \leadsto \quad E[X] = 0 \times \tfrac{1}{16} + 1 \times \tfrac{4}{16} + 2 \times \tfrac{6}{16} + 3 \times \tfrac{4}{16} + 4 \times \tfrac{1}{16} = \tfrac{32}{16} = 2
@@ -545,6 +587,22 @@ def _(mo, theorem):
             ),
         ]
     )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Summary
+
+    - pmf of a discrete random variable: $f_X(x) = P(X = x)$, with $f_X \geq 0$, $f_X(x) = 0$ for $x \notin S_X$ and $\sum_{x \in A} f_X(x) = P_X(A)$ &nbsp; $\leadsto$ &nbsp; $f_X$ completely determines $P_X$
+    - cdf: $F_X(x) = P(X \leq x) = \sum_{t \leq x} f_X(t)$, non-decreasing from $0$ to $1$, with jumps $F_X(x) - F_X(x^-) = f_X(x)$
+    - expectation of a function of $X$: $E[u(X)] = \sum_{x} u(x)\, f_X(x)$
+    - mean $\mu_X = E[X]$ (“center”), variance $\sigma_X^2 = E[(X - \mu_X)^2]$ (“width”), skewness $\gamma_X = E\big[\big(\tfrac{X - \mu_X}{\sigma_X}\big)^3\big]$ (“symmetry”)
+    - expectation is linear: $E[a\, u(X) + b\, v(X)] = a\, E[u(X)] + b\, E[v(X)]$, $E[c] = c$ &nbsp; $\Longrightarrow$ &nbsp; $\sigma_X^2 = E[X^2] - E[X]^2$
+
+    **Next:** binomial and negative binomial models
+    """)
     return
 
 
