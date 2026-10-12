@@ -400,8 +400,10 @@ def _(BLUE, Figure, GREEN, RED, mo, np, theorem):
     $$
 
     $$
-    \Longrightarrow \quad Y \sim \mathcal{N}(a\mu + b,\ a^2\sigma^2) \qquad (\text{if } m_{Y_1}(t) = m_{Y_2}(t) \text{ around } t = 0 \ \Longrightarrow \ Y_1 \text{ and } Y_2 \text{ have the same distribution!})
+    \Longrightarrow \quad Y \sim \mathcal{N}(a\mu + b,\ a^2\sigma^2)
     $$
+
+    (if $m_{Y_1}(t) = m_{Y_2}(t)$ around $t = 0$, then $Y_1$ and $Y_2$ have the same distribution!)
 
     $\Longrightarrow$ &nbsp; linear transformations of normal RVs are still normal RVs!
 

@@ -174,8 +174,10 @@ def _(definition, mo, theorem):
 
     $$
     \leadsto \quad \underbrace{F_X(x)}_{\text{cdf}} = P(X \leq x) \ \text{ continuous}
-    \qquad \leadsto \qquad \underbrace{f_X(x)}_{\text{pdf}} = \frac{d}{dx} F_X(x) \quad \left( \begin{array}{c} \text{where the derivative is well-defined} \\ \text{(usually, piecewise continuous)} \end{array} \right)
+    \qquad \leadsto \qquad \underbrace{f_X(x)}_{\text{pdf}} = \frac{d}{dx} F_X(x)
     $$
+
+    (where the derivative is well-defined; usually, piecewise continuous)
 
     **Remark.** For continuous RVs &nbsp; $f_X(x) \neq \underbrace{P(X = x)}_{=\, 0 \ \forall x}$
 
@@ -285,7 +287,7 @@ def _(BLUE, Figure, RED, math, mo, np):
     _ax.legend(frameon=False, fontsize=10)
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
-    mo.hstack([_fig, mo.md(r"e.g. $\Gamma(\tfrac{1}{2}) = \sqrt{\pi}$, &nbsp; $\Gamma(r + 1) = r\, \Gamma(r)$ for every $r > 0$")], widths=[3, 2], gap=2, align="center", wrap=True)
+    _fig
     return
 
 

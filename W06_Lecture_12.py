@@ -212,7 +212,10 @@ def _(Figure, RED, definition, mo, theorem):
 
     $$
     Y = \text{clock time of a sale} \ (9 = \text{9AM}) \quad \leadsto \quad S_Y = (9, 21)
-    \qquad \Longrightarrow \quad P(Y \leq y) = \frac{y - 9}{21 - 9} = \frac{y - 9}{12}
+    $$
+
+    $$
+    \Longrightarrow \quad P(Y \leq y) = \frac{y - 9}{21 - 9} = \frac{y - 9}{12}
     \qquad \Longrightarrow \quad f_Y(y) = \frac{1}{12}, \quad y \in (9, 21)
     $$
     """

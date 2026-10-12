@@ -519,7 +519,6 @@ def _(BLUE, Figure, die_preset, mo, np, weights):
 
     mo.vstack(
         [
-            mo.md(r"Choose $P$ by assigning a weight to each face (probabilities are the weights divided by their sum):"),
             mo.hstack([die_preset] + list(weights), justify="start", gap=1.5, align="end", wrap=True),
             mo.hstack(
                 [
@@ -567,7 +566,6 @@ def _(BLUE, Figure, RED, mo, n_rolls, np, pmf, reroll):
 
     mo.vstack(
         [
-            mo.md(r"Relative frequency of “even faces” in repeated rolls of the die chosen above:"),
             mo.hstack([n_rolls, reroll], justify="start", gap=2, align="center"),
             _fig,
         ]
