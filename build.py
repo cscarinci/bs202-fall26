@@ -10,8 +10,13 @@ from pathlib import Path
 HERE = Path(__file__).parent
 SITE = HERE / "site"
 
-PARTS = [  # (name, first lecture, last lecture)
-    ("Lectures", 1, 28),
+PARTS = [  # (name, first lecture, last lecture); ranges after part II are tentative
+    ("I. Probability spaces and counting methods", 1, 3),
+    ("II. Random variables and their distributions", 4, 13),
+    ("III. Joint distributions and independence", 14, 16),
+    ("IV. Random samples and sampling distributions", 17, 19),
+    ("V. Estimation and hypothesis testing", 20, 25),
+    ("VI. Simple linear regression", 26, 28),
 ]
 
 TITLES = {  # lecture number -> title shown on the index
@@ -57,6 +62,28 @@ PAGE = """<!doctype html>
 """
 
 
+NAV_CSS = """<style>
+  .bs-nav { position: fixed; left: 1.1rem; bottom: 1.1rem; z-index: 50; display: flex; gap: .35rem;
+             font-family: "KaTeX_Main", "Latin Modern Roman", "CMU Serif", Georgia, serif; font-size: .9rem; }
+  .bs-nav a { color: #1b458f; text-decoration: none; opacity: .45; padding: .25rem .55rem; border-radius: .3rem;
+               background: rgba(255,255,255,.85); border: 1px solid rgba(27,69,143,.25); transition: opacity .15s; }
+  .bs-nav a:hover { opacity: 1; }
+  #root { padding-bottom: 3.5rem; }
+  @media print { .bs-nav { display: none; } }
+</style>"""
+
+
+def nav_html(number, numbers):
+    """Subtle previous / index / next links for the page of lecture `number`."""
+    links = []
+    if number - 1 in numbers:
+        links.append(f'<a href="../Lecture_{number - 1:02d}/" title="Lecture {number - 1:02d}">&larr; {number - 1:02d}</a>')
+    links.append('<a href="../" title="All lectures">Index</a>')
+    if number + 1 in numbers:
+        links.append(f'<a href="../Lecture_{number + 1:02d}/" title="Lecture {number + 1:02d}">{number + 1:02d} &rarr;</a>')
+    return NAV_CSS + '<nav class="bs-nav">' + "".join(links) + "</nav>"
+
+
 def main():
     notebooks = {}
     for path in sorted(HERE.glob("W*_Lecture_*.py")):
@@ -70,6 +97,12 @@ def main():
             check=True,
             cwd=HERE,
         )
+
+    for number in notebooks:  # previous / next navigation, injected into each exported page
+        page = SITE / f"Lecture_{number:02d}" / "index.html"
+        html = re.sub(r'<nav class="bs-nav">.*?</nav>', "", page.read_text(encoding="utf-8"), flags=re.S)
+        html = html.replace("</body>", nav_html(number, notebooks) + "</body>", 1)
+        page.write_text(html, encoding="utf-8")
 
     sections = []
     for name, first, last in PARTS:
