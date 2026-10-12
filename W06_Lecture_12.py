@@ -192,7 +192,7 @@ def _(mo):
         \end{cases}
         $$
 
-    **In this lecture:** families of continuous random variables &nbsp; $\leadsto$ &nbsp; uniform, beta, Gaussian, chi-squared
+    **In this lecture:** families of continuous random variables &nbsp; $\leadsto$ &nbsp; uniform, beta, Gaussian
     """)
     return
 
