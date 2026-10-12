@@ -5,7 +5,6 @@ Preview: python -m http.server --directory site
 """
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -67,7 +66,7 @@ def main():
     for number, path in notebooks.items():
         print(f"exporting {path.name}")
         subprocess.run(
-            [sys.executable, "-m", "marimo", "export", "html-wasm", str(path), "-o", str(SITE / path.stem), "--mode", "run", "-f"],
+            ["marimo", "export", "html-wasm", str(path), "-o", str(SITE / f"Lecture_{number:02d}"), "--mode", "run", "-f"],
             check=True,
             cwd=HERE,
         )
@@ -75,7 +74,7 @@ def main():
     sections = []
     for name, first, last in PARTS:
         items = [
-            f'<li><a href="{notebooks[n].stem}/">Lecture {n:02d}</a> &mdash; {TITLES.get(n, "")}</li>'
+            f'<li><a href="Lecture_{n:02d}/">Lecture {n:02d}</a> &mdash; {TITLES.get(n, "")}</li>'
             for n in range(first, last + 1)
             if n in notebooks
         ]
