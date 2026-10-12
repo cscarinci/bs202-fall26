@@ -203,7 +203,7 @@ def _(definition, mo, theorem):
     $$
 
     $$
-    \leadsto \quad m_X(t) = E[e^{tX}] = \exp\!\left( \mu t + \sigma^2 \frac{t^2}{2} \right) \qquad (\text{will prove later!})
+    \leadsto \quad m_X(t) = E[e^{tX}] = \exp\!\left( \mu t + \sigma^2 \frac{t^2}{2} \right) \qquad (\text{proved below})
     $$
     """,
                 "Moments of the normal distribution",
@@ -704,8 +704,6 @@ def _(mo):
     - $Y = aX + b$: &nbsp; $m_Y(t) = e^{tb}\, m_X(ta)$ &nbsp; $\Longrightarrow$ &nbsp; $E[Y] = a\, E[X] + b$, $\mathrm{Var}(Y) = a^2\, \mathrm{Var}(X)$
     - $X \sim \mathcal{N}(\mu, \sigma^2)$ if and only if $Z = \dfrac{X - \mu}{\sigma} \sim \mathcal{N}(0, 1)$ &nbsp; $\Longrightarrow$ &nbsp; $F_X(x) = \Phi\!\left( \dfrac{x - \mu}{\sigma} \right)$; linear transformations of normal random variables are still normal: $aX + b \sim \mathcal{N}(a\mu + b,\ a^2\sigma^2)$
     - $p$-quantile: $F_X(q_p) = p$; &nbsp; for the normal distribution $q_p(X) = \mu + \sigma z_p$ with $\Phi(z_p) = p$
-
-    **Next:** to be announced
     """)
     return
 

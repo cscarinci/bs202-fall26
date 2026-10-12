@@ -656,7 +656,7 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, MaxNLocator, RED, binomial_pmf, hy
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    (e) Compare the distributions of $X$ for $N = 40$, $200$, $2000$, with $K/N = 0.2$.
+    (e) Compare the distributions of $X$ for $N = 20$, $40$, $200$, $2000$, with $K/N = 0.2$.
     """)
     return
 
@@ -881,7 +881,7 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, a_cut, a_rate, a_seats, a_seed, mo
 
     (b) $\{R(t) < 60\} = \{T(60) > t\}$: fewer than 60 requests by time $t$ exactly when the 60th request comes after $t$.
 
-    (c) Simulated mean $30.0$ s; standard deviation $3.8$ s ($T(60) \sim \mathrm{Gamma}(60, 2)$, variance $60/4$).
+    (c) Simulated mean $\approx 30$ s; standard deviation $\approx 3.9$ s ($T(60) \sim \mathrm{Gamma}(60, 2)$, variance $60/4$).
 
     (d) $P(R(t) < 60)$ with $R(t) \sim \mathrm{Pois}(2t)$: $0.998$ at $t = 20$, $0.483$ at $t = 30$, $0.009$ at $t = 40$.
     """
