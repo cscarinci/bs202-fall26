@@ -190,8 +190,10 @@ def _(definition, mo):
 
     $$
     \leadsto \quad \underbrace{F_X(x)}_{\text{cdf}} = P(X \leq x) = \sum_{y \in (-\infty, x] \cap S_X} f_X(y)
-    \qquad \Longrightarrow \qquad f_X(x) = F_X(x) - F_X(x^-) \quad (F_X(x^-) = P(X < x): \text{value of } F_X \text{ just before } x)
+    \qquad \Longrightarrow \qquad f_X(x) = F_X(x) - F_X(x^-)
     $$
+
+    ($F_X(x^-) = P(X < x)$: value of $F_X$ just before $x$)
     """
             ),
             definition(
@@ -453,7 +455,7 @@ def _(BLUE, Figure, RED, m_lam, m_s, m_t, math, mo, np):
             rf"| $P(Y \leq t) = F_Y(t) = 1 - e^{{-\lambda t}}$ | ${_F(_t):.4f}$ |",
         ]
     )
-    mo.vstack([mo.hstack([m_lam, m_s, m_t], justify="start", gap=3, wrap=True), mo.md(_table), mo.md("red area divided by hatched area equals the blue area:"), _fig])
+    mo.vstack([mo.hstack([m_lam, m_s, m_t], justify="start", gap=3, wrap=True), mo.md(_table), _fig])
     return
 
 
@@ -494,7 +496,7 @@ def _(mo, q_p, q_s, q_t):
             rf"| $P(Y \leq t) = 1 - (1 - p)^t$ | ${_F(_t):.4f}$ |",
         ]
     )
-    mo.vstack([mo.md(r"Check for $Y \sim \mathrm{Geom}(p)$ (number of flips until the first $H$):"), mo.hstack([q_p, q_s, q_t], justify="start", gap=3, wrap=True), mo.md(_table)])
+    mo.vstack([mo.hstack([q_p, q_s, q_t], justify="start", gap=3, wrap=True), mo.md(_table)])
     return
 
 

@@ -351,8 +351,7 @@ def _(mo, theorem):
 
     $$
     \begin{aligned}
-    \mathrm{Var}(X) &= E[X(X - 1)] + E[X] - E[X]^2 \\
-    &= \sum_{x=0}^{\infty} x (x - 1)\, e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} + \lambda t - (\lambda t)^2 \\
+    \mathrm{Var}(X) &= E[X(X - 1)] + E[X] - E[X]^2 = \sum_{x=0}^{\infty} x (x - 1)\, e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} + \lambda t - (\lambda t)^2 \\[6pt]
     &= \underbrace{\sum_{x-2=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^{x-2}}{(x - 2)!}}_{1}\, (\lambda t)^2 + \lambda t - (\lambda t)^2 = \lambda t
     \end{aligned}
     $$

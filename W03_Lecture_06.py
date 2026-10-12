@@ -319,10 +319,8 @@ def _(definition, mo, theorem):
 
     $$
     \begin{aligned}
-    E[X] &= \sum_{x=0}^{n} x \binom{n}{x} p^x q^{n-x} \\
-    &= \sum_{x=0}^{n} x\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x} \\
-    &= \sum_{x=1}^{n} \frac{n!}{(x - 1)!\,(n - x)!}\, p^x q^{n-x} \\
-    &= np \underbrace{\sum_{x-1=0}^{n-1} \frac{(n - 1)!}{(x - 1)!\,(n - 1 - x + 1)!}\, p^{x-1} q^{n-1-x+1}}_{(p + q)^{n-1} \,=\, 1}
+    E[X] &= \sum_{x=0}^{n} x \binom{n}{x} p^x q^{n-x} = \sum_{x=0}^{n} x\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x} \\[6pt]
+    &= \sum_{x=1}^{n} \frac{n!}{(x - 1)!\,(n - x)!}\, p^x q^{n-x} = np \underbrace{\sum_{x-1=0}^{n-1} \frac{(n - 1)!}{(x - 1)!\,(n - 1 - x + 1)!}\, p^{x-1} q^{n-1-x+1}}_{(p + q)^{n-1} \,=\, 1}
     \end{aligned}
     $$
 
@@ -332,8 +330,7 @@ def _(definition, mo, theorem):
 
     $$
     \begin{aligned}
-    \leadsto \quad E[X(X - 1)] &= \sum_{x=0}^{n} x (x - 1)\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x} \\
-    &= \sum_{x=2}^{n} \frac{n (n - 1) (n - 2)!}{(x - 2)!\,(n - 2 - x + 2)!}\, p^2 p^{x-2} q^{n-x} \\
+    \leadsto \quad E[X(X - 1)] &= \sum_{x=0}^{n} x (x - 1)\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x} = \sum_{x=2}^{n} \frac{n (n - 1) (n - 2)!}{(x - 2)!\,(n - 2 - x + 2)!}\, p^2 p^{x-2} q^{n-x} \\[6pt]
     &= n (n - 1) p^2 \underbrace{\sum_{x-2=0}^{n-2} \frac{(n - 2)!}{(x - 2)!\,(n - 2 - x + 2)!}\, p^{x-2} q^{n-x}}_{(p + q)^{n-2} \,=\, 1}
     \end{aligned}
     $$
@@ -432,7 +429,7 @@ def _(Figure, RED, math, mo, np_, nr, ny):
         _text = rf"$f_Y({_y}) = \binom{{{_y - 1}}}{{{_r - 1}}} ({_p:g})^{{{_r}}} ({1 - _p:g})^{{{_y - _r}}} \approx {100 * _f(_y):.3g}\%$"
     else:
         _text = rf"$y = {_y} < r = {_r}$ &nbsp; $\Longrightarrow$ &nbsp; $y \notin S_Y$, &nbsp; $f_Y({_y}) = 0$"
-    mo.vstack([mo.hstack([nr, np_, ny], justify="start", gap=3, wrap=True), mo.md(_text + r" &nbsp;&nbsp; (dashed line: the mean $r/p$, see next lecture)"), _fig])
+    mo.vstack([mo.hstack([nr, np_, ny], justify="start", gap=3, wrap=True), mo.md(_text), _fig])
     return
 
 

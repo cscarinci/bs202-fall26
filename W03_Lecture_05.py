@@ -493,7 +493,6 @@ def _(game_payout, game_preset, game_price, game_weights, mo):
         )
     mo.vstack(
         [
-            mo.md(r"Expected winnings in the game (choose the die by weights, as in Lecture 01):"),
             mo.hstack([game_preset, game_price, game_payout], justify="start", gap=2, wrap=True),
             mo.hstack([game_weights[_i] for _i in range(6)], justify="start", gap=1.5, wrap=True),
             _text,

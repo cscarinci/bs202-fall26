@@ -579,10 +579,8 @@ def _(mo):
 
     $$
     \begin{aligned}
-    \text{Bayes' rule:} \qquad P(D \mid T) &= \frac{P(D \cap T)}{P(T)} \\[4pt]
-    &= \frac{P(T \mid D)\, P(D)}{P(T)} \\[4pt]
-    &= \frac{P(T \mid D)\, P(D)}{P(T \cap D) + P(T \cap D^c)} \\[4pt]
-    &= \frac{P(T \mid D)\, P(D)}{P(T \mid D)\, P(D) + P(T \mid D^c)\, P(D^c)} \\[4pt]
+    \text{Bayes' rule:} \qquad P(D \mid T) &= \frac{P(D \cap T)}{P(T)} = \frac{P(T \mid D)\, P(D)}{P(T)} \\[6pt]
+    &= \frac{P(T \mid D)\, P(D)}{P(T \cap D) + P(T \cap D^c)} = \frac{P(T \mid D)\, P(D)}{P(T \mid D)\, P(D) + P(T \mid D^c)\, P(D^c)} \\[6pt]
     &= \frac{0.9 \times 0.01}{0.9 \times 0.01 + 0.05 \times 0.99} = \frac{2}{13} \approx 15.4\%
     \end{aligned}
     $$

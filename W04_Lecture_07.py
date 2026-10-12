@@ -180,14 +180,20 @@ def _(definition, mo, theorem):
 
     $$
     \Longrightarrow \quad \underbrace{f_X(x)}_{B(n, p)(x)} = \begin{cases} \dbinom{n}{x} p^x q^{n-x}, & \text{for } x = \underbrace{0, 1, 2, \dots, n}_{S_X} \\[8pt] 0, & \text{otherwise} \end{cases}
-    \qquad \left( \tbinom{n}{x}: \#\text{ combinations of } x \text{ objects in } n \text{ positions} \right)
     $$
+
+    ($\tbinom{n}{x}$: # combinations of $x$ objects in $n$ positions)
 
     **Negative binomial models** &nbsp; $\leadsto$ &nbsp; count number of trials until a fixed target of successes is achieved
 
     $$
-    S = \{\, c_1 \cdots c_{n-1} c_n \mid n \geq r,\ c_n = H,\ c_i = H \text{ or } T \text{ for } 1 \leq i \leq n - 1, \text{ and } \#(H \text{ in } c_1 \cdots c_{n-1}) = r - 1 \,\} \qquad (n \text{ allowed to vary!})
+    \begin{aligned}
+    S = \{\, c_1 \cdots c_{n-1} c_n \mid\ & n \geq r,\ c_n = H,\ c_i = H \text{ or } T \text{ for } 1 \leq i \leq n - 1, \\
+    & \text{and } \#(H \text{ in } c_1 \cdots c_{n-1}) = r - 1 \,\}
+    \end{aligned}
     $$
+
+    ($n$ allowed to vary!)
 
     $$
     P(\underbrace{c_1 \cdots c_{n-1}}_{r - 1\ H\text{s}} \underbrace{c_n}_{\text{always } = H}) = p^r q^{n-r}, \qquad Y(c_1 \cdots c_{n-1} c_n) = \#(\text{trials until } r\ H)
@@ -195,8 +201,9 @@ def _(definition, mo, theorem):
 
     $$
     \Longrightarrow \quad \underbrace{f_Y(y)}_{NB(r, p)(y)} = \begin{cases} \dbinom{y - 1}{r - 1} p^r q^{y-r}, & \text{for } y = \underbrace{r, r + 1, \dots}_{S_Y} \\[8pt] 0, & \text{otherwise} \end{cases}
-    \qquad \left( \tbinom{y-1}{r-1}: \#\text{ combinations of } r - 1 \text{ objects in } y - 1 \text{ positions} \right)
     $$
+
+    ($\tbinom{y-1}{r-1}$: # combinations of $r - 1$ objects in $y - 1$ positions)
     """
             ),
             theorem(
