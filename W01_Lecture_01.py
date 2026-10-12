@@ -189,7 +189,7 @@ def _(definition, dice, mo):
         [
             mo.md(
                 r"""
-    ## I.1 &nbsp; Probability Basics (WMS 2.1 ~ 2.4)
+    ## I.1 &nbsp; Probability Basics (WMS 2.1–2.4)
 
     $\leadsto$ &nbsp; mathematical language used to describe unpredictable phenomena
     """
@@ -544,7 +544,7 @@ def _(BLUE, HALF, ORANGE, RED, blank, definition, mo, np):
 
     $$
     \Longrightarrow \quad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases}
-    \qquad \Longrightarrow \qquad P(\{\text{even faces}\}) = 1\,!
+    \qquad \Longrightarrow \qquad P(\{\text{even faces}\}) = 1
     $$
 
     $\leadsto$ &nbsp; there can be many distinct probability measures on the same sample space / event space

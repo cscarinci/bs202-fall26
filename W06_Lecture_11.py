@@ -168,7 +168,7 @@ def _(mo):
     - $\leadsto$ &nbsp; $f_X(x) = \dfrac{d}{dx} F_X(x)$ &nbsp; (pdf; where the derivative is well-defined; usually, piecewise continuous)
     - **Remark.** For continuous random variables &nbsp; $f_X(x) \neq \underbrace{P(X = x)}_{=\, 0 \ \forall x}$
 
-    **Today:** expectations for continuous random variables; moment generating functions
+    **In this lecture:** expectations for continuous random variables; moment generating functions
     """)
     return
 

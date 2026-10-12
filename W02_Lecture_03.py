@@ -185,7 +185,7 @@ def _(mo):
         \Longrightarrow \quad P(\text{at least one}) = 1 - \frac{\ \dfrac{17!}{4!\, 13!}\ }{\dfrac{20!}{4!\, 16!}} = 1 - \frac{17!\, 16!}{20!\, 13!} \approx 50.9\%
         $$
 
-    **Today:** how knowledge about one event changes the probability of another
+    **In this lecture:** how knowledge about one event changes the probability of another
     """)
     return
 
@@ -284,7 +284,7 @@ def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
     $\leadsto$ &nbsp; the probability of an event might change depending on our knowledge about the occurrence of other events!
 
     $$
-    \text{roll two fair dice:} \qquad P(\text{sum is 8}) = \tfrac{5}{36}, \qquad P\left(\substack{\text{sum is 8 when} \\ \text{1st dice is even}}\right) = \tfrac{3}{18} = \tfrac{1}{6}
+    \text{roll two fair dice:} \qquad P(\text{sum is 8}) = \tfrac{5}{36}, \qquad P\left(\substack{\text{sum is 8 when} \\ \text{1st die is even}}\right) = \tfrac{3}{18} = \tfrac{1}{6}
     $$
     """
             ),

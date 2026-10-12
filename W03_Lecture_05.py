@@ -169,7 +169,7 @@ def _(mo):
     - $\leadsto$ &nbsp; $\mathcal{E}_X$ = algebra of subsets of $\mathbb{R}$
     - $\leadsto$ &nbsp; $P_X$ = probability distribution $P_X : \mathcal{E}_X \longrightarrow \mathbb{R}$, &nbsp; $P_X(A) = P(X \in A)$ &nbsp; (probability that the measurement of $X$ is valued in $A$)
 
-    **Today:** discrete random variables: pmf, cdf and expectation
+    **In this lecture:** discrete random variables: pmf, cdf and expectation
     """)
     return
 

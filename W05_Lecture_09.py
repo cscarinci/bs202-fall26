@@ -176,7 +176,7 @@ def _(mo):
         S_Y = (0, +\infty) \qquad \text{continuous (not countable)}
         $$
 
-    **Today:** random variables with continuous state spaces
+    **In this lecture:** random variables with continuous state spaces
     """)
     return
 

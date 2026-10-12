@@ -227,7 +227,7 @@ def _(BLUE, HALF, LIGHT, blank, mo):
     - $P(A \mid B_i)$ = likelihoods &nbsp; $\leadsto$ &nbsp; true positive rates and false positive rates
     - law of total probability: &nbsp; $P(A) = \displaystyle\sum_{i=1}^{k} P(A \mid B_i)\, P(B_i)$
 
-    **Today:** random variables and their probability distributions: pmf and cdf
+    **In this lecture:** random variables and their probability distributions: pmf and cdf
     """
             ),
         ]
@@ -648,7 +648,7 @@ def _(answers, ask, mo, pmf_answers):
 
     ### Question 1
 
-    A lab uses chemicals kits from three suppliers
+    A lab uses chemical kits from three suppliers
 
     $$
     P(S_1) = 50\%, \qquad P(S_2) = 30\%, \qquad P(S_3) = 20\%

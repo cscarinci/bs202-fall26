@@ -166,9 +166,9 @@ def _(mo):
     Families of continuous random variables
 
     - $\mathrm{Unif}(a, b)$, pdf $\dfrac{1}{b - a}$ &nbsp; $\leadsto$ &nbsp; measures position of occurrence in $(a, b)$, assuming probability $P((c, d)) = \dfrac{d - c}{b - a}$ for $(c, d) \subset (a, b)$
-    - $\mathrm{Beta}(\alpha, \beta)$, pdf $\dfrac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, x^{\alpha-1} (1 - x)^{\beta-1}$ &nbsp; $\leadsto$ &nbsp; measures position of $\alpha$ occurrence in $(0, 1)$, out of $\alpha + \beta - 1$ uniform and independent total occurrences
+    - $\mathrm{Beta}(\alpha, \beta)$, pdf $\dfrac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, x^{\alpha-1} (1 - x)^{\beta-1}$ &nbsp; $\leadsto$ &nbsp; measures position of the $\alpha$th occurrence in $(0, 1)$, out of $\alpha + \beta - 1$ uniform and independent total occurrences
     - $\mathcal{N}(\mu, \sigma^2)$, pdf $\dfrac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\dfrac{(x - \mu)^2}{2\sigma^2} \right)$ &nbsp; $\leadsto$ &nbsp; measures position of middle occurrence in $(\mu - \ell, \mu + \ell)$, out of $n$ uniform and independent total occurrences, where $\ell \to +\infty$, $n = 2m - 1 \to +\infty$ with $\ell^2 / n = \sigma^2$ fixed
-    - for $n = 2m - 1$, the middle is $\tfrac{n + 1}{2} = m$; &nbsp; $X$ = position of $m$ occurrence on $(\mu - \ell, \mu + \ell)$
+    - for $n = 2m - 1$, the middle is $\tfrac{n + 1}{2} = m$; &nbsp; $X$ = position of the $m$th occurrence on $(\mu - \ell, \mu + \ell)$
 
         $$
         \begin{aligned}
@@ -178,7 +178,7 @@ def _(mo):
         \end{aligned}
         $$
 
-    **Today:** the standard normal distribution; functions of random variables; quantiles
+    **In this lecture:** the standard normal distribution; functions of random variables; quantiles
     """)
     return
 

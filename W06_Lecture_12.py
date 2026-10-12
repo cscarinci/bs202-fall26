@@ -192,7 +192,7 @@ def _(mo):
         \end{cases}
         $$
 
-    **Today:** families of continuous random variables &nbsp; $\leadsto$ &nbsp; uniform, beta, Gaussian, chi-squared
+    **In this lecture:** families of continuous random variables &nbsp; $\leadsto$ &nbsp; uniform, beta, Gaussian, chi-squared
     """)
     return
 
@@ -285,7 +285,7 @@ def _(definition, mo):
 
     1. consists of a fixed number $n$ of occurrences along a unit interval $(0, 1)$
     2. each occurrence being independent and following a uniform model on $(0, 1)$
-    3. measure the position $Y$ of the $r$th occurrence
+    3. measures the position $Y$ of the $r$th occurrence
     """,
                 "Beta model",
             ),

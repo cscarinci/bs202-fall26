@@ -248,7 +248,7 @@ def _(mo, theorem):
     """,
                 "Mean, variance and skewness",
             ),
-            mo.md(r"**Today:** hypergeometric and negative hypergeometric models"),
+            mo.md(r"**In this lecture:** hypergeometric and negative hypergeometric models"),
         ]
     )
     return

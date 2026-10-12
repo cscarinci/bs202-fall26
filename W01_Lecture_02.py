@@ -200,7 +200,7 @@ def _(mo):
 
         different probability measure on $(S, \mathcal{E})$ &nbsp; $\leadsto$ &nbsp; different mathematical model for the “dice experiment”
 
-    **Today:** properties of probability (axioms + algebra of events) and counting methods
+    **In this lecture:** properties of probability (axioms + algebra of events) and counting methods
     """)
     return
 
@@ -715,7 +715,7 @@ def _(mo, w1, w2, w3, w4):
         [
             mo.md(
                 r"""
-    ## Practice W01
+    ## Practice
 
     ### Question 1
 
