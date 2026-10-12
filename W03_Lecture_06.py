@@ -305,7 +305,7 @@ def _(BLUE, FULL, Figure, GREEN, LIGHT, RED, b_redo, b_reps, bn, bp, bx, math, m
                     (r"$P(X \leq x)$", rf"${100 * _le:.3f}\%$"),
                     (r"$P(X \geq x)$", rf"${100 * _ge:.3f}\%$"),
                     (r"$np$", rf"$\textcolor{{{GREEN}}}{{{_n * _p:.2f}}}$"),
-                    (r"$npq$", rf"${_n * _p * (1 - _p):.4f}$"),
+                    (r"$npq$", rf"${_n * _p * (1 - _p):.2f}$"),
                 ]
             ),
             _fig,
