@@ -591,7 +591,7 @@ def _(BLUE, Figure, RED, binomial_pmf, hypergeometric_pmf, mo, np, z_frac, z_pla
         for _ax, _Nn in zip(_axes, _sizes):
             _Kk = round(_Nn * _p)
             for _k, (_name, _vals, _pmf, _dark, _light) in enumerate(
-                (("A", _counts[N][0], lambda x: binomial_pmf(x, _n, _p), BLUE, "#8fa8e8"), ("B", _counts[N][1], lambda x, N=_Nn, K=_Kk: hypergeometric_pmf(x, N, K, _n), RED, "#f0b4a0"))
+                (("A", _counts[_Nn][0], lambda x: binomial_pmf(x, _n, _p), BLUE, "#8fa8e8"), ("B", _counts[_Nn][1], lambda x, N=_Nn, K=_Kk: hypergeometric_pmf(x, N, K, _n), RED, "#f0b4a0"))
             ):
                 _ax.bar(_xs + (_k - 0.5) * 0.4, [(_vals == x).mean() for x in _xs], width=0.4, color=_light, label=f"player {_name}")
                 _ax.plot(_xs, [_pmf(int(x)) for x in _xs], "o", color=_dark, ms=3.5)
