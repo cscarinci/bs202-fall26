@@ -23,7 +23,16 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     # ---- Building blocks shared by all lectures -------------------------
-    RED, GREEN, BLUE, GREY = "#b3261e", "#2e7d32", "#1b458f", "#888888"
+    # Palette with fixed roles (figures only; text carries no colour):
+    #   BLUE   the primary object (the particle, the point, the chosen vector)
+    #   RED    the second object it is compared with
+    #   GREEN  a derived quantity (velocity, relative velocity, tangent vector)
+    #   ORANGE a third series, only when three are needed
+    #   GREY   reference geometry (equator, light cone, inertial comparison)
+    #   LIGHT  fills and grids
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    # Figure widths: FULL spans the page, HALF sits beside text or in a pair
+    FULL, HALF = 7.4, 3.6
 
     def header(document, date, running=""):
         """Course header, as on the exercise sheets and exams."""
@@ -51,20 +60,31 @@ def _(mo):
     def theorem(body, title=""):
         return _statement("Theorem", title, body)
 
-    def warning(body):
+    def proposition(body, title=""):
+        return _statement("Proposition", title, body)
+
+    def corollary(body, title=""):
+        return _statement("Corollary", title, body)
+
+    def postulate(body, title=""):
+        return _statement("Postulate", title, body)
+
+    def note(body):
+        """Editorial note of the notebook (not part of the lecture)."""
         return mo.md("**Note.** " + body.strip())
 
-    def arrow(ax, tail, tip, color, label=None, at_tip=False, **kw):
-        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip."""
+    def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
+        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
+        One head size and one line weight for every figure, so arrows look alike across lectures."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>", "color": color, "lw": 2.2, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
-            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=18)
+            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=13)
 
     def plane(ax, lim):
         """Style a 2D axis as a coordinate plane with range [-lim, lim]."""
@@ -73,8 +93,33 @@ def _(mo):
         ax.set_aspect("equal")
         ax.axhline(0, color="black", lw=0.8)
         ax.axvline(0, color="black", lw=0.8)
-        ax.grid(True, color="#cfe3f5", lw=0.6)
+        ax.grid(True, color=LIGHT, lw=0.6)
         ax.set_axisbelow(True)
+
+    def blank(w, h, xlim, ylim):
+        """A figure with one bare axis (no frame) for sketches."""
+        from matplotlib.figure import Figure as _Figure
+
+        fig = _Figure(figsize=(w, h), layout="constrained")
+        ax = fig.subplots()
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        return fig, ax
+
+    def blob(cx, cy, rx, ry, wobble=0.07, seed=0, n=400):
+        """Closed organic curve around (cx, cy): an ellipse with a few low harmonics."""
+        import numpy as _np
+
+        rng = _np.random.default_rng(seed)
+        t = _np.linspace(0, 2 * _np.pi, n)
+        r = 1 + sum(wobble / k * rng.uniform(0.4, 1.0) * _np.cos(k * t + rng.uniform(0, 2 * _np.pi)) for k in (2, 3, 4, 5))
+        return cx + rx * r * _np.cos(t), cy + ry * r * _np.sin(t)
+
+    def table(rows):
+        """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
+        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
 
     def check(field, answer):
         """Feedback mark for a numeric answer typed into a text field."""
@@ -86,70 +131,7 @@ def _(mo):
         except ValueError:
             return "⚠️ enter a number"
 
-    return BLUE, GREEN, GREY, RED, arrow, check, definition, header, plane, theorem, warning
-
-
-@app.cell(hide_code=True)
-def _(BLUE, GREEN, RED):
-    _PIPS = {
-        1: [(2, 2)],
-        2: [(1, 1), (3, 3)],
-        3: [(1, 1), (2, 2), (3, 3)],
-        4: [(1, 1), (1, 3), (3, 1), (3, 3)],
-        5: [(1, 1), (1, 3), (2, 2), (3, 1), (3, 3)],
-        6: [(1, 1), (1, 2), (1, 3), (3, 1), (3, 2), (3, 3)],
-    }
-
-    def die(n, color=BLUE):
-        """A small picture of a die face, for use inside text."""
-        dots = "".join(f'<circle cx="{6 * x}" cy="{6 * y}" r="2" fill="{color}"/>' for x, y in _PIPS[n])
-        return (
-            '<svg viewBox="0 0 24 24" style="display:inline-block;width:1.25em;height:1.25em;vertical-align:-0.25em">'
-            f'<rect x="1.5" y="1.5" width="21" height="21" rx="4" fill="none" stroke="{color}" stroke-width="1.6"/>{dots}</svg>'
-        )
-
-    def dice(faces, color=BLUE):
-        return ", ".join(die(n, color) for n in faces)
-
-    return dice, die
-
-
-@app.cell(hide_code=True)
-def _(arrow):
-    def cross_axes(ax, xlim, ylim, xlabel=None, ylabel=None):
-        """A bare pair of coordinate axes through the origin."""
-        ax.set_xlim(*xlim)
-        ax.set_ylim(*ylim)
-        ax.set_aspect("equal")
-        ax.axis("off")
-        arrow(ax, (xlim[0], 0), (xlim[1], 0), "black", lw=0.9)
-        arrow(ax, (0, ylim[0]), (0, ylim[1]), "black", lw=0.9)
-        if xlabel:
-            ax.annotate(xlabel, (xlim[1], 0), textcoords="offset points", xytext=(-12, -18), fontsize=13)
-        if ylabel:
-            ax.annotate(ylabel, (0, ylim[1]), textcoords="offset points", xytext=(8, -10), fontsize=13)
-
-    return (cross_axes,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    def ask(label, field, answer, tol=1e-6):
-        """A labelled answer box with a feedback mark; accepts decimals, decimal commas and percentages."""
-        raw = field.value.strip()
-        mark = ""
-        if raw:
-            try:
-                value = float(raw.rstrip("%").replace(",", ".")) / (100 if raw.endswith("%") else 1)
-                mark = "✅" if abs(value - answer) <= tol else "❌ try again"
-            except ValueError:
-                mark = "⚠️ enter a number"
-        return mo.hstack([mo.md(label), field, mo.md(mark)], justify="start", align="center")
-
-    def box():
-        return mo.ui.text(placeholder="?", debounce=True)
-
-    return ask, box
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
@@ -159,56 +141,102 @@ def _(header):
 
 
 @app.cell(hide_code=True)
-def _(definition, mo, theorem):
+def _(arrow, math):
+    def vector(ax, tail, tip, color, label=None, turn=0, r=15, **kw):
+        """Arrow from `tail` to `tip` (a dot when it has zero length), labelled beyond its tip on a white box;
+        `turn` (degrees) rotates the label about the tip so that coinciding vectors keep separate labels."""
+        dx, dy = tip[0] - tail[0], tip[1] - tail[1]
+        if dx == 0 and dy == 0:
+            ax.plot(*tip, "o", color=color, ms=4, zorder=4)
+            d = math.radians(45 + turn)
+        else:
+            arrow(ax, tail, tip, color, **kw)
+            d = math.atan2(dy, dx) + math.radians(turn)
+        if label:
+            ax.annotate(label, tip, textcoords="offset points", xytext=(r * math.cos(d), r * math.sin(d)), ha="center", va="center", color=color, fontsize=13, zorder=5, bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
+
+    return (vector,)
+
+
+@app.cell(hide_code=True)
+def _(Figure):
+    def pmf_axes(xlabel, h=3.0):
+        """A full-width figure with one axis for pmf plots: integer ticks, no top/right spines."""
+        from matplotlib.ticker import MaxNLocator
+
+        fig = Figure(figsize=(7.4, h), layout="constrained")
+        ax = fig.subplots()
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.set_xlabel(xlabel)
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
+        return fig, ax
+
+    def stems(ax, xs, ps, color, dx=0.0):
+        """A pmf as thin vertical stems with a dot, shifted sideways by `dx` to sit next to a second pmf;
+        on a long range (more than 60 values) the stems would merge, so only the dots are drawn."""
+        if len(xs) > 60:
+            ax.plot(xs, ps, "o", color=color, ms=2.2)
+        else:
+            pos = [x + dx for x in xs]
+            ax.vlines(pos, 0, ps, color=color, lw=1.0)
+            ax.plot(pos, ps, "o", color=color, ms=3.5)
+
+    def span(a, b):
+        r"""The set of integers {a, ..., b} in LaTeX."""
+        return rf"\{{{a}\}}" if a == b else rf"\{{{a}, {b}\}}" if b == a + 1 else rf"\{{{a}, \dots, {b}\}}"
+
+    return pmf_axes, span, stems
+
+
+@app.cell(hide_code=True)
+def _(mo, theorem):
     mo.vstack(
         [
             mo.md(
                 r"""
     ## Last time
 
-    **Binomial models** &nbsp; $\leadsto$ &nbsp; count number of “successes” in a fixed number of trials
+    - **Binomial models** &nbsp; $\leadsto$ &nbsp; count number of “successes” in a fixed number of trials
 
-    $$
-    S = \{\, c_1 c_2 \cdots c_n \mid c_i = H \text{ or } T \,\} \qquad (n: \text{number of trials})
-    $$
+        $$
+        S = \{\, c_1 c_2 \cdots c_n \mid c_i = H \text{ or } T \,\} \quad (n: \text{number of trials}), \qquad
+        \underbrace{P(\{H\}) = p}_{\text{success}}, \quad \underbrace{P(\{T\}) = 1 - p = q}_{\text{failure}}
+        $$
 
-    success with $P(\{H\}) = p$, &nbsp; failure with $P(\{T\}) = 1 - p = q$
+        $$
+        P(\underbrace{c_1 c_2 \cdots c_n}_{r\ H\text{s}}) = p^r (1 - p)^{n-r} = p^r q^{n-r}, \qquad X(c_1 c_2 \cdots c_n) = \#(H \text{ in } n \text{ trials})
+        $$
 
-    $$
-    P(\underbrace{c_1 c_2 \cdots c_n}_{r\ H\text{s}}) = p^r (1 - p)^{n-r} = p^r q^{n-r}, \qquad X(c_1 c_2 \cdots c_n) = \#(H \text{ in } n \text{ trials})
-    $$
+        $$
+        \Longrightarrow \quad \underbrace{f_X(x)}_{B(n, p)(x)} = \begin{cases} \dbinom{n}{x} p^x q^{n-x}, & \text{for } x = \underbrace{0, 1, 2, \dots, n}_{S_X} \\[8pt] 0, & \text{otherwise} \end{cases}
+        $$
 
-    $$
-    \Longrightarrow \quad \underbrace{f_X(x)}_{B(n, p)(x)} = \begin{cases} \dbinom{n}{x} p^x q^{n-x}, & \text{for } x = \underbrace{0, 1, 2, \dots, n}_{S_X} \\[8pt] 0, & \text{otherwise} \end{cases}
-    $$
+        ($\tbinom{n}{x}$: # combinations of $x$ objects in $n$ positions)
 
-    ($\tbinom{n}{x}$: # combinations of $x$ objects in $n$ positions)
+    - **Negative binomial models** &nbsp; $\leadsto$ &nbsp; count number of trials until a fixed target of successes is achieved
 
-    **Negative binomial models** &nbsp; $\leadsto$ &nbsp; count number of trials until a fixed target of successes is achieved
+        $$
+        \begin{aligned}
+        S = \{\, c_1 \cdots c_{n-1} c_n \mid\ & n \geq r \ (n \text{ allowed to vary!}),\ c_n = H,\ c_i = H \text{ or } T \text{ for } 1 \leq i \leq n - 1, \\
+        & \text{and } \#(H \text{ in } c_1 \cdots c_{n-1}) = r - 1 \,\}
+        \end{aligned}
+        $$
 
-    $$
-    \begin{aligned}
-    S = \{\, c_1 \cdots c_{n-1} c_n \mid\ & n \geq r,\ c_n = H,\ c_i = H \text{ or } T \text{ for } 1 \leq i \leq n - 1, \\
-    & \text{and } \#(H \text{ in } c_1 \cdots c_{n-1}) = r - 1 \,\}
-    \end{aligned}
-    $$
+        $$
+        P(\underbrace{c_1 \cdots c_{n-1}}_{r - 1\ H\text{s}} \underbrace{c_n}_{\text{always } = H}) = p^r q^{n-r}, \qquad Y(c_1 \cdots c_{n-1} c_n) = \#(\text{trials until } r\ H)
+        $$
 
-    ($n$ allowed to vary!)
+        $$
+        \Longrightarrow \quad \underbrace{f_Y(y)}_{NB(r, p)(y)} = \begin{cases} \dbinom{y - 1}{r - 1} p^r q^{y-r}, & \text{for } y = \underbrace{r, r + 1, \dots}_{S_Y} \\[8pt] 0, & \text{otherwise} \end{cases}
+        $$
 
-    $$
-    P(\underbrace{c_1 \cdots c_{n-1}}_{r - 1\ H\text{s}} \underbrace{c_n}_{\text{always } = H}) = p^r q^{n-r}, \qquad Y(c_1 \cdots c_{n-1} c_n) = \#(\text{trials until } r\ H)
-    $$
-
-    $$
-    \Longrightarrow \quad \underbrace{f_Y(y)}_{NB(r, p)(y)} = \begin{cases} \dbinom{y - 1}{r - 1} p^r q^{y-r}, & \text{for } y = \underbrace{r, r + 1, \dots}_{S_Y} \\[8pt] 0, & \text{otherwise} \end{cases}
-    $$
-
-    ($\tbinom{y-1}{r-1}$: # combinations of $r - 1$ objects in $y - 1$ positions)
+        ($\tbinom{y-1}{r-1}$: # combinations of $r - 1$ objects in $y - 1$ positions)
     """
             ),
             theorem(
                 r"""
-    $X$ binomial RV with bias $p$ on $n$ trials, &nbsp; $Y$ negative binomial RV with bias $p$ and target $r$
+    $X$ binomial random variable with bias $p$ on $n$ trials, &nbsp; $Y$ negative binomial random variable with bias $p$ and target $r$
 
     $$
     \begin{aligned}
@@ -217,9 +245,26 @@ def _(definition, mo, theorem):
     \mathrm{Skew}(X) &= \gamma_X = \frac{q - p}{\sqrt{npq}}, & \mathrm{Skew}(Y) &= \gamma_Y = \frac{1 + q}{\sqrt{rq}}
     \end{aligned}
     $$
+    """,
+                "Mean, variance and skewness",
+            ),
+            mo.md(r"**Today:** hypergeometric and negative hypergeometric models"),
+        ]
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(definition, mo):
+    mo.vstack(
+        [
+            mo.md(
+                r"""
+    ## II.4 &nbsp; Hypergeometric and negative hypergeometric models
+
+    ### Hypergeometric models
     """
             ),
-            mo.md(r"**Today:** Hypergeometric & negative hypergeometric models"),
             definition(
                 r"""
     A **hypergeometric model** is an experiment that
@@ -227,21 +272,22 @@ def _(definition, mo, theorem):
     1. consists of a sequence of trials (not independent!)
     2. each single trial has one of two outcomes, with exactly $K$ possible “successes” and $N - K$ possible “failures” in total, with all combinations of the $K$ possible successes among the $N$ possible trials being equally likely
     3. measures the number $X$ of “successes” in a fixed number $n$ of trials
-    """
+    """,
+                "Hypergeometric model",
             ),
             mo.md(
                 r"""
-    Draw colored coins from a bag with $K$ red coins and $N - K$ blue coins and without replacing the coins; count $X = \#(\text{red coins in } n \text{ draws})$
+    $\leadsto$ &nbsp; draw colored coins from a bag with $K$ red coins and $N - K$ blue coins and without replacing the coins; count $X = \#(\text{red coins in } n \text{ draws})$
 
     $$
     S = \{\, c_1 c_2 \cdots c_n \mid c_i = R \text{ or } B,\ i = 1, \dots, n \,\}, \qquad S_X = \{0, 1, \dots, n\} \quad (\text{if } n \leq K \text{ and } n \leq N - K)
     $$
 
     $$
-    P(\{c_1 c_2 \cdots c_n\}) = \frac{\dbinom{N - n}{K - k}}{\dbinom{N}{K}} \quad \text{if } X(c_1 c_2 \cdots c_n) = k
+    P(\{c_1 c_2 \cdots c_n\}) = \frac{\dbinom{N - n}{K - x}}{\dbinom{N}{K}} \qquad \text{if } X(c_1 c_2 \cdots c_n) = x
     $$
 
-    $N = 5$, $K = 3$, $n = 3$:
+    $\leadsto$ &nbsp; $N = 5$, $K = 3$, $n = 3$:
 
     $$
     P(\{RBB\}) = \frac{3}{5} \cdot \frac{2}{4} \cdot \frac{1}{3} = \frac{\binom{5-3}{3-1}}{\binom{5}{3}} = \frac{1}{\frac{5!}{2!\,3!}},
@@ -249,7 +295,7 @@ def _(definition, mo, theorem):
     P(\{BRR\}) = \frac{2}{5} \cdot \frac{3}{4} \cdot \frac{2}{3} = \frac{\binom{5-3}{3-2}}{\binom{5}{3}} = \frac{2!}{\frac{5!}{2!\,3!}}
     $$
 
-    $N = 9$, $K = 5$, $n = 4$:
+    $\leadsto$ &nbsp; $N = 9$, $K = 5$, $n = 4$:
 
     $$
     P(\{BBBR\}) = \frac{\binom{5}{4}}{\binom{9}{5}} = \frac{4}{9} \cdot \frac{3}{8} \cdot \frac{2}{7} \cdot \frac{5}{6}
@@ -263,12 +309,15 @@ def _(definition, mo, theorem):
             ),
             definition(
                 r"""
-    A RV $X$ is said to have a **hypergeometric distribution** if its pmf is
+    A random variable $X$ is said to have a **hypergeometric distribution** if its pmf is
 
     $$
-    \underbrace{f_X(x)}_{HG(N, K, n)(x)} = \frac{\dbinom{K}{x} \dbinom{N - K}{n - x}}{\dbinom{N}{n}}, \qquad \text{for } x \in \mathbb{Z},\ 0 \leq x \leq K \text{ and } 0 \leq n - x \leq N - K \quad (\text{and } f_X(x) = 0 \text{ otherwise})
+    \underbrace{f_X(x)}_{HG(N, K, n)(x)} = \frac{\dbinom{K}{x} \dbinom{N - K}{n - x}}{\dbinom{N}{n}}, \qquad \text{for } x \in \mathbb{Z},\ 0 \leq x \leq K \text{ and } 0 \leq n - x \leq N - K
     $$
-    """
+
+    (and $f_X(x) = 0$ otherwise).
+    """,
+                "Hypergeometric distribution",
             ),
             mo.md(
                 r"""
@@ -298,48 +347,64 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, RED, hK, hN, hn, hx, math, mo):
+def _(BLUE, GREEN, RED, hK, hN, hn, hx, math, mo, pmf_axes, span, stems, table):
     _N, _K, _n, _x = hN.value, hK.value, hn.value, hx.value
-    if _K > _N or _n > _N:
-        _out = mo.vstack([mo.hstack([mo.vstack([hN, hK]), mo.vstack([hn, hx])], justify="start", gap=3, wrap=True), mo.md(rf"need $K \le N$ and $n \le N$ &nbsp; (here $N = {_N}$)")])
-    else:
+    _fig, _ax = pmf_axes("$x$")
+    _ax.text(0, 1.03, "$HG(N, K, n)$", color=BLUE, fontsize=12, ha="left", va="bottom", transform=_ax.transAxes)
+    _ax.text(1, 1.03, "$B(n, p)$,  $p = K/N$", color=RED, fontsize=12, ha="right", va="bottom", transform=_ax.transAxes)
+    if _K <= _N and _n <= _N:
         _p = _K / _N
         _lo, _hi = max(0, _n - (_N - _K)), min(_K, _n)
         _total = math.comb(_N, _n)
-        # Both pmfs on the full range x = 0, ..., n; HG is zero outside its support
+        # both pmfs on the full range x = 0, ..., n; HG is zero outside its support
         _xs = list(range(_n + 1))
-        _hg = [math.comb(_K, x) * math.comb(_N - _K, _n - x) / _total if _lo <= x <= _hi else 0.0 for x in _xs]
-        _bi = [math.comb(_n, x) * _p**x * (1 - _p) ** (_n - x) for x in _xs]
-        _keep = [i for i in _xs if _hg[i] > 5e-4 or _bi[i] > 5e-4] or _xs
-        _a, _b = _keep[0], _keep[-1] + 1
-        _fx = _hg[_x] if _x <= _n else 0.0
+        _hg = [math.comb(_K, _i) * math.comb(_N - _K, _n - _i) / _total if _lo <= _i <= _hi else 0.0 for _i in _xs]
+        _bi = [math.comb(_n, _i) * _p**_i * (1 - _p) ** (_n - _i) for _i in _xs]
+        _keep = [_i for _i in _xs if _hg[_i] > 5e-4 or _bi[_i] > 5e-4]
+        _a, _b = _keep[0], _keep[-1]
         _mean = _n * _p
-        _fpc = (_N - _n) / (_N - 1) if _N > 1 else 1.0
+        _top = max(max(_hg), max(_bi))
+        stems(_ax, _xs[_a : _b + 1], _hg[_a : _b + 1], BLUE, -0.15)
+        stems(_ax, _xs[_a : _b + 1], _bi[_a : _b + 1], RED, 0.15)
+        _ax.set_xlim(min(_a, _mean) - 1, max(_b, _mean) + 1)
+        _ax.set_ylim(0, 1.3 * _top)
+        _ax.plot([_mean, _mean], [0, 1.06 * _top], color=GREEN, lw=1.0, ls=(0, (4, 3)))
+        _ax.text(_mean, 1.12 * _top, "$nK/N = np$", color=GREEN, fontsize=12, ha="center", va="bottom")
+        _in = _lo <= _x <= _hi
+        _rows = [
+            rf"${span(_lo, _hi)}$",
+            rf"$\textcolor{{{BLUE}}}{{{100 * (_hg[_x] if _in else 0.0):.2f}\%}}$" + ("" if _in else r" &nbsp; ($x \notin S_X$)"),
+            rf"$\textcolor{{{RED}}}{{{100 * (_bi[_x] if _x <= _n else 0.0):.2f}\%}}$" + ("" if _x <= _n else r" &nbsp; ($x > n$)"),
+            rf"$\textcolor{{{GREEN}}}{{{_mean:.2f}}}$",
+            rf"${(_N - _n) / (_N - 1):.4f}$",
+            rf"${span(_a, _b)}$",
+        ]
+    else:
+        _ax.set_xlim(-1, 11)
+        _ax.set_ylim(0, 1)
+        _rows = [r"need $K \leq N$ and $n \leq N$"] * 6
 
-        _fig = Figure(figsize=(7.4, 3.0), layout="constrained")
-        _ax = _fig.subplots()
-        _ax.bar(_xs[_a:_b], _hg[_a:_b], width=0.7, color=RED, alpha=0.75, label="$HG(N, K, n)$")
-        _ax.plot(_xs[_a:_b], _bi[_a:_b], "o-", color=BLUE, ms=3.5, lw=1, label="$B(n, p)$, $p = K/N$")
-        _ax.axvline(_mean, color="#555555", lw=1, ls="--")
-        _ax.text(_mean, max(max(_hg), max(_bi)) * 1.08, "$nK/N = np$", ha="center", fontsize=10, color="#555555")
-        _ax.set_ylim(0, max(max(_hg), max(_bi)) * 1.25)
-        _ax.set_xlabel("$x$")
-        _ax.legend(frameon=False, fontsize=11, loc="upper right")
-        for _s in ("top", "right"):
-            _ax.spines[_s].set_visible(False)
-
-        _table = "\n".join(
-            [
-                "| | |",
-                "|:--|--:|",
-                rf"| $HG(N, K, n)(x)$ | ${100 * _fx:.3g}\%$ " + ("" if _lo <= _x <= _hi else rf"&nbsp; ($x \notin S_X = \{{{_lo}, \dots, {_hi}\}}$)") + " |",
-                rf"| $B(n, K/N)(x)$ | ${100 * (_bi[_x] if _x <= _n else 0):.3g}\%$ |",
-                rf"| $E[X] = nK/N$ | ${_mean:.4g}$ |",
-                rf"| $\mathrm{{Var}}(X) / npq = (N - n)/(N - 1)$ | ${_fpc:.4g}$ |",
-            ]
-        )
-        _out = mo.vstack([mo.hstack([mo.vstack([hN, hK]), mo.vstack([hn, hx])], justify="start", gap=3, wrap=True), mo.md(_table), _fig])
-    _out
+    mo.vstack(
+        [
+            mo.hstack([hN, hK, hn, hx], justify="start", gap=2, wrap=True),
+            table(
+                list(
+                    zip(
+                        [
+                            r"$S_X$",
+                            r"$HG(N, K, n)(x)$",
+                            r"$B(n, K/N)(x)$",
+                            r"$E[X] = nK/N$",
+                            r"$\mathrm{Var}(X) / npq = (N - n)/(N - 1)$",
+                            r"plotted: $x$ with a pmf value $> 0.0005$",
+                        ],
+                        _rows,
+                    )
+                )
+            ),
+            _fig,
+        ]
+    )
     return
 
 
@@ -347,18 +412,20 @@ def _(BLUE, Figure, RED, hK, hN, hn, hx, math, mo):
 def _(definition, mo, theorem):
     mo.vstack(
         [
+            mo.md(r"""### Negative hypergeometric models"""),
             definition(
                 r"""
     A **negative hypergeometric model** is an experiment that
 
     1. consists of a sequence of trials
-    2. each single trial has one of two outcomes with exactly $K$ possible “successes” and $N - K$ possible “failures” in total, with all combinations of the $K$ possible successes among the $N$ possible trials being equally likely
+    2. each single trial has one of two outcomes, with exactly $K$ possible “successes” and $N - K$ possible “failures” in total, with all combinations of the $K$ possible successes among the $N$ possible trials being equally likely
     3. measures the number $Y$ of trials until a fixed number $r$ of “successes” is achieved
 
     $$
-    S_Y = \{r, r + 1, \dots, N - K + r\} \quad (r \leq K), \qquad \underbrace{f_Y(y)}_{NHG(N, K, r)} = \frac{\dbinom{y - 1}{r - 1} \dbinom{N - y}{K - r}}{\dbinom{N}{K}}
+    S_Y = \{r, r + 1, \dots, N - K + r\} \quad (r \leq K), \qquad \underbrace{f_Y(y)}_{NHG(N, K, r)(y)} = \frac{\dbinom{y - 1}{r - 1} \dbinom{N - y}{K - r}}{\dbinom{N}{K}}
     $$
-    """
+    """,
+                "Negative hypergeometric model",
             ),
             mo.md(
                 r"""
@@ -368,11 +435,13 @@ def _(definition, mo, theorem):
     |:--|:-:|:-:|
     | # successes in $n$ trials | Binomial | Hypergeometric |
     | # trials until $r$ successes | Negative binomial | Negative hypergeometric |
+
+    ### Mean and variance
     """
             ),
             theorem(
                 r"""
-    For $X$ a hypergeometric RV, &nbsp; $Y$ a negative hypergeometric RV
+    For $X$ a hypergeometric random variable, &nbsp; $Y$ a negative hypergeometric random variable
 
     $$
     \begin{aligned}
@@ -380,11 +449,14 @@ def _(definition, mo, theorem):
     E[Y] &= r\, \frac{N + 1}{K + 1}, & \mathrm{Var}(Y) &= \frac{r (N + 1)(N - K)(K + 1 - r)}{(K + 1)^2 (K + 2)}
     \end{aligned}
     $$
-    """
+    """,
+                "Mean and variance",
             ),
             mo.md(
                 r"""
-    $E[X] = np$ if $p = \tfrac{K}{N}$; &nbsp; $\mathrm{Var}(X) = np(1 - p) \times \underbrace{\dfrac{N - n}{N - 1}}_{\text{finite population correction term}}$
+    $$
+    E[X] = np \quad \text{if } p = \frac{K}{N}, \qquad \mathrm{Var}(X) = np(1 - p) \times \underbrace{\frac{N - n}{N - 1}}_{\text{finite population correction term}}
+    $$
 
     **Proof.** Similar trick as for binomial
 
@@ -398,14 +470,13 @@ def _(definition, mo, theorem):
     \binom{N}{n} = \sum_{\substack{0 \leq x \leq K \\ 0 \leq n - x \leq N - K}} \binom{K}{x} \binom{N - K}{n - x}
     $$
 
-    $$
-    (1 + t)^N = (1 + t)^K (1 + t)^{N-K}
-    $$
+    $\leadsto$ &nbsp; $(1 + t)^N = (1 + t)^K (1 + t)^{N-K}$
 
     $$
     \begin{aligned}
-    \sum_{n} \binom{N}{n} t^{N-n} &= \sum_{k} \binom{K}{k} t^{K-k} \cdot \sum_{\ell} \binom{N - K}{\ell} t^{N-K-\ell} \\
-    &= \sum_{k} \sum_{\ell} \binom{K}{k} \binom{N - K}{\ell} t^{N-k-\ell} \overset{k + \ell = n}{=} \sum_{n} \Big[ \sum_{x} \binom{K}{x} \binom{N - K}{n - x} \Big] t^{N-n}
+    \sum_{n} \binom{N}{n} t^{N-n} &= \sum_{x} \binom{K}{x} t^{K-x} \cdot \sum_{\ell} \binom{N - K}{\ell} t^{N-K-\ell}
+    = \sum_{x} \sum_{\ell} \binom{K}{x} \binom{N - K}{\ell} t^{N-x-\ell} \\
+    &\overset{x + \ell = n}{=} \sum_{n} \Big[ \sum_{x} \binom{K}{x} \binom{N - K}{n - x} \Big] t^{N-n}
     \end{aligned}
     $$
 
@@ -426,43 +497,80 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, RED, gK, gN, gr, math, mo):
+def _(BLUE, GREEN, RED, gK, gN, gr, math, mo, pmf_axes, span, stems, table):
     _N, _K, _r = gN.value, gK.value, gr.value
-    if _K > _N or _r > _K:
-        _out = mo.vstack([mo.hstack([gN, gK, gr], justify="start", gap=3, wrap=True), mo.md(rf"need $K \le N$ and $r \le K$ &nbsp; (here $N = {_N}$, $K = {_K}$)")])
-    else:
+    _fig, _ax = pmf_axes("$y$")
+    _ax.text(0, 1.03, "$NHG(N, K, r)$", color=BLUE, fontsize=12, ha="left", va="bottom", transform=_ax.transAxes)
+    _ax.text(1, 1.03, "$NB(r, p)$,  $p = K/N$", color=RED, fontsize=12, ha="right", va="bottom", transform=_ax.transAxes)
+    if _K <= _N and _r <= _K:
         _p = _K / _N
         _total = math.comb(_N, _K)
-        _ys = list(range(_r, _N - _K + _r + 1))
-        _nhg = [math.comb(y - 1, _r - 1) * math.comb(_N - y, _K - _r) / _total for y in _ys]
-        _nb = [math.comb(y - 1, _r - 1) * _p**_r * (1 - _p) ** (y - _r) for y in _ys]
-        _keep = [i for i in range(len(_ys)) if _nhg[i] > 5e-4 or _nb[i] > 5e-4] or list(range(len(_ys)))
-        _a, _b = _keep[0], _keep[-1] + 1
+        _last = _N - _K + _r
+
+        def _nb(y):
+            return math.comb(y - 1, _r - 1) * _p**_r * (1 - _p) ** (y - _r)
+
+        # NHG lives on r, ..., N - K + r; NB has no upper end: continue until it is negligible
+        _ys = list(range(_r, _last + 1))
+        while _nb(_ys[-1] + 1) > 5e-4 or _ys[-1] + 1 < _r / _p:
+            _ys.append(_ys[-1] + 1)
+        _nhg = [math.comb(_y - 1, _r - 1) * math.comb(_N - _y, _K - _r) / _total if _y <= _last else 0.0 for _y in _ys]
+        _nbs = [_nb(_y) for _y in _ys]
+        _keep = [_i for _i in range(len(_ys)) if _nhg[_i] > 5e-4 or _nbs[_i] > 5e-4] or list(range(len(_ys)))
+        _a, _b = _keep[0], _keep[-1]
         _mean = _r * (_N + 1) / (_K + 1)
+        _top = max(max(_nhg), max(_nbs))
+        stems(_ax, _ys[_a : _b + 1], _nhg[_a : _b + 1], BLUE, -0.15)
+        stems(_ax, _ys[_a : _b + 1], _nbs[_a : _b + 1], RED, 0.15)
+        _ax.set_xlim(min(_ys[_a], _mean) - 1, max(_ys[_b], _mean) + 1)
+        _ax.set_ylim(0, 1.3 * _top)
+        _ax.plot([_mean, _mean], [0, 1.06 * _top], color=GREEN, lw=1.0, ls=(0, (4, 3)))
+        _ax.text(_mean, 1.12 * _top, "$r(N+1)/(K+1)$", color=GREEN, fontsize=12, ha="center", va="bottom")
+        _rows = [
+            rf"${span(_r, _last)}$",
+            rf"$\textcolor{{{GREEN}}}{{{_mean:.2f}}}$",
+            rf"$\textcolor{{{RED}}}{{{_r / _p:.2f}}}$",
+            rf"${span(_ys[_a], _ys[_b])}$",
+        ]
+    else:
+        _ax.set_xlim(-1, 11)
+        _ax.set_ylim(0, 1)
+        _rows = [r"need $K \leq N$ and $r \leq K$"] * 4
 
-        _fig = Figure(figsize=(7.4, 3.0), layout="constrained")
-        _ax = _fig.subplots()
-        _ax.bar(_ys[_a:_b], _nhg[_a:_b], width=0.7, color=RED, alpha=0.75, label="$NHG(N, K, r)$")
-        _ax.plot(_ys[_a:_b], _nb[_a:_b], "o-", color=BLUE, ms=3.5, lw=1, label="$NB(r, p)$, $p = K/N$")
-        _ax.axvline(_mean, color="#555555", lw=1, ls="--")
-        _ax.text(_mean, max(max(_nhg), max(_nb)) * 1.08, "$r(N+1)/(K+1)$", ha="center", fontsize=10, color="#555555")
-        _ax.set_ylim(0, max(max(_nhg), max(_nb)) * 1.25)
-        _ax.set_xlabel("$y$")
-        _ax.legend(frameon=False, fontsize=11, loc="upper right")
-        for _s in ("top", "right"):
-            _ax.spines[_s].set_visible(False)
+    mo.vstack(
+        [
+            mo.hstack([gN, gK, gr], justify="start", gap=2, wrap=True),
+            table(
+                list(
+                    zip(
+                        [
+                            r"$S_Y = \{r, \dots, N - K + r\}$",
+                            r"$E[Y] = r(N + 1)/(K + 1)$",
+                            r"$r/p$ (negative binomial mean)",
+                            r"plotted: $y$ with a pmf value $> 0.0005$",
+                        ],
+                        _rows,
+                    )
+                )
+            ),
+            _fig,
+        ]
+    )
+    return
 
-        _table = "\n".join(
-            [
-                "| | |",
-                "|:--|--:|",
-                rf"| $S_Y = \{{r, \dots, N - K + r\}}$ | $\{{{_r}, \dots, {_N - _K + _r}\}}$ |",
-                rf"| $E[Y] = r(N + 1)/(K + 1)$ | ${_mean:.4g}$ |",
-                rf"| $r/p$ (negative binomial mean) | ${_r / _p:.4g}$ |",
-            ]
-        )
-        _out = mo.vstack([mo.hstack([gN, gK, gr], justify="start", gap=3, wrap=True), mo.md(_table), _fig])
-    _out
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Summary
+
+    - hypergeometric model: draws without replacement from $K$ “successes” and $N - K$ “failures”, count the number $X$ of successes in $n$ trials: &nbsp; $HG(N, K, n)(x) = \binom{K}{x} \binom{N - K}{n - x} \big/ \binom{N}{n}$
+    - negative hypergeometric model: count the number $Y$ of trials until $r$ successes: &nbsp; $NHG(N, K, r)(y) = \binom{y - 1}{r - 1} \binom{N - y}{K - r} \big/ \binom{N}{K}$
+    - replacement allowed versus not allowed: binomial $\leftrightarrow$ hypergeometric, negative binomial $\leftrightarrow$ negative hypergeometric
+    - $E[X] = n \tfrac{K}{N} = np$ and $\mathrm{Var}(X) = np(1 - p) \times \tfrac{N - n}{N - 1}$ (finite population correction term) for $p = \tfrac{K}{N}$; &nbsp; $E[Y] = r\, \tfrac{N + 1}{K + 1}$
+
+    **Next:** Poisson models
+    """)
     return
 
 
