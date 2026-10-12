@@ -224,7 +224,7 @@ def _(mo):
         NHG(N, K, r)(y) = \frac{\dbinom{y - 1}{r - 1} \dbinom{N - y}{K - r}}{\dbinom{N}{K}} = \frac{K}{N}\, \frac{\dbinom{K - 1}{r - 1} \dbinom{N - K}{y - r}}{\dbinom{N - 1}{y - 1}}, \qquad r \leq y \leq N - K + r
         $$
 
-    **Today:** Poisson and exponential models
+    **In this lecture:** Poisson and exponential models
     """)
     return
 

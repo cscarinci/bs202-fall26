@@ -168,7 +168,7 @@ def _(mo):
     - probability distributions &nbsp; $f_X : \mathbb{R} \longrightarrow \mathbb{R}$, &nbsp; $x \longmapsto P(X = x)$
     - expectation &nbsp; $E[u(X)] = \displaystyle\sum_{x \in S_X} u(x)\, f_X(x)$
 
-    **Today:** probabilistic models (specific pmfs) &nbsp; $\leadsto$ &nbsp; binomial, geometric, Poisson, … &nbsp; (WMS 3.4 – 3.8)
+    **In this lecture:** probabilistic models (specific pmfs) &nbsp; $\leadsto$ &nbsp; binomial, geometric, Poisson, … &nbsp; (WMS 3.4 – 3.8)
     """)
     return
 
