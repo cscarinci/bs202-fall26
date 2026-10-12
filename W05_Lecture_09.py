@@ -182,7 +182,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(corollary, definition, mo, note):
+def _(corollary, definition, mo):
     mo.vstack(
         [
             mo.md(
@@ -210,15 +210,26 @@ def _(corollary, definition, mo, note):
     A random variable $X : S \longrightarrow \mathbb{R}$ is **continuous** if
 
     - $S_X$ is uncountable
-    - there exists $F_X : \mathbb{R} \longrightarrow \mathbb{R}$ continuous (cdf) such that
+    - there exists $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ integrable (pdf: probability density function) such that
 
         $$
-        P(X \leq x) = F_X(x)
+        P(a \leq X \leq b) = \int_a^b f_X(x)\, dx
         $$
 
         (does not follow from the assumption on $S_X$ only!)
     """,
-                "Continuous random variable, via the cdf",
+                "Continuous random variable",
+            ),
+            mo.md(
+                r"""
+    $\Longrightarrow$ &nbsp; the cdf of $X$ is continuous
+
+    $$
+    F_X(x) = P(X \leq x) = \int_{-\infty}^{x} f_X(u)\, du
+    $$
+
+    (a continuous cdf alone does not guarantee a pdf)
+    """
             ),
             corollary(
                 r"""
@@ -229,24 +240,6 @@ def _(corollary, definition, mo, note):
     $$
     """,
                 "Single values have probability zero",
-            ),
-            definition(
-                r"""
-    A random variable $X : S \longrightarrow \mathbb{R}$ is **continuous** if
-
-    - $S_X$ is uncountable
-    - there exists $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ integrable (pdf: probability density function) such that
-
-        $$
-        P(a \leq X \leq b) = \int_a^b f_X(x)\, dx = F_X(b) - F_X(a)
-        $$
-    """,
-                "Continuous random variable, via the pdf",
-            ),
-            note(
-                r"""
-    In this course, continuous random variables are those with a pdf; continuity of the cdf then follows from $F_X(x) = \int_{-\infty}^{x} f_X(u)\, du$.
-    """
             ),
             mo.md(
                 r"""

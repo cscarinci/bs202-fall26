@@ -311,7 +311,7 @@ def _(definition, mo):
     $$
     \begin{aligned}
     X &= \text{year in DGIST} && \leadsto \quad S_X = \{2011, 2012, \dots, 2026\} \\
-    Y &= \text{current GPA} && \leadsto \quad S_Y = [0, 4]
+    Y &= \text{current GPA} && \leadsto \quad S_Y \subseteq [0, 4] \quad (\text{finitely many values here; usually modeled by all of } [0, 4])
     \end{aligned}
     $$
 
