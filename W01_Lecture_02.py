@@ -23,7 +23,16 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     # ---- Building blocks shared by all lectures -------------------------
-    RED, GREEN, BLUE, GREY = "#b3261e", "#2e7d32", "#1b458f", "#888888"
+    # Palette with fixed roles (figures only; text carries no colour):
+    #   BLUE   the primary object (the particle, the point, the chosen vector)
+    #   RED    the second object it is compared with
+    #   GREEN  a derived quantity (velocity, relative velocity, tangent vector)
+    #   ORANGE a third series, only when three are needed
+    #   GREY   reference geometry (equator, light cone, inertial comparison)
+    #   LIGHT  fills and grids
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    # Figure widths: FULL spans the page, HALF sits beside text or in a pair
+    FULL, HALF = 7.4, 3.6
 
     def header(document, date, running=""):
         """Course header, as on the exercise sheets and exams."""
@@ -51,20 +60,31 @@ def _(mo):
     def theorem(body, title=""):
         return _statement("Theorem", title, body)
 
-    def warning(body):
+    def proposition(body, title=""):
+        return _statement("Proposition", title, body)
+
+    def corollary(body, title=""):
+        return _statement("Corollary", title, body)
+
+    def postulate(body, title=""):
+        return _statement("Postulate", title, body)
+
+    def note(body):
+        """Editorial note of the notebook (not part of the lecture)."""
         return mo.md("**Note.** " + body.strip())
 
-    def arrow(ax, tail, tip, color, label=None, at_tip=False, **kw):
-        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip."""
+    def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
+        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
+        One head size and one line weight for every figure, so arrows look alike across lectures."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>", "color": color, "lw": 2.2, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
-            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=18)
+            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=13)
 
     def plane(ax, lim):
         """Style a 2D axis as a coordinate plane with range [-lim, lim]."""
@@ -73,8 +93,33 @@ def _(mo):
         ax.set_aspect("equal")
         ax.axhline(0, color="black", lw=0.8)
         ax.axvline(0, color="black", lw=0.8)
-        ax.grid(True, color="#cfe3f5", lw=0.6)
+        ax.grid(True, color=LIGHT, lw=0.6)
         ax.set_axisbelow(True)
+
+    def blank(w, h, xlim, ylim):
+        """A figure with one bare axis (no frame) for sketches."""
+        from matplotlib.figure import Figure as _Figure
+
+        fig = _Figure(figsize=(w, h), layout="constrained")
+        ax = fig.subplots()
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        return fig, ax
+
+    def blob(cx, cy, rx, ry, wobble=0.07, seed=0, n=400):
+        """Closed organic curve around (cx, cy): an ellipse with a few low harmonics."""
+        import numpy as _np
+
+        rng = _np.random.default_rng(seed)
+        t = _np.linspace(0, 2 * _np.pi, n)
+        r = 1 + sum(wobble / k * rng.uniform(0.4, 1.0) * _np.cos(k * t + rng.uniform(0, 2 * _np.pi)) for k in (2, 3, 4, 5))
+        return cx + rx * r * _np.cos(t), cy + ry * r * _np.sin(t)
+
+    def table(rows):
+        """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
+        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
 
     def check(field, answer):
         """Feedback mark for a numeric answer typed into a text field."""
@@ -86,50 +131,7 @@ def _(mo):
         except ValueError:
             return "⚠️ enter a number"
 
-    return BLUE, GREEN, GREY, RED, arrow, check, definition, header, plane, theorem, warning
-
-
-@app.cell(hide_code=True)
-def _(BLUE, GREEN, RED):
-    _PIPS = {
-        1: [(2, 2)],
-        2: [(1, 1), (3, 3)],
-        3: [(1, 1), (2, 2), (3, 3)],
-        4: [(1, 1), (1, 3), (3, 1), (3, 3)],
-        5: [(1, 1), (1, 3), (2, 2), (3, 1), (3, 3)],
-        6: [(1, 1), (1, 2), (1, 3), (3, 1), (3, 2), (3, 3)],
-    }
-
-    def die(n, color=BLUE):
-        """A small picture of a die face, for use inside text."""
-        dots = "".join(f'<circle cx="{6 * x}" cy="{6 * y}" r="2" fill="{color}"/>' for x, y in _PIPS[n])
-        return (
-            '<svg viewBox="0 0 24 24" style="display:inline-block;width:1.25em;height:1.25em;vertical-align:-0.25em">'
-            f'<rect x="1.5" y="1.5" width="21" height="21" rx="4" fill="none" stroke="{color}" stroke-width="1.6"/>{dots}</svg>'
-        )
-
-    def dice(faces, color=BLUE):
-        return ", ".join(die(n, color) for n in faces)
-
-    return dice, die
-
-
-@app.cell(hide_code=True)
-def _(arrow):
-    def cross_axes(ax, xlim, ylim, xlabel=None, ylabel=None):
-        """A bare pair of coordinate axes through the origin."""
-        ax.set_xlim(*xlim)
-        ax.set_ylim(*ylim)
-        ax.set_aspect("equal")
-        ax.axis("off")
-        arrow(ax, (xlim[0], 0), (xlim[1], 0), "black", lw=0.9)
-        arrow(ax, (0, ylim[0]), (0, ylim[1]), "black", lw=0.9)
-        if xlabel:
-            ax.annotate(xlabel, (xlim[1], 0), textcoords="offset points", xytext=(-12, -18), fontsize=13)
-        if ylabel:
-            ax.annotate(ylabel, (0, ylim[1]), textcoords="offset points", xytext=(8, -10), fontsize=13)
-
-    return (cross_axes,)
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
@@ -139,109 +141,96 @@ def _(header):
 
 
 @app.cell(hide_code=True)
-def _(definition, mo):
-    mo.vstack(
-        [
-            mo.md(
-                r"""
+def _(arrow, math):
+    def vector(ax, tail, tip, color, label=None, turn=0, r=15, **kw):
+        """Arrow from `tail` to `tip` (a dot when it has zero length), labelled beyond its tip on a white box;
+        `turn` (degrees) rotates the label about the tip so that coinciding vectors keep separate labels."""
+        dx, dy = tip[0] - tail[0], tip[1] - tail[1]
+        if dx == 0 and dy == 0:
+            ax.plot(*tip, "o", color=color, ms=4, zorder=4)
+            d = math.radians(45 + turn)
+        else:
+            arrow(ax, tail, tip, color, **kw)
+            d = math.atan2(dy, dx) + math.radians(turn)
+        if label:
+            ax.annotate(label, tip, textcoords="offset points", xytext=(r * math.cos(d), r * math.sin(d)), ha="center", va="center", color=color, fontsize=13, zorder=5, bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
+
+    return (vector,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
     ## Last time
 
-    Started Probability theory
+    - started Probability theory
+    - **random experiment** = repeatable, uncertain outcome whose set of all outcomes is defined &nbsp; $\leadsto$ &nbsp; sample space $S$
+    - **events in an experiment** = collections of outcomes (subsets $A \subseteq S$) sharing some property &nbsp; $\leadsto$ &nbsp; if the outcome has property “$A$” we say “$A$ has occurred”
+    - a **probability measure** in an experiment is a function $P : \mathcal{E} \longrightarrow \mathbb{R}$ that assigns probabilities to each event ($\mathcal{E}$: collection of all relevant events); $P$ must satisfy 3 axioms
 
-    **random experiment** = repeatable, uncertain outcome whose *set of all outcomes* is defined &nbsp; $\leadsto$ &nbsp; sample space $S$
+        $$
+        \underbrace{P(A) \geq 0 \quad \forall\, A \in \mathcal{E}}_{\text{positivity}} \qquad
+        \underbrace{P(S) = 1}_{\text{normalization}} \qquad
+        \underbrace{P(A \cup B) = P(A) + P(B) \ \text{ for } A \cap B = \emptyset}_{\text{additivity}}
+        $$
 
-    **events in an experiment** = *collections of outcomes* (subsets $A \subseteq S$) *sharing some property* &nbsp; $\leadsto$ &nbsp; if outcome has property “$A$” we say “$A$ has occurred”
-    """
-            ),
-            definition(
-                r"""
-    A **probability measure** in an experiment is a function $P$ that assigns probabilities to each event
+    - to be precise, we need a bit more from additivity (**countable additivity**; we won't need to be this precise)
 
-    $$
-    P : \mathcal{E} \longrightarrow \mathbb{R} \qquad (\mathcal{E}: \text{collection of all relevant events})
-    $$
+        $$
+        P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots \qquad \text{for } \underbrace{A_1, A_2, \dots}_{\text{possibly infinite}} \text{ pairwise disjoint} \quad (A_i \cap A_j = \emptyset \ \ \forall\, i \neq j)
+        $$
 
-    $P$ must satisfy 3 axioms
+    - we call a triple $(S, \mathcal{E}, P)$ a **probability space** &nbsp; $\leadsto$ &nbsp; a mathematical model for a random experiment
+    - rolling a die: $S = \{1, 2, 3, 4, 5, 6\}$, &nbsp; $\mathcal{E} = \big\{ \emptyset, \{1\}, \{2\}, \dots, \{1, 2\}, \dots, \{1, 2, 3, 4, 5, 6\} \big\}$; for a “fair” die (extra assumption): $P(\{i\}) = P(\{j\}) \quad \forall\, i \neq j \in S$
 
-    - $P(A) \geq 0 \quad \forall\, A \in \mathcal{E}$ &nbsp; (positivity)
-    - $P(S) = 1$ &nbsp; (normalization)
-    - for $A \cap B = \emptyset$, &nbsp; $P(A \cup B) = P(A) + P(B)$ &nbsp; (additivity)
-    """
-            ),
-            mo.md(
-                r"""
-    To be precise, we need a bit more from additivity
+        $$
+        \text{axioms} \quad \Longrightarrow \quad P(\{i\}) = \tfrac{1}{6}, \quad P(\{i, j\}) = \tfrac{2}{6}, \quad P(\{i, j, k\}) = \tfrac{3}{6}, \ \dots
+        \quad \Longrightarrow \quad P(A) = \frac{\# A}{\# S} \quad \forall\, A \in \mathcal{E}
+        $$
 
-    $$
-    P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots \qquad \text{countable additivity}
-    $$
+    - but not every die is fair… a different assumption is also possible
 
-    for $A_1, A_2, \dots$ (possibly infinite) *pairwise disjoint* &nbsp; ($A_i \cap A_j = \emptyset \ \ \forall\, i \neq j$)
+        $$
+        P(\{i\}) = \begin{cases} 0, & i \neq 6 \\ 1, & i = 6 \end{cases}
+        \quad \overset{\text{axioms}}{\Longrightarrow} \quad
+        P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases}
+        \quad \Longrightarrow \quad
+        P(A) = \begin{cases} 0, & 6 \notin A \\ 1, & 6 \in A \end{cases}
+        $$
 
-    We won't need to be this precise.
-    """
-            ),
-            definition(
-                r"""
-    We call a triple $(S, \mathcal{E}, P)$ a **probability space** &nbsp; $\leadsto$ &nbsp; a mathematical model for a random experiment
-    """
-            ),
-            mo.md(
-                r"""
-    **Example** (Rolling a die).
+        different probability measure on $(S, \mathcal{E})$ &nbsp; $\leadsto$ &nbsp; different mathematical model for the “dice experiment”
 
-    $$
-    S = \{1, 2, 3, 4, 5, 6\}, \qquad \mathcal{E} = \big\{\, \emptyset, \{1\}, \{2\}, \dots, \{1, 2\}, \dots, \{1, 2, 3, 4, 5, 6\} \,\big\}
-    $$
-
-    For a “fair” die (extra assumption): &nbsp; $P(\{i\}) = P(\{j\}) \quad \forall\, i \neq j \in S$
-
-    $$
-    \text{axioms} \quad \Longrightarrow \quad P(\{i\}) = \tfrac{1}{6}, \quad P(\{i, j\}) = \tfrac{2}{6}, \quad P(\{i, j, k\}) = \tfrac{3}{6}, \ \dots
-    \qquad \Longrightarrow \qquad P(A) = \frac{\# A}{\# S} \quad \forall\, A \in \mathcal{E}
-    $$
-
-    But not every die is fair…
-
-    $$
-    P(\{i\}) = \begin{cases} 0, & i \neq 6 \\ 1, & i = 6 \end{cases} \qquad \text{is also possible (different assumption)}
-    $$
-
-    $$
-    \text{axioms} \quad \Longrightarrow \quad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases}
-    \qquad \Longrightarrow \qquad P(A) = \begin{cases} 0, & 6 \notin A \\ 1, & 6 \in A \end{cases}
-    $$
-
-    Different probability measure on $(S, \mathcal{E})$ &nbsp; $\leadsto$ &nbsp; different mathematical model for the “dice experiment”
-    """
-            ),
-        ]
-    )
+    **Today:** properties of probability (axioms + algebra of events) and counting methods
+    """)
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREEN, RED, np):
-    def venn_row(panels, three=False, width=9.6):
-        """A row of small Venn diagrams. Each panel is (sign, region, colour, note);
-        `region` is a function of the boolean grids A, B, C."""
-        g = np.linspace(0, 1, 260)
+def _(Arc, BLUE, FULL, Figure, LIGHT, ORANGE, RED, np):
+    def venn_row(panels, three=False):
+        """A row of four small Venn diagrams of A (blue), B (red) and, when `three`, C (orange).
+        Each panel is (sign, region, remark): `region` is a function of the boolean grids A, B, C
+        and is filled; `sign` is written to the left of the panel and `remark` below it."""
+        g = np.linspace(0, 1, 700)
         X, Y = np.meshgrid(g * 3.2, g * 2.4)
-        circles = [((1.2, 1.45, 0.62), RED), ((2.0, 1.45, 0.62), GREEN)] + ([((1.6, 0.9, 0.62), BLUE)] if three else [])
-        A, B = ((X - cx) ** 2 + (Y - cy) ** 2 < r**2 for (cx, cy, r), _ in circles[:2])
-        C = (X - 1.6) ** 2 + (Y - 0.9) ** 2 < 0.62**2 if three else np.zeros_like(A)
-        th = np.linspace(0, 2 * np.pi, 120)
-        fig = Figure(figsize=(width, width / len(panels) * 0.95), layout="constrained")
-        for ax, (sign, region, color, note) in zip(np.atleast_1d(fig.subplots(1, len(panels))), panels):
-            ax.contourf(X, Y, region(A, B, C).astype(float), levels=[0.5, 1.5], colors=[color], alpha=0.55)
-            for (cx, cy, r), col in circles:
-                ax.plot(cx + r * np.cos(th), cy + r * np.sin(th), color=col, lw=1.3)
-            ax.plot([0, 3.2, 3.2, 0, 0], [0, 0, 2.4, 2.4, 0], color="black", lw=1.2)
-            ax.text(-0.75, 1.2, sign, fontsize=18, ha="center", va="center")
-            if note:
-                ax.text(1.6, -0.35, note, fontsize=10, ha="center", color=GREEN)
-            ax.set_xlim(-1.2, 3.3)
-            ax.set_ylim(-0.6, 2.5)
+        cy = 1.5 if three else 1.2
+        circles = [((1.2, cy, 0.62), BLUE, "$A$", (0.3, 2.06)), ((2.0, cy, 0.62), RED, "$B$", (2.9, 2.06))]
+        if three:
+            circles.append(((1.6, 0.85, 0.62), ORANGE, "$C$", (2.55, 0.34)))
+        inside = [(X - cx) ** 2 + (Y - c_y) ** 2 < r**2 for (cx, c_y, r), *_ in circles]
+        if not three:
+            inside.append(np.zeros_like(inside[0]))
+        fig = Figure(figsize=(FULL, 1.75), layout="constrained")
+        for ax, (sign, region, remark) in zip(fig.subplots(1, len(panels)), panels):
+            ax.contourf(X, Y, region(*inside).astype(float), levels=[0.5, 1.5], colors=[LIGHT])
+            for (cx, c_y, r), col, name, at in circles:
+                ax.add_patch(Arc((cx, c_y), 2 * r, 2 * r, color=col, lw=1.2))
+                ax.text(*at, name, color=col, fontsize=12, ha="center", va="center")
+            ax.plot([0, 3.2, 3.2, 0, 0], [0, 0, 2.4, 2.4, 0], color="black", lw=1.0, solid_joinstyle="miter")
+            ax.text(-0.62, 1.2, sign, fontsize=14, ha="center", va="center")
+            ax.text(1.6, -0.2, remark, fontsize=12, ha="center", va="top", linespacing=1.1)
+            ax.set_xlim(-1.15, 3.3)
+            ax.set_ylim(-1.2, 2.5)
             ax.set_aspect("equal")
             ax.axis("off")
         return fig
@@ -250,53 +239,53 @@ def _(BLUE, Figure, GREEN, RED, np):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREEN, RED, mo, np, theorem, venn_row):
-    ORANGE = "#f5a623"
-    _fig = Figure(figsize=(2.8, 1.9), layout="constrained")
-    _ax = _fig.subplots()
-    _th = np.linspace(0, 2 * np.pi, 100)
-    _ax.plot(1.5 + 0.7 * np.cos(_th), 1.0 + 0.7 * np.sin(_th), color=RED, lw=1.6)
-    _ax.plot([1.2, 1.9, 1.5, 1.2], [0.7, 0.75, 1.4, 0.7], color=GREEN, lw=1.6)
-    _ax.plot([0, 3, 3, 0, 0], [0, 0, 2, 2, 0], color=BLUE, lw=1.4)
-    _ax.text(1.05, 1.1, "$A$", color=GREEN, fontsize=14)
-    _ax.text(2.2, 1.6, "$B$", color=RED, fontsize=14)
-    _ax.text(2.65, 0.12, "$S$", color=BLUE, fontsize=14)
-    _ax.set_aspect("equal")
-    _ax.axis("off")
+def _(Arc, BLUE, HALF, RED, blank, mo, theorem, venn_row):
+    _fig, _ax = blank(HALF, 2.3, (-0.1, 3.1), (-0.1, 2.1))
+    _ax.plot([0, 3, 3, 0, 0], [0, 0, 2, 2, 0], color="black", lw=1.0, solid_joinstyle="miter")
+    _ax.add_patch(Arc((1.5, 1.0), 1.4, 1.4, color=RED, lw=1.2))
+    _ax.plot([1.2, 1.9, 1.5, 1.2], [0.7, 0.75, 1.4, 0.7], color=BLUE, lw=1.2, solid_joinstyle="miter")
+    _ax.text(1.12, 1.15, "$A$", color=BLUE, fontsize=13, ha="center", va="center")
+    _ax.text(2.3, 1.62, "$B$", color=RED, fontsize=13, ha="center", va="center")
+    _ax.text(2.75, 0.25, "$S$", fontsize=13, ha="center", va="center")
 
     mo.vstack(
         [
-            mo.md(r"## Properties (axioms + algebra of events)"),
-            mo.hstack(
-                [
-                    theorem(
-                        r"""
+            mo.md(
+                r"""
+    ## I.2 &nbsp; Properties of probability; counting methods
+
+    ### Properties (axioms + algebra of events)
+    """
+            ),
+            theorem(
+                r"""
     Given $A, B \in \mathcal{E}$
 
     1. $P(A^c) = 1 - P(A)$
     2. $P(\emptyset) = 0$
     3. if $A \subseteq B$ then $P(A) \leq P(B)$
-    """
-                    ),
-                    mo.vstack([_fig, mo.md(r"$P$ is similar to “relative size” or “relative weight”")]),
-                ],
-                widths=[3, 2],
-                gap=2,
-                align="center",
-                wrap=True,
+    """,
+                "Basic properties",
             ),
+            _fig,
             mo.md(
                 r"""
+    $\leadsto$ &nbsp; $P$ is similar to “relative size” or “relative weight”
+
     **Proof.**
 
     (i) &nbsp; $A \subseteq S \ \Longrightarrow \ A \cup A^c = S$ and $A \cap A^c = \emptyset$ &nbsp; $\Longrightarrow$ &nbsp; $P(A \cup A^c) = 1 = P(A) + P(A^c)$
 
     (ii) &nbsp; $A = S \ \Longrightarrow \ A^c = S^c = \emptyset$ &nbsp; $\Longrightarrow$ &nbsp; $P(S \cup \emptyset) = 1 = P(S) + P(\emptyset)$ &nbsp; $\Longrightarrow$ &nbsp; $P(\emptyset) = 0$
 
-    (iii) &nbsp; $A \subseteq B \ \Longrightarrow \ B = (B \cap A) \cup (B \cap A^c) = A \cup (B \cap A^c)$ &nbsp; with $A \cap (B \cap A^c) = \emptyset$ &nbsp; ($A \cap (A^c \cap B) = (A \cap A^c) \cap B$)
+    (iii) &nbsp; $A \subseteq B \ \Longrightarrow \ B = (B \cap A) \cup (B \cap A^c) = A \cup (B \cap A^c)$
 
     $$
-    \Longrightarrow \quad P(B) = P(A) + \underbrace{P(B \cap A^c)}_{\geq\, 0} \geq P(A)
+    \text{with} \quad A \cap (B \cap A^c) = \emptyset \qquad \big(\text{since } A \cap (A^c \cap B) = (A \cap A^c) \cap B\big)
+    $$
+
+    $$
+    \Longrightarrow \quad P(B) = P(A) + \underbrace{P(B \cap A^c)}_{\geq\, 0} \geq P(A) \qquad \square
     $$
     """
             ),
@@ -307,7 +296,8 @@ def _(BLUE, Figure, GREEN, RED, mo, np, theorem, venn_row):
     $$
     P(A \cup B) = P(A) + P(B) - P(A \cap B)
     $$
-    """
+    """,
+                "Probability of a union of two events",
             ),
             mo.md(
                 r"""
@@ -316,18 +306,17 @@ def _(BLUE, Figure, GREEN, RED, mo, np, theorem, venn_row):
     $(A^c \cap B) \cup (A \cap B) = B$ &nbsp; (with $(A^c \cap B) \cap (A \cap B) = \emptyset$) &nbsp; $\Longrightarrow$ &nbsp; $P(A^c \cap B) + P(A \cap B) = P(B)$
 
     $$
-    \Longrightarrow \quad P(A \cup B) = P(A) + P(B) - P(A \cap B)
+    \Longrightarrow \quad P(A \cup B) = P(A) + P(B) - P(A \cap B) \qquad \square
     $$
     """
             ),
             venn_row(
                 [
-                    ("", lambda A, B, C: A | B, ORANGE, ""),
-                    ("$=$", lambda A, B, C: A, RED, ""),
-                    ("$+$", lambda A, B, C: B, GREEN, ""),
-                    ("$-$", lambda A, B, C: A & B, ORANGE, "added 2 times"),
-                ],
-                width=8.4,
+                    ("", lambda A, B, C: A | B, ""),
+                    ("$=$", lambda A, B, C: A, ""),
+                    ("$+$", lambda A, B, C: B, ""),
+                    ("$-$", lambda A, B, C: A & B, "added 2 times"),
+                ]
             ),
             theorem(
                 r"""
@@ -335,32 +324,30 @@ def _(BLUE, Figure, GREEN, RED, mo, np, theorem, venn_row):
 
     $$
     \begin{aligned}
-    P(A \cup B \cup C) = {} & P(A) + P(B) + P(C) \\
-    & - P(A \cap B) - P(A \cap C) - P(B \cap C) \\
+    P(A \cup B \cup C) = {} & P(A) + P(B) + P(C) - P(A \cap B) - P(A \cap C) - P(B \cap C) \\
     & + P(A \cap B \cap C)
     \end{aligned}
     $$
-    """
+    """,
+                "Probability of a union of three events",
             ),
             venn_row(
                 [
-                    ("", lambda A, B, C: A | B | C, ORANGE, ""),
-                    ("$=$", lambda A, B, C: A, RED, ""),
-                    ("$+$", lambda A, B, C: B, GREEN, ""),
-                    ("$+$", lambda A, B, C: C, BLUE, ""),
+                    ("", lambda A, B, C: A | B | C, ""),
+                    ("$=$", lambda A, B, C: A, ""),
+                    ("$+$", lambda A, B, C: B, ""),
+                    ("$+$", lambda A, B, C: C, ""),
                 ],
                 three=True,
-                width=8.4,
             ),
             venn_row(
                 [
-                    ("$-$", lambda A, B, C: A & B, BLUE, "added 2 times"),
-                    ("$-$", lambda A, B, C: A & C, GREEN, "added 2 times"),
-                    ("$-$", lambda A, B, C: B & C, RED, "added 2 times"),
-                    ("$+$", lambda A, B, C: A & B & C, ORANGE, "added and subtracted 3 times"),
+                    ("$-$", lambda A, B, C: A & B, "added 2 times"),
+                    ("$-$", lambda A, B, C: A & C, "added 2 times"),
+                    ("$-$", lambda A, B, C: B & C, "added 2 times"),
+                    ("$+$", lambda A, B, C: A & B & C, "added and\nsubtracted 3 times"),
                 ],
                 three=True,
-                width=8.4,
             ),
             mo.md(
                 r"""
@@ -387,23 +374,23 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREEN, RED, ie_sum, mo):
+def _(BLUE, Figure, HALF, ORANGE, RED, ie_sum, mo, table):
     _t = ie_sum.value
-    _fig = Figure(figsize=(4.0, 4.0), layout="constrained")
+    _fig = Figure(figsize=(HALF, HALF), layout="constrained")
     _ax = _fig.subplots()
     _A, _B, _C = set(), set(), set()
     for _i in range(1, 7):
         for _j in range(1, 7):
             if _i % 2 == 1:
                 _A.add((_i, _j))
-                _ax.plot(_i, _j, "o", ms=19, mfc="none", mec=RED, mew=1.6)
+                _ax.plot(_i, _j, "o", ms=17, mfc="none", mec=BLUE, mew=1.2)
             if _j % 2 == 1:
                 _B.add((_i, _j))
-                _ax.plot(_i, _j, "s", ms=14, mfc="none", mec=GREEN, mew=1.6)
+                _ax.plot(_i, _j, "s", ms=12, mfc="none", mec=RED, mew=1.2)
             if _i + _j == _t:
                 _C.add((_i, _j))
-                _ax.plot(_i, _j, "D", ms=8, mfc="none", mec=BLUE, mew=1.6)
-            _ax.plot(_i, _j, "o", ms=3, color="#555555")
+                _ax.plot(_i, _j, "D", ms=6.5, mfc="none", mec=ORANGE, mew=1.2)
+            _ax.plot(_i, _j, "o", ms=2.5, color="black")
     _ax.set_xlim(0.3, 6.7)
     _ax.set_ylim(0.3, 6.7)
     _ax.set_aspect("equal")
@@ -417,25 +404,21 @@ def _(BLUE, Figure, GREEN, RED, ie_sum, mo):
     _n = [len(_A), len(_B), len(_C), len(_A & _B), len(_A & _C), len(_B & _C), len(_A & _B & _C)]
     _union = len(_A | _B | _C)
     _rhs = _n[0] + _n[1] + _n[2] - _n[3] - _n[4] - _n[5] + _n[6]
+    _f = lambda k: rf"\frac{{{k}}}{{36}}"
     mo.vstack(
         [
-            ie_sum,
-            mo.hstack(
+            mo.hstack([ie_sum], justify="start", gap=2, wrap=True),
+            table(
                 [
-                    _fig,
-                    mo.md(
-                        rf"$\textcolor{{{RED}}}{{A}}$ (circles), &nbsp; $\textcolor{{{GREEN}}}{{B}}$ (squares), &nbsp; $\textcolor{{{BLUE}}}{{C}}$ (diamonds)"
-                        + "\n\n"
-                        + rf"$P(A \cup B \cup C) = \frac{{{_n[0]}}}{{36}} + \frac{{{_n[1]}}}{{36}} + \frac{{{_n[2]}}}{{36}} - \frac{{{_n[3]}}}{{36}} - \frac{{{_n[4]}}}{{36}} - \frac{{{_n[5]}}}{{36}} + \frac{{{_n[6]}}}{{36}} = \frac{{{_rhs}}}{{36}}$"
-                        + "\n\n"
-                        + rf"check by counting the marked points: &nbsp; $\#(A \cup B \cup C) = {_union}$"
-                    ),
-                ],
-                widths=[1, 1],
-                gap=2,
-                align="center",
-                wrap=True,
+                    (rf"$\textcolor{{{BLUE}}}{{A}} = \{{\text{{1st is odd}}\}}$ (circles)", rf"$\# A = \textcolor{{{BLUE}}}{{{_n[0]}}}$"),
+                    (rf"$\textcolor{{{RED}}}{{B}} = \{{\text{{2nd is odd}}\}}$ (squares)", rf"$\# B = \textcolor{{{RED}}}{{{_n[1]}}}$"),
+                    (rf"$\textcolor{{{ORANGE}}}{{C}} = \{{\text{{sum is }} {_t}\}}$ (diamonds)", rf"$\# C = \textcolor{{{ORANGE}}}{{{_n[2]}}}$"),
+                    (r"$\#(A \cap B), \ \#(A \cap C), \ \#(B \cap C), \ \#(A \cap B \cap C)$", rf"${_n[3]}, \ {_n[4]}, \ {_n[5]}, \ {_n[6]}$"),
+                    (r"$P(A \cup B \cup C)$", rf"${_f(_n[0])} + {_f(_n[1])} + {_f(_n[2])} - {_f(_n[3])} - {_f(_n[4])} - {_f(_n[5])} + {_f(_n[6])} = {_f(_rhs)}$"),
+                    (r"$\#(A \cup B \cup C)$, counting the marked points", rf"${_union}$"),
+                ]
             ),
+            _fig,
         ]
     )
     return
@@ -445,10 +428,12 @@ def _(BLUE, Figure, GREEN, RED, ie_sum, mo):
 def _(definition, mo, theorem):
     mo.vstack(
         [
+            mo.md(r"""### Equally likely outcomes"""),
             definition(
                 r"""
     If $S = \{o_1, \dots, o_n\}$ is finite and $P(\{o_i\}) = P(\{o_j\}) \quad \forall\, i, j \in \{1, \dots, n\}$ we say $(S, \mathcal{E}, P)$ has **equally likely outcomes**.
-    """
+    """,
+                "Equally likely outcomes",
             ),
             theorem(
                 r"""
@@ -457,13 +442,14 @@ def _(definition, mo, theorem):
     $$
     P(A) = \frac{\# A}{\# S}
     $$
-    """
+    """,
+                "Probability by counting",
             ),
             mo.md(
                 r"""
-    Probability becomes a counting problem!
+    $\leadsto$ &nbsp; probability becomes a counting problem!
 
-    ## 2 &nbsp; Counting methods (WMS 2.6)
+    ### Counting methods (WMS 2.6)
     """
             ),
             theorem(
@@ -474,7 +460,7 @@ def _(definition, mo, theorem):
             ),
             mo.md(
                 r"""
-    **Proof.** Think of elements $a_i$ as labels of rows and elements $b_j$ as labels of columns of a matrix &nbsp; $\Longrightarrow$ &nbsp; $(a_i, b_j)$ labels its entries &nbsp; (not a proof… just verification)
+    **Proof.** Think of elements $a_i$ as labels of rows and elements $b_j$ as labels of columns of a matrix &nbsp; $\Longrightarrow$ &nbsp; $(a_i, b_j)$ labels its entries &nbsp; (not a proof… just verification) $\square$
 
     **Example** (Flipping a coin and rolling a die).
 
@@ -482,23 +468,23 @@ def _(definition, mo, theorem):
     S = \{(H, 1), (H, 2), \dots, (H, 6), (T, 1), \dots, (T, 6)\} \quad \Longrightarrow \quad \# S = 12 = 2 \times 6
     $$
 
-    Useful to count total number of outcomes on random experiments with *successive stages* (1st the coin, then the die).
+    $\leadsto$ &nbsp; useful to count total number of outcomes on random experiments with **successive stages** (1st the coin, then the die)
 
     **Remark.** The rule easily extends to more than two sets
 
     $$
-    \text{e.g.} \quad \# A = m, \ \# B = n, \ \# C = p \quad \Longrightarrow \quad \#(A \times B \times C) = m\, n\, p \qquad (\text{ordered triples})
+    \text{e.g.} \quad \# A = m, \ \# B = n, \ \# C = p \quad \Longrightarrow \quad \#(\underbrace{A \times B \times C}_{\text{ordered triples}}) = m\, n\, p
     $$
 
     **Example** (ordered hands of poker).
 
-    $S = \{\, (A\diamondsuit, 2\heartsuit, 3\spadesuit, 4\clubsuit, 5\diamondsuit),\ (A\diamondsuit, 2\heartsuit, 3\spadesuit, 5\diamondsuit, 4\clubsuit),\ \dots \,\}$ &nbsp; (distinct ordered hands)
+    $$
+    S = \{\, \underbrace{(A\diamondsuit, 2\heartsuit, 3\spadesuit, 4\clubsuit, 5\diamondsuit),\ (A\diamondsuit, 2\heartsuit, 3\spadesuit, 5\diamondsuit, 4\clubsuit)}_{\text{distinct ordered hands}},\ \dots \,\}
+    $$
 
     $$
-    \begin{aligned}
-    \# S &= \underbrace{\#(\text{1st card})}_{\text{1st stage}}\ \underbrace{\#(\text{2nd card})}_{\text{2nd stage}} \cdots \underbrace{\#(\text{5th card})}_{\text{5th stage}} \\
-    &= 52 \cdot 51 \cdot 50 \cdot 49 \cdot 48 = \frac{52!}{47!} = P^{52}_{5}
-    \end{aligned}
+    \# S = \underbrace{\#(\text{1st card})}_{\text{1st stage}}\ \underbrace{\#(\text{2nd card})}_{\text{2nd stage}} \cdots \underbrace{\#(\text{5th card})}_{\text{5th stage}}
+    = 52 \cdot 51 \cdot 50 \cdot 49 \cdot 48 = \frac{52!}{47!} = P^{52}_{5}
     $$
 
     $P^{52}_5 = \#(\text{orderings of 52 objects taken 5 at a time})$ &nbsp; (orderings: arrangements or permutations)
@@ -511,7 +497,8 @@ def _(definition, mo, theorem):
     $$
     P^n_r = \frac{n!}{(n - r)!} = n \cdot (n - 1) \cdot (n - 2) \cdots (n - r + 1) \qquad \text{number of orderings}
     $$
-    """
+    """,
+                "Number of orderings",
             ),
             mo.md(
                 r"""
@@ -519,7 +506,9 @@ def _(definition, mo, theorem):
 
     If we don't care about order
 
-    $(A\diamondsuit, 2\heartsuit, 3\spadesuit, 4\clubsuit, 5\diamondsuit) = (A\diamondsuit, 2\heartsuit, 3\spadesuit, 5\diamondsuit, 4\clubsuit) = (2\heartsuit, 3\spadesuit, 5\diamondsuit, A\diamondsuit, 4\clubsuit) = \cdots$
+    $$
+    (A\diamondsuit, 2\heartsuit, 3\spadesuit, 4\clubsuit, 5\diamondsuit) = (A\diamondsuit, 2\heartsuit, 3\spadesuit, 5\diamondsuit, 4\clubsuit) = (2\heartsuit, 3\spadesuit, 5\diamondsuit, A\diamondsuit, 4\clubsuit) = \cdots
+    $$
 
     $\leadsto$ &nbsp; $P^{52}_5$ over-counts the hands!
     """
@@ -531,7 +520,8 @@ def _(definition, mo, theorem):
     $$
 
     (combinations: unordered arrangements)
-    """
+    """,
+                "Number of combinations",
             ),
             mo.md(
                 r"""
@@ -552,7 +542,7 @@ def _(definition, mo, theorem):
     $$
 
     $$
-    \Longrightarrow \quad P^{52}_5 = C^{52}_5 \cdot 5!
+    \Longrightarrow \quad P^{52}_5 = C^{52}_5 \cdot 5! \qquad \square
     $$
     """
             ),
@@ -569,35 +559,30 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(cn, cr, math, mo):
+def _(cn, cr, math, mo, table):
     _n, _r = cn.value, cr.value
-    _fmt = lambda k: f"{k:,}".replace(",", r"\,")
-    if _r > _n:
-        _text = mo.md(rf"need $r \le n$ &nbsp; (here $r = {_r} > n = {_n}$)")
-    else:
-        _text = mo.md(
-            "\n".join(
+    _fmt = lambda k: "$" + f"{k:,}".replace(",", r"\,") + "$"
+    _need = r"need $r \leq n$"
+    mo.vstack(
+        [
+            mo.hstack([cn, cr], justify="start", gap=2, wrap=True),
+            table(
                 [
-                    "| | |",
-                    "|:--|--:|",
-                    rf"| orderings $P^n_r$ | ${_fmt(math.perm(_n, _r))}$ |",
-                    rf"| $r!$ | ${_fmt(math.factorial(_r))}$ |",
-                    rf"| combinations $C^n_r$ | ${_fmt(math.comb(_n, _r))}$ |",
-                    rf"| arrangements with replacement $n^r$ | ${_fmt(_n**_r)}$ |",
-                    rf"| combinations with replacement $\binom{{n + r - 1}}{{r}}$ | ${_fmt(math.comb(_n + _r - 1, _r))}$ |",
+                    (r"orderings $P^n_r$", _fmt(math.perm(_n, _r)) if _r <= _n else _need),
+                    (r"$r!$", _fmt(math.factorial(_r))),
+                    (r"combinations $C^n_r$", _fmt(math.comb(_n, _r)) if _r <= _n else _need),
+                    (r"arrangements with replacement $n^r$", _fmt(_n**_r)),
+                    (r"combinations with replacement $\binom{n + r - 1}{r}$", _fmt(math.comb(_n + _r - 1, _r))),
                 ]
-            )
-        )
-    mo.vstack([mo.hstack([cn, cr], justify="start", gap=3), _text])
+            ),
+        ]
+    )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo, theorem):
-    mo.vstack(
-        [
-            mo.md(
-                r"""
+def _(mo):
+    mo.md(r"""
     **Example** (probability of a hand of poker).
 
     $$
@@ -620,28 +605,22 @@ def _(mo, theorem):
     P(\text{at least one is defective}) = \ ?
     $$
 
-    Counting combinations of 1 defective plus 2 defective plus 3 defective is hard…
+    $\leadsto$ &nbsp; counting combinations of 1 defective plus 2 defective plus 3 defective is hard…
 
     $$
     \{\text{at least one defective}\} = \{\text{none defective}\}^c
     $$
 
-    Counting combinations of none defective is much easier!
+    $\leadsto$ &nbsp; counting combinations of none defective is much easier!
 
     $$
     \#\{\text{none defective}\} = C^{17}_4 = \frac{17!}{4!\, 13!}
     $$
 
     $$
-    \begin{aligned}
-    \Longrightarrow \quad P(\text{at least one}) &= 1 - P(\text{none}) \\
-    &= 1 - \frac{C^{17}_4}{C^{20}_4} = 1 - \underbrace{\frac{17!}{20!} \frac{16!}{13!}}_{\textstyle \frac{16 \cdot 15 \cdot 14}{20 \cdot 19 \cdot 18}} \approx 50.9\%
-    \end{aligned}
+    \Longrightarrow \quad P(\text{at least one}) = 1 - P(\text{none}) = 1 - \frac{C^{17}_4}{C^{20}_4} = 1 - \underbrace{\frac{17!}{20!} \frac{16!}{13!}}_{\textstyle \frac{16 \cdot 15 \cdot 14}{20 \cdot 19 \cdot 18}} \approx 50.9\%
     $$
-    """
-            ),
-        ]
-    )
+    """)
     return
 
 
@@ -654,24 +633,29 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(d_def, d_items, d_pick, math, mo):
+def _(d_def, d_items, d_pick, math, mo, table):
     _n, _d, _k = d_items.value, d_def.value, d_pick.value
-    if _d > _n or _k > _n:
-        _text = mo.md(rf"need $\text{{defective}} \le \text{{items}}$ and $\text{{picked}} \le \text{{items}}$ &nbsp; (here items $= {_n}$)")
+    _fmt = lambda k: "$" + f"{k:,}".replace(",", r"\,") + "$"
+    _need_d, _need_k = r"need defective $\leq$ items", r"need picked $\leq$ items"
+    if _d > _n:
+        _none = _p = _need_d
+    elif _k > _n:
+        _none = _p = _need_k
     else:
-        _p = 1 - math.comb(_n - _d, _k) / math.comb(_n, _k)
-        _text = mo.md(
-            "\n".join(
+        _none = _fmt(math.comb(_n - _d, _k))
+        _p = rf"${100 * (1 - math.comb(_n - _d, _k) / math.comb(_n, _k)):.1f}\%$"
+    mo.vstack(
+        [
+            mo.hstack([d_items, d_def, d_pick], justify="start", gap=2, wrap=True),
+            table(
                 [
-                    "| | |",
-                    "|:--|--:|",
-                    rf"| $\#\{{\text{{none defective}}\}}$ | ${math.comb(_n - _d, _k):,}$ |".replace(",", r"\,"),
-                    rf"| $\# S$ | ${math.comb(_n, _k):,}$ |".replace(",", r"\,"),
-                    rf"| $P(\text{{at least one}}) = 1 - P(\text{{none}})$ | ${100 * _p:.1f}\%$ |",
+                    (r"$\#\{\text{none defective}\}$", _none),
+                    (r"$\# S$", _fmt(math.comb(_n, _k)) if _k <= _n else _need_k),
+                    (r"$P(\text{at least one}) = 1 - P(\text{none})$", _p),
                 ]
-            )
-        )
-    mo.vstack([mo.hstack([d_items, d_def, d_pick], justify="start", gap=3, wrap=True), _text])
+            ),
+        ]
+    )
     return
 
 
@@ -681,7 +665,7 @@ def _(mo, theorem):
         [
             mo.md(
                 r"""
-    So far, arrangements and combinations of objects *without replacement* &nbsp; (once an object is selected it cannot be selected again)
+    $\leadsto$ &nbsp; so far, arrangements and combinations of objects **without replacement** &nbsp; (once an object is selected it cannot be selected again)
     """
             ),
             theorem(
@@ -695,7 +679,8 @@ def _(mo, theorem):
     $$
     \binom{n + r - 1}{r} = \#\, \text{combinations with replacement}
     $$
-    """
+    """,
+                "Arrangements and combinations with replacement",
             ),
         ]
     )
@@ -760,6 +745,22 @@ def _(mo, w1, w2, w3, w4):
             _ask("number $=$", w4, 220, 1e-6),
         ]
     )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Summary
+
+    - axioms + algebra of events &nbsp; $\Longrightarrow$ &nbsp; $P(A^c) = 1 - P(A)$, &nbsp; $P(\emptyset) = 0$, &nbsp; if $A \subseteq B$ then $P(A) \leq P(B)$
+    - $P(A \cup B) = P(A) + P(B) - P(A \cap B)$ &nbsp; (the intersection is added 2 times), and similarly for three events
+    - equally likely outcomes (very strong assumption!) &nbsp; $\Longrightarrow$ &nbsp; $P(A) = \# A / \# S$: probability becomes a counting problem
+    - multiplication rule: $m \cdot n$ ordered pairs &nbsp; $\leadsto$ &nbsp; count outcomes of experiments with successive stages
+    - orderings $P^n_r = n!/(n - r)!$ and combinations $C^n_r = P^n_r / r! = \binom{n}{r}$ (without replacement); $n^r$ arrangements and $\binom{n + r - 1}{r}$ combinations with replacement
+
+    **Next:** conditioning, independence, and Bayes' rule
+    """)
     return
 
 
