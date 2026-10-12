@@ -24,11 +24,11 @@ def _():
 def _(mo):
     # ---- Building blocks shared by all lectures -------------------------
     # Palette with fixed roles (figures only; text carries no colour):
-    #   BLUE   the primary object (the particle, the point, the chosen vector)
+    #   BLUE   the primary object (the point, the chosen vector, the main curve)
     #   RED    the second object it is compared with
-    #   GREEN  a derived quantity (velocity, relative velocity, tangent vector)
+    #   GREEN  a derived quantity (tangent vector, gradient, mean)
     #   ORANGE a third series, only when three are needed
-    #   GREY   reference geometry (equator, light cone, inertial comparison)
+    #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
     BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
@@ -44,7 +44,7 @@ def _(mo):
       <div class="bs-inst">Daegu Gyeongbuk Institute of Science and Technology<br>School of Undergraduate Studies</div>
       <div class="bs-meta">
         <b>Document</b><span>{document}</span><b>Course</b><span>BS202a</span>
-        <b>Date</b><span>{date}</span><b>Instructor</b><span>Professor Scarinci</span>
+        <b>Week</b><span>{date.removeprefix('Week ')}</span><b>Instructor</b><span>Professor Scarinci</span>
       </div>
     </div>
     """
@@ -323,7 +323,7 @@ def _(definition, mo):
     A random variable $Y$ has a **beta distribution** with parameters $\alpha$ and $\beta$ if its pdf is
 
     $$
-    \underbrace{f_Y(y)}_{\mathrm{Beta}(\alpha, \beta)(y)} = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, y^{\alpha-1} (1 - y)^{\beta-1}, \qquad y \in (0, 1) \qquad (\alpha, \beta > 0)
+    \underbrace{f_Y(y)}_{\mathrm{Beta}(\alpha, \beta)(y)} = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, y^{\alpha-1} (1 - y)^{\beta-1}, \qquad y \in (0, 1) \qquad (\alpha, \beta \text{ positive integers})
     $$
 
     ($\alpha = r$: counting from start; &nbsp; $\beta = n - r + 1$: counting from end)
