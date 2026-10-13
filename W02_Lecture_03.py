@@ -632,7 +632,8 @@ def _(BLUE, FULL, Figure, LIGHT, RED, mo, prev, sens, spec, table):
     _ax.plot([_tp, _tp + _fp, _tp + _fp, _tp, _tp], [0, 0, 1, 1, 0], color=RED, lw=1.4)
     _ax.plot([0, _tp, _tp, 0, 0], [0, 0, 1, 1, 0], color=BLUE, lw=1.4)
     _ax.text(0, 1.25, r"$P(T \cap D)$", color=BLUE, fontsize=13, ha="left", va="bottom")
-    _ax.text(_tp + _fp, 1.25, r"$P(T \cap D^c)$", color=RED, fontsize=13, ha="right", va="bottom")
+    if _fp > 0:  # at specificity 100 % there is no false-positive box to label
+        _ax.text(_tp + _fp, 1.25, r"$P(T \cap D^c)$", color=RED, fontsize=13, ha="right", va="bottom")
     _ax.set_xlim(-0.01 * (_tp + _fp), 1.01 * (_tp + _fp))
     _ax.set_ylim(-0.1, 2.0)
     _ax.set_yticks([])

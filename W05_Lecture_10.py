@@ -277,7 +277,7 @@ def _(ask, mo, posterior, q1_boxes):
 
 @app.cell(hide_code=True)
 def _(mo):
-    t_pop = mo.ui.slider(1000, 100000, 1000, value=10000, label="population", show_value=True)
+    t_pop = mo.ui.slider(2500, 100000, 2500, value=10000, label="population", show_value=True)
     t_prev = mo.ui.slider(0.001, 0.5, 0.001, value=0.01, label="prevalence $P(I)$", show_value=True)
     t_sens = mo.ui.slider(0.5, 1.0, 0.01, value=0.80, label="sensitivity", show_value=True)
     t_spec = mo.ui.slider(0.80, 1.0, 0.005, value=0.95, label="specificity", show_value=True)
@@ -333,7 +333,7 @@ def _(BLUE, FULL, Figure, LIGHT, ORANGE, RED, mo, population_grid, posterior, t_
             "Simulation [cell 1]": mo.vstack(
                 [
                     mo.hstack([t_pop, t_prev, t_sens, t_spec, t_step], justify="start", gap=2, wrap=True),
-                    mo.md("Population $" + f"{_pop:,}".replace(",", r"\,") + f"$, one square = ${_per:g}$ people."),
+                    mo.md("Population $" + f"{_pop:,}".replace(",", r"\,") + f"$, one square = ${_per:g}$ " + ("person." if _per == 1 else "people.")),
                     mo.md("\n".join(_lines)),
                     _fig,
                 ]
@@ -399,7 +399,7 @@ def _(ask, mo, q1_boxes):
 
 @app.cell(hide_code=True)
 def _(mo):
-    d_pop = mo.ui.slider(1000, 100000, 1000, value=10000, label="population", show_value=True)
+    d_pop = mo.ui.slider(2500, 100000, 2500, value=10000, label="population", show_value=True)
     d_prev = mo.ui.slider(0.001, 0.5, 0.001, value=0.01, label="prevalence $P(I)$", show_value=True)
     d_sens = mo.ui.slider(0.5, 1.0, 0.01, value=0.80, label="sensitivity", show_value=True)
     d_spec = mo.ui.slider(0.80, 1.0, 0.005, value=0.95, label="specificity", show_value=True)
@@ -435,7 +435,7 @@ def _(BLUE, FULL, Figure, LIGHT, ORANGE, RED, d_pop, d_prev, d_sens, d_spec, mo,
             "Simulation [cell 3]": mo.vstack(
                 [
                     mo.hstack([d_pop, d_prev, d_sens, d_spec], justify="start", gap=2, wrap=True),
-                    mo.md("Population $" + f"{_pop:,}".replace(",", r"\,") + "$ ($" + f"{_ninf:,}".replace(",", r"\,") + f"$ infected), one square = ${_per:g}$ people."),
+                    mo.md("Population $" + f"{_pop:,}".replace(",", r"\,") + "$ ($" + f"{_ninf:,}".replace(",", r"\,") + f"$ infected), one square = ${_per:g}$ " + ("person." if _per == 1 else "people.")),
                     mo.md("\n".join(_lines)),
                     _tfig,
                 ]
@@ -564,8 +564,8 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, MaxNLocator, RED, binomial_pmf, hy
             "A": (lambda x: binomial_pmf(x, _n, _p), lambda y: neg_binomial_pmf(y, _r, _p), rf"\mathrm{{B}}({_n}, {_p:.3g})", rf"\mathrm{{NB}}({_r}, {_p:.3g})"),
             "B": (lambda x: hypergeometric_pmf(x, _N, _K, _n), lambda y: neg_hypergeometric_pmf(y, _N, _K, _r), rf"\mathrm{{HG}}({_N}, {_K}, {_n})", rf"\mathrm{{NHG}}({_N}, {_K}, {_r})"),
         }
-        # the frame of the Y histogram follows the simulated data: every run is drawn
-        _YMAX = int(max(_YA.max(), _YB.max()))
+        # the frame of the Y histogram follows the runs shown: every one of them is drawn
+        _YMAX = int(max(_YA[:_m].max(), _YB[:_m].max()))
         _hfig = Figure(figsize=(FULL, 5.0), layout="constrained")
         _hx, _hy = _hfig.subplots(2, 1)
         _xs = np.arange(0, _n + 1)

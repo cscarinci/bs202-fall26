@@ -321,7 +321,10 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, g_a, g_b, g_lam, g_r, g_t, math, m
     def _cdf(t, r):
         return 1 - sum(np.exp(-_lam * t) * (_lam * t) ** k / math.factorial(k) for k in range(r))
 
-    _y = np.linspace(0, 10, 500)
+    # the frame reaches at least 10 and at least the 99.5 % point of the chosen r
+    _grid = np.linspace(0, 200, 4001)
+    _xmax = max(10.0, float(np.ceil(_grid[np.argmax(_cdf(_grid, _r) >= 0.995)])))
+    _y = np.linspace(0, _xmax, 500)
     _fig = Figure(figsize=(FULL, 3.0), layout="constrained")
     _ax, _cx = _fig.subplots(1, 2)
     _white = {"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"}
@@ -337,9 +340,9 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, g_a, g_b, g_lam, g_r, g_t, math, m
     for _k in sorted({1, 2, 3, _r}):
         _col = BLUE if _k == _r else GREY
         _ax.plot(_y, _pdf(_y, _k), color=_col, lw=1.4 if _k == _r else 1.0, zorder=3 if _k == _r else 2)
-        _x = min((_k - 0.5) / _lam, 10)
-        _ax.annotate(f"$r = {_k}$", (_x, float(_pdf(_x, _k))), textcoords="offset points", xytext=(5, _lift.get(_k, 2) if _x < 10 else 0), ha="left", va="bottom" if _x < 10 else "center", color=_col, fontsize=12, bbox=_white, zorder=5, annotation_clip=False)
-    _ax.set_xlim(0, 10)
+        _x = min((_k - 0.5) / _lam, _xmax)
+        _ax.annotate(f"$r = {_k}$", (_x, float(_pdf(_x, _k))), textcoords="offset points", xytext=(5, _lift.get(_k, 2) if _x < _xmax else 0), ha="left", va="bottom" if _x < _xmax else "center", color=_col, fontsize=12, bbox=_white, zorder=5, annotation_clip=False)
+    _ax.set_xlim(0, _xmax)
     _ax.set_ylim(0, 1.05 * _lam)
     _ax.set_xlabel("$y$")
     _ax.set_ylabel("$f_Y(y)$")
@@ -354,7 +357,7 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, g_a, g_b, g_lam, g_r, g_t, math, m
     _cx.plot(_t, _Ft, "o", color="black", ms=4, zorder=5)
     _cx.plot([_t, _t], [_Ft, 1.05], color=GREY, lw=1.0, ls=(0, (1, 2)))
     _cx.annotate("$t$", (_t, 1.0), xycoords=("data", "axes fraction"), textcoords="offset points", xytext=(0, 3), ha="center", va="bottom", fontsize=12, annotation_clip=False)
-    _cx.set_xlim(0, 10)
+    _cx.set_xlim(0, _xmax)
     _cx.set_ylim(0, 1.05)
     _cx.set_xlabel("$y$")
     _cx.set_ylabel("$F_Y(y)$")
@@ -454,9 +457,11 @@ def _(BLUE, FULL, Figure, GREY, LIGHT, m_lam, m_s, m_t, math, mo, np, table):
     _ax = _fig.subplots()
     _hi = max(1.4 * (_s + _t) + 0.3, min(6 / _l, 3 * (_s + _t)))  # the frame follows s + t
     _top = 1.5 * _l
-    for _lo, _up in ((0, _t), (_s, _s + _t)):
-        _yy = np.linspace(_lo, _up, 100)
-        _ax.fill_between(_yy, _f(_yy), color=LIGHT, lw=0)
+    _yy = np.linspace(0, _t, 100)
+    _ax.fill_between(_yy, _f(_yy), color=LIGHT, lw=0)
+    # (s, s + t] gets its own blue hatch, so that it stays distinct from (0, t] also when the two overlap (t > s)
+    _yy = np.linspace(_s, _s + _t, 100)
+    _ax.fill_between(_yy, _f(_yy), facecolor="none", edgecolor=BLUE, hatch="\\\\\\", lw=0)
     _yy = np.linspace(_s, _hi, 200)
     _ax.fill_between(_yy, _f(_yy), facecolor="none", edgecolor=GREY, hatch="///", lw=0)
     for _x in (_t, _s, _s + _t):
