@@ -488,10 +488,18 @@ def _(mo):
     mo.md(r"""
     ## Summary
 
-    - **binomial model**: $n$ identical independent trials with two outcomes, $P(\text{“success”}) = p$, $P(\text{“failure”}) = q = 1 - p$; $X$ = number of “successes” &nbsp; $\Longrightarrow$ &nbsp; $f_X(x) = \binom{n}{x} p^x q^{n-x}$ for $x = 0, 1, 2, \dots, n$
+    - **binomial model**: $n$ identical independent trials with two outcomes, $P(\text{“success”}) = p$, $P(\text{“failure”}) = q = 1 - p$; $X$ = number of “successes”
+
+        $$
+        \Longrightarrow \qquad f_X(x) = \binom{n}{x} p^x q^{n-x} \quad \text{for } x = 0, 1, 2, \dots, n
+        $$
     - $\sum_{x=0}^{n} f_X(x) = (p + 1 - p)^n = 1$
     - a binomial random variable has $\mu_X = np$ and $\sigma_X^2 = npq$ &nbsp; (via $E[X^2] = E[X(X - 1)] + E[X]$)
-    - **negative binomial model**: same trials; $Y$ = number of trials until a fixed number $r$ of “successes” &nbsp; $\Longrightarrow$ &nbsp; $f_Y(y) = \binom{y-1}{r-1} p^r q^{y-r}$ for $y = r, r + 1, r + 2, \dots$
+    - **negative binomial model**: same trials; $Y$ = number of trials until a fixed number $r$ of “successes”
+
+        $$
+        \Longrightarrow \qquad f_Y(y) = \binom{y-1}{r-1} p^r q^{y-r} \quad \text{for } y = r, r + 1, r + 2, \dots
+        $$
 
     **Next:** hypergeometric and negative hypergeometric models
     """)

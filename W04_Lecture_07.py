@@ -569,10 +569,24 @@ def _(mo):
     mo.md(r"""
     ## Summary
 
-    - hypergeometric model: draws without replacement from $K$ “successes” and $N - K$ “failures”, count the number $X$ of successes in $n$ trials: &nbsp; $HG(N, K, n)(x) = \binom{K}{x} \binom{N - K}{n - x} \big/ \binom{N}{n}$
-    - negative hypergeometric model: count the number $Y$ of trials until $r$ successes: &nbsp; $NHG(N, K, r)(y) = \binom{y - 1}{r - 1} \binom{N - y}{K - r} \big/ \binom{N}{K}$
+    - hypergeometric model: draws without replacement from $K$ “successes” and $N - K$ “failures”, count the number $X$ of successes in $n$ trials:
+
+        $$
+        HG(N, K, n)(x) = \frac{\binom{K}{x} \binom{N - K}{n - x}}{\binom{N}{n}}
+        $$
+    - negative hypergeometric model: count the number $Y$ of trials until $r$ successes:
+
+        $$
+        NHG(N, K, r)(y) = \frac{\binom{y - 1}{r - 1} \binom{N - y}{K - r}}{\binom{N}{K}}
+        $$
     - replacement allowed versus not allowed: binomial $\leftrightarrow$ hypergeometric, negative binomial $\leftrightarrow$ negative hypergeometric
-    - $E[X] = n \tfrac{K}{N} = np$ and $\mathrm{Var}(X) = np(1 - p) \times \tfrac{N - n}{N - 1}$ (finite population correction term) for $p = \tfrac{K}{N}$; &nbsp; $E[Y] = r\, \tfrac{N + 1}{K + 1}$
+    - $E[X] = n \tfrac{K}{N} = np$ and
+
+        $$
+        \mathrm{Var}(X) = np(1 - p) \times \frac{N - n}{N - 1} \qquad (\text{finite population correction term})
+        $$
+
+        for $p = \tfrac{K}{N}$; &nbsp; $E[Y] = r\, \tfrac{N + 1}{K + 1}$
 
     **Next:** Poisson models
     """)

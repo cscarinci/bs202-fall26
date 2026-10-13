@@ -794,11 +794,21 @@ def _(mo):
     mo.md(r"""
     ## Summary
 
-    - axioms + algebra of events &nbsp; $\Longrightarrow$ &nbsp; $P(A^c) = 1 - P(A)$, &nbsp; $P(\emptyset) = 0$, &nbsp; if $A \subseteq B$ then $P(A) \leq P(B)$
+    - axioms + algebra of events
+
+        $$
+        \Longrightarrow \qquad P(A^c) = 1 - P(A), \qquad P(\emptyset) = 0, \qquad \text{if } A \subseteq B \text{ then } P(A) \leq P(B)
+        $$
     - $P(A \cup B) = P(A) + P(B) - P(A \cap B)$ &nbsp; (the intersection is added 2 times), and similarly for three events
     - equally likely outcomes (very strong assumption!) &nbsp; $\Longrightarrow$ &nbsp; $P(A) = \# A / \# S$: probability becomes a counting problem
     - multiplication rule: $m \cdot n$ ordered pairs &nbsp; $\leadsto$ &nbsp; count outcomes of experiments with successive stages
-    - orderings $P^n_r = n!/(n - r)!$ and combinations $C^n_r = P^n_r / r! = \binom{n}{r}$ (without replacement); $n^r$ arrangements and $\binom{n + r - 1}{r}$ combinations with replacement
+    - orderings
+
+        $$
+        P^n_r = \frac{n!}{(n - r)!} \qquad \text{and combinations} \qquad C^n_r = \frac{P^n_r}{r!} = \binom{n}{r} \qquad (\text{without replacement})
+        $$
+
+        $n^r$ arrangements and $\binom{n + r - 1}{r}$ combinations with replacement
 
     **Next:** conditioning, independence, and Bayes' rule
     """)

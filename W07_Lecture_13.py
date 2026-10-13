@@ -544,6 +544,11 @@ def _(BLUE, FULL, Figure, GREY, LIGHT, RED, cut, math, mo, np, table):
     _xc = np.linspace(_c, 120, 300)
     _ax.fill_between(_xc, _pdf(_xc, 50, 20), color=LIGHT, lw=0)
     _ax.plot([_c, _c], [0, 0.031], color=GREY, lw=1.0, ls=(0, (4, 3)))
+    # the matching cutoff y on Y: its tail (hatched) has the same area as the shaded tail of X
+    _yc = np.linspace(min(_y, 120), 120, 300)
+    _ax.fill_between(_yc, _pdf(_yc, 75, 15), facecolor="none", edgecolor=RED, hatch="////", lw=0)
+    _ax.plot([_y, _y], [0, 0.031], color=RED, lw=1.0, ls=(0, (4, 3)))
+    _ax.text(_y, 0.0318, "$y$", color=RED, fontsize=12, ha="center", va="bottom")
     _ax.plot(_x, _pdf(_x, 50, 20), color=BLUE, lw=1.4)
     _ax.plot(_x, _pdf(_x, 75, 15), color=RED, lw=1.4)
     _ax.text(_c, 0.0318, "$x$", fontsize=12, ha="center", va="bottom")
@@ -701,10 +706,37 @@ def _(mo):
     mo.md(r"""
     ## Summary
 
-    - standard normal $Z \sim \mathcal{N}(0, 1)$: &nbsp; cdf $\Phi(z) = P(Z \leq z)$ (no simple formula, tabled), $\Phi(-z) = 1 - \Phi(z)$, &nbsp; $m_Z(t) = e^{t^2/2}$ &nbsp; $\Longrightarrow$ &nbsp; $E[Z] = 0$, $\mathrm{Var}(Z) = 1$, $\mathrm{Skew}(Z) = 0$
-    - $Y = u(X)$ with $u$ strictly increasing: &nbsp; $F_Y(y) = F_X(u^{-1}(y))$ and, for $X$ continuous, $f_Y(y) \,{=}\, \tfrac{d}{dy} u^{-1}(y)\ f_X(u^{-1}(y))$
-    - $Y = aX + b$: &nbsp; $m_Y(t) = e^{tb}\, m_X(ta)$ &nbsp; $\Longrightarrow$ &nbsp; $E[Y] = a\, E[X] + b$, $\mathrm{Var}(Y) = a^2\, \mathrm{Var}(X)$
-    - $X \sim \mathcal{N}(\mu, \sigma^2)$ if and only if $Z = \dfrac{X - \mu}{\sigma} \sim \mathcal{N}(0, 1)$ &nbsp; $\Longrightarrow$ &nbsp; $F_X(x) = \Phi\!\left( \dfrac{x - \mu}{\sigma} \right)$; linear transformations of normal random variables are still normal: $aX + b \sim \mathcal{N}(a\mu + b,\ a^2\sigma^2)$
+    - standard normal $Z \sim \mathcal{N}(0, 1)$: &nbsp; cdf $\Phi(z) = P(Z \leq z)$ (no simple formula, tabled)
+
+        $$
+        \begin{gathered}
+        \Phi(-z) = 1 - \Phi(z), \qquad m_Z(t) = e^{t^2/2} \\[4pt]
+        \Longrightarrow \qquad E[Z] = 0, \quad \mathrm{Var}(Z) = 1, \quad \mathrm{Skew}(Z) = 0
+        \end{gathered}
+        $$
+    - $Y = u(X)$ with $u$ strictly increasing:
+
+        $$
+        F_Y(y) = F_X(u^{-1}(y))
+        $$
+
+        and, for $X$ continuous,
+
+        $$
+        f_Y(y) = \frac{d}{dy} u^{-1}(y)\ f_X(u^{-1}(y))
+        $$
+    - $Y = aX + b$:
+
+        $$
+        m_Y(t) = e^{tb}\, m_X(ta) \qquad \Longrightarrow \qquad E[Y] = a\, E[X] + b, \quad \mathrm{Var}(Y) = a^2\, \mathrm{Var}(X)
+        $$
+    - $X \sim \mathcal{N}(\mu, \sigma^2)$ if and only if
+
+        $$
+        Z = \frac{X - \mu}{\sigma} \sim \mathcal{N}(0, 1) \qquad \Longrightarrow \qquad F_X(x) = \Phi\!\left( \frac{x - \mu}{\sigma} \right)
+        $$
+
+        linear transformations of normal random variables are still normal: $aX + b \sim \mathcal{N}(a\mu + b,\ a^2\sigma^2)$
     - $p$-quantile: $F_X(q_p) = p$; &nbsp; for the normal distribution $q_p(X) = \mu + \sigma z_p$ with $\Phi(z_p) = p$
     """)
     return

@@ -596,7 +596,11 @@ def _(mo):
     ## Summary
 
     - a Poisson model: independent occurrences along a continuous interval at a constant average rate $\lambda > 0$; $X$ = number of occurrences in a fixed interval of length $t$, $S_X = \{0, 1, 2, \dots\}$
-    - splitting $[0, t]$ into $n$ subintervals gives $f_X(x) \approx B(n, \lambda t/n)(x)$, and in the limit $n \to \infty$: &nbsp; $\mathrm{Pois}(\lambda t)(x) = e^{-\lambda t} (\lambda t)^x / x!$, &nbsp; $x = 0, 1, 2, \dots$
+    - splitting $[0, t]$ into $n$ subintervals gives $f_X(x) \approx B(n, \lambda t/n)(x)$, and in the limit $n \to \infty$:
+
+        $$
+        \mathrm{Pois}(\lambda t)(x) = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!}, \qquad x = 0, 1, 2, \dots
+        $$
     - $E[X] = \lambda t$, &nbsp; $\mathrm{Var}(X) = \lambda t$, &nbsp; $\mathrm{Skew}(X) = \dfrac{1}{\sqrt{\lambda t}}$
     - for large $n$, small $p$: &nbsp; $B(n, p)(x) \approx \mathrm{Pois}(np)(x)$
     - a gamma model measures instead the length $Y$ until the $r$-th occurrence, $S_Y = (0, \infty)$ (not discrete)

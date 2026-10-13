@@ -766,7 +766,13 @@ def _(mo):
 
     - a **random experiment** is a repeatable process with uncertain outcomes but a pre-determined set of possible outcomes: the **sample space** $S$; **events** are subsets $A \subseteq S$, and the **event space** $\mathcal{E}$ is the collection of all relevant events
     - events are combined with $\cup$, $\cap$ and ${}^c$, which satisfy commutativity, associativity, distributivity and De Morgan's Law; $A, B$ are **disjoint** when $A \cap B = \emptyset$ and **exhaustive** when $A \cup B = S$
-    - a **probability measure** is $P : \mathcal{E} \longrightarrow \mathbb{R}$ with $P(S) = 1$, $P(A) \geq 0$ and $P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots$ for pairwise disjoint events
+    - a **probability measure** is $P : \mathcal{E} \longrightarrow \mathbb{R}$ with
+
+        $$
+        P(S) = 1, \qquad P(A) \geq 0 \qquad \text{and} \qquad P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots
+        $$
+
+        for pairwise disjoint events
     - a **probability space** is a triple $(S, \mathcal{E}, P)$; there can be many distinct probability measures on the same sample space / event space (fair and not fair die)
 
     **Next:** properties of probability; counting methods

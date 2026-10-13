@@ -709,7 +709,11 @@ def _(mo):
     - a random variable is a function $X : S \longrightarrow \mathbb{R}$ on the sample space; its state space $S_X = \mathrm{Im}(X) \subseteq \mathbb{R}$ serves as a simplified version of $S$
     - probability distribution of $X$: &nbsp; $P_X(A) = P(\{\, o \in S \mid X(o) \in A \,\}) = P(X \in A)$ for $A \subseteq S_X$
     - $X$ is discrete if $S_X$ consists of countably many points, continuous if $S_X$ is uncountable + extra conditions (later)
-    - pmf: $f_X(x) = P(X = x)$, with $f_X \geq 0$, $\sum_{x \in S_X} f_X(x) = 1$ and $\sum_{x \in A} f_X(x) = P(X \in A)$
+    - pmf: $f_X(x) = P(X = x)$, with
+
+        $$
+        f_X \geq 0, \qquad \sum_{x \in S_X} f_X(x) = 1 \qquad \text{and} \qquad \sum_{x \in A} f_X(x) = P(X \in A)
+        $$
     - cdf: $F_X(x) = P(X \leq x)$; for the largest face of two fair 4-sided dice, $F_X(k) - F_X(k - 1) = f_X(k)$
 
     **Next:** discrete random variables: pmf, cdf, expectation
