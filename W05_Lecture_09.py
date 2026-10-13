@@ -164,7 +164,9 @@ def _(mo):
     ## Last time
 
     - Poisson and gamma models
-    - $X = \#(\text{occurrences in fixed interval } [0, t])$ &nbsp; (constant average rate $\lambda$; independent for disjoint intervals)
+    - $X = \#(\text{occurrences in fixed interval } [0, t])$
+
+        (constant average rate $\lambda$; independent for disjoint intervals)
 
         $$
         S_X = \{0, 1, 2, \dots\}, \qquad f_X(x) = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \qquad \leadsto \qquad \sum_{x=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = e^{-\lambda t} e^{\lambda t} = 1

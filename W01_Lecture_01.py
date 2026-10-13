@@ -490,7 +490,11 @@ def _(BLUE, HALF, ORANGE, RED, blank, definition, mo, np):
 
     - $P(S) = 1$
     - $P(A) \geq 0$ for every event $A \in \mathcal{E}$
-    - $P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots$ for every countable sequence of *pairwise disjoint* events $A_1, A_2, \dots$ &nbsp; ($A_i \cap A_j = \emptyset \ \ \forall\, i \neq j$)
+    - for every countable sequence of *pairwise disjoint* events $A_1, A_2, \dots$ &nbsp; ($A_i \cap A_j = \emptyset \ \ \forall\, i \neq j$)
+
+        $$
+        P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots
+        $$
     """,
                 "Probability measure",
             ),

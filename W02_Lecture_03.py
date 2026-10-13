@@ -321,7 +321,13 @@ def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
 
     - $P(A \mid B) \geq 0$
     - $P(B \mid B) = 1$
-    - $P(A_1 \cup A_2 \mid B) = P(A_1 \mid B) + P(A_2 \mid B)$ &nbsp; for $(A_1 \cap B) \cap (A_2 \cap B) = \emptyset$ &nbsp; (also true for countably many)
+    - for $(A_1 \cap B) \cap (A_2 \cap B) = \emptyset$
+
+        $$
+        P(A_1 \cup A_2 \mid B) = P(A_1 \mid B) + P(A_2 \mid B)
+        $$
+
+        (also true for countably many)
 
     that is, $P(\,\cdot \mid B)$ is a probability measure on events $A \cap B$!
     """,
@@ -418,7 +424,14 @@ def _(definition, mo):
                 r"""
     **Example.** two fair dice &nbsp; $\leadsto$ &nbsp; $S = \{(1, 1), \dots, (6, 6)\}$
 
-    $A$ = sum is 7 $= \{(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1)\}$ &nbsp; and &nbsp; $B$ = 1st is even $= \{(2, 1), (2, 2), \dots, (6, 5), (6, 6)\}$ &nbsp; are independent:
+    $$
+    \begin{aligned}
+    A &= \text{sum is 7} = \{(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1)\} \\[4pt]
+    B &= \text{1st is even} = \{(2, 1), (2, 2), \dots, (6, 5), (6, 6)\}
+    \end{aligned}
+    $$
+
+    are independent:
 
     $$
     P(A \mid B) = \frac{P(A \cap B)}{P(B)} = \frac{3/36}{18/36} = \frac{1}{6} = \frac{6}{36} = P(A)

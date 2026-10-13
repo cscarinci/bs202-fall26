@@ -221,8 +221,10 @@ def _(definition, mo, theorem):
     More generally,
 
     $$
-    E[X^k] = \hat{\mu}_{X,k} \quad \text{is the } k\text{th \textbf{moment} of } X, \qquad
-    E[(X - \mu_X)^k] = \mu_{X,k} \quad \text{is the } k\text{th \textbf{central moment} of } X
+    \begin{aligned}
+    E[X^k] &= \hat{\mu}_{X,k} && \text{is the } k\text{th \textbf{moment} of } X, \\[4pt]
+    E[(X - \mu_X)^k] &= \mu_{X,k} && \text{is the } k\text{th \textbf{central moment} of } X
+    \end{aligned}
     $$
     """,
                 "Mean, variance, skewness, moments",

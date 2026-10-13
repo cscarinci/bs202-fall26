@@ -205,7 +205,11 @@ def _(BLUE, HALF, LIGHT, blank, mo):
         \qquad \leadsto \qquad P(A \cap B) = P(A \mid B)\, P(B)
         $$
 
-    - if knowledge about $B$ does not change our belief about $A$, then $A$ and $B$ are **independent**! &nbsp; $\leadsto$ &nbsp; $P(A \mid B) = P(A) \ \Longleftrightarrow \ P(A \cap B) = P(A)\, P(B)$
+    - if knowledge about $B$ does not change our belief about $A$, then $A$ and $B$ are **independent**!
+
+        $$
+        \leadsto \qquad P(A \mid B) = P(A) \qquad \Longleftrightarrow \qquad P(A \cap B) = P(A)\, P(B)
+        $$
     - Bayes' rule:
 
         $$
@@ -311,7 +315,8 @@ def _(definition, mo):
     $$
     \begin{aligned}
     X &= \text{year in DGIST} && \leadsto \qquad S_X = \{2011, 2012, \dots, 2026\} \\
-    Y &= \text{current GPA} && \leadsto \qquad S_Y \subseteq [0, 4] \quad (\text{finitely many values here; usually modeled by all of } [0, 4])
+    Y &= \text{current GPA} && \leadsto \qquad S_Y \subseteq [0, 4] \\[2pt]
+    & && \phantom{\leadsto \qquad} (\text{finitely many values here; usually modeled by all of } [0, 4])
     \end{aligned}
     $$
 
