@@ -304,7 +304,7 @@ def _(mo):
         "(A ∩ B)ᶜ",
         "Aᶜ ∪ Bᶜ",
     ]
-    _laws = {
+    venn_laws = {
         "commutativity (∪)": ("A ∪ B", "B ∪ A"),
         "commutativity (∩)": ("A ∩ B", "B ∩ A"),
         "associativity (∪)": ("(A ∪ B) ∪ C", "A ∪ (B ∪ C)"),
@@ -315,17 +315,19 @@ def _(mo):
         "De Morgan (∩)": ("(A ∩ B)ᶜ", "Aᶜ ∪ Bᶜ"),
     }
     # The pair shown in the two panels; a law sets both sides, the left/right dropdowns set one each
-    get_venn, set_venn = mo.state(_laws["distributivity (∩ over ∪)"])
-    venn_law = mo.ui.dropdown(_laws, value="distributivity (∩ over ∪)", label="law", on_change=lambda pair: pair and set_venn(pair))
-    return get_venn, set_venn, venn_law, venn_options
+    get_venn, set_venn = mo.state(venn_laws["distributivity (∩ over ∪)"], allow_self_loops=True)
+    return get_venn, set_venn, venn_laws, venn_options
 
 
 @app.cell(hide_code=True)
-def _(get_venn, mo, set_venn, venn_options):
+def _(get_venn, mo, set_venn, venn_laws, venn_options):
     _l, _r = get_venn()
+    # the law menu shows the law of the current pair (blank if the pair is not a law), so picking any law is always a change
+    _law = next((_k for _k, _pair in venn_laws.items() if _pair == (_l, _r)), None)
+    venn_law = mo.ui.dropdown(venn_laws, value=_law, label="law", on_change=lambda pair: pair and set_venn(pair))
     venn_left = mo.ui.dropdown(venn_options, value=_l, label="left", allow_select_none=False, on_change=lambda v: set_venn((v, get_venn()[1])))
     venn_right = mo.ui.dropdown(venn_options, value=_r, label="right", allow_select_none=False, on_change=lambda v: set_venn((get_venn()[0], v)))
-    return venn_left, venn_right
+    return venn_law, venn_left, venn_right
 
 
 @app.cell(hide_code=True)
