@@ -209,7 +209,7 @@ def _(mo, theorem):
         $$
 
         $$
-        \Longrightarrow \quad \underbrace{f_X(x)}_{B(n, p)(x)} = \begin{cases} \dbinom{n}{x} p^x q^{n-x}, & \text{for } x = \underbrace{0, 1, 2, \dots, n}_{S_X} \\[8pt] 0, & \text{otherwise} \end{cases}
+        \Longrightarrow \qquad \underbrace{f_X(x)}_{B(n, p)(x)} = \begin{cases} \dbinom{n}{x} p^x q^{n-x}, & \text{for } x = \underbrace{0, 1, 2, \dots, n}_{S_X} \\[8pt] 0, & \text{otherwise} \end{cases}
         $$
 
         ($\tbinom{n}{x}$: # combinations of $x$ objects in $n$ positions)
@@ -228,7 +228,7 @@ def _(mo, theorem):
         $$
 
         $$
-        \Longrightarrow \quad \underbrace{f_Y(y)}_{NB(r, p)(y)} = \begin{cases} \dbinom{y - 1}{r - 1} p^r q^{y-r}, & \text{for } y = \underbrace{r, r + 1, \dots}_{S_Y} \\[8pt] 0, & \text{otherwise} \end{cases}
+        \Longrightarrow \qquad \underbrace{f_Y(y)}_{NB(r, p)(y)} = \begin{cases} \dbinom{y - 1}{r - 1} p^r q^{y-r}, & \text{for } y = \underbrace{r, r + 1, \dots}_{S_Y} \\[8pt] 0, & \text{otherwise} \end{cases}
         $$
 
         ($\tbinom{y-1}{r-1}$: # combinations of $r - 1$ objects in $y - 1$ positions)
@@ -328,7 +328,7 @@ def _(definition, mo):
     $$
 
     $$
-    \leadsto \quad f_X(7) \approx 11\%, \qquad f_X(5) \approx 19\%, \qquad f_X(3) \approx 14\%
+    \leadsto \qquad f_X(7) \approx 11\%, \qquad f_X(5) \approx 19\%, \qquad f_X(3) \approx 14\%
     $$
     """
             ),

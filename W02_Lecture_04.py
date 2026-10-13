@@ -310,8 +310,8 @@ def _(definition, mo):
 
     $$
     \begin{aligned}
-    X &= \text{year in DGIST} && \leadsto \quad S_X = \{2011, 2012, \dots, 2026\} \\
-    Y &= \text{current GPA} && \leadsto \quad S_Y \subseteq [0, 4] \quad (\text{finitely many values here; usually modeled by all of } [0, 4])
+    X &= \text{year in DGIST} && \leadsto \qquad S_X = \{2011, 2012, \dots, 2026\} \\
+    Y &= \text{current GPA} && \leadsto \qquad S_Y \subseteq [0, 4] \quad (\text{finitely many values here; usually modeled by all of } [0, 4])
     \end{aligned}
     $$
 
@@ -382,11 +382,11 @@ def _(BLUE, FULL, GREY, arrow, blank, definition, mo):
     **Example** (Roll two fair 4-sided dice). &nbsp; $\leadsto$ &nbsp; $S = \{\, (i, j) \mid i, j \in \{1, 2, 3, 4\} \,\}$
 
     $$
-    X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} \ = \text{largest face} \qquad \leadsto \quad S_X = \{1, 2, 3, 4\}
+    X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} \ = \text{largest face} \qquad \leadsto \qquad S_X = \{1, 2, 3, 4\}
     $$
 
     $$
-    Y(i, j) = i + j = \text{sum of faces} \qquad \leadsto \quad S_Y = \{2, 3, \dots, 7, 8\}
+    Y(i, j) = i + j = \text{sum of faces} \qquad \leadsto \qquad S_Y = \{2, 3, \dots, 7, 8\}
     $$
     """
             ),
@@ -502,7 +502,7 @@ def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
     $$
 
     $$
-    \leadsto \quad
+    \leadsto \qquad
     \begin{aligned}
     F_X(4) - F_X(3) &= f_X(4) \\
     F_X(3) - F_X(2) &= f_X(3) \\

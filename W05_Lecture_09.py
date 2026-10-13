@@ -167,7 +167,7 @@ def _(mo):
     - $X = \#(\text{occurrences in fixed interval } [0, t])$ &nbsp; (constant average rate $\lambda$; independent for disjoint intervals)
 
         $$
-        S_X = \{0, 1, 2, \dots\}, \qquad f_X(x) = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \qquad \leadsto \quad \sum_{x=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = e^{-\lambda t} e^{\lambda t} = 1
+        S_X = \{0, 1, 2, \dots\}, \qquad f_X(x) = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \qquad \leadsto \qquad \sum_{x=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = e^{-\lambda t} e^{\lambda t} = 1
         $$
 
     - $Y$ = length of interval until $r$ occurrences
@@ -194,11 +194,11 @@ def _(corollary, definition, mo):
     **Recall:** $X : S \longrightarrow \mathbb{R}$ is a discrete random variable if $S_X = \mathrm{Im}(X)$ is countable
 
     $$
-    \leadsto \quad P_X(A) = P(X \in A) = \sum_{x \in A \cap S_X} \underbrace{f_X(x)}_{\text{pmf: } P(X = x)}
+    \leadsto \qquad P_X(A) = P(X \in A) = \sum_{x \in A \cap S_X} \underbrace{f_X(x)}_{\text{pmf: } P(X = x)}
     $$
 
     $$
-    \leadsto \quad \underbrace{F_X(x)}_{\text{cdf}} = P(X \leq x) = \sum_{y \in (-\infty, x] \cap S_X} f_X(y)
+    \leadsto \qquad \underbrace{F_X(x)}_{\text{cdf}} = P(X \leq x) = \sum_{y \in (-\infty, x] \cap S_X} f_X(y)
     \qquad \Longrightarrow \qquad f_X(x) = F_X(x) - F_X(x^-)
     $$
 
@@ -236,7 +236,7 @@ def _(corollary, definition, mo):
     $X$ continuous random variable &nbsp; $\Longrightarrow$ &nbsp; $P(X = x) = 0 \quad \forall\, x \in \mathbb{R}$! &nbsp; (no notion of pmf)
 
     $$
-    \Longrightarrow \quad P(a \leq X \leq b) = F_X(b) - F_X(a)
+    \Longrightarrow \qquad P(a \leq X \leq b) = F_X(b) - F_X(a)
     $$
     """,
                 "Single values have probability zero",
@@ -270,7 +270,7 @@ def _(corollary, definition, mo):
 
     $$
     \begin{aligned}
-    \Longrightarrow \quad f_Y(t) &= \frac{d}{dt} \left( \sum_{x=r}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \right)
+    \Longrightarrow \qquad f_Y(t) &= \frac{d}{dt} \left( \sum_{x=r}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \right)
     = \sum_{x=r}^{\infty} \lambda e^{-\lambda t} \left( -\frac{(\lambda t)^x}{x!} + \frac{(\lambda t)^{x-1}}{(x - 1)!} \right) \\[6pt]
     &= \lambda e^{-\lambda t} \left[ \sum_{x=r}^{\infty} \frac{(\lambda t)^{x-1}}{(x - 1)!} - \sum_{x=r}^{\infty} \frac{(\lambda t)^x}{x!} \right]
     = \lambda e^{-\lambda t}\, \frac{(\lambda t)^{r-1}}{(r - 1)!} = \underbrace{\frac{\lambda^r t^{r-1}}{(r - 1)!}\, e^{-\lambda t}}_{\mathrm{Gamma}(r, \lambda)(t)} \qquad \square
@@ -394,7 +394,7 @@ def _(mo, theorem):
     $\leadsto$ &nbsp; $Y$ = time until 1 accident
 
     $$
-    \Longrightarrow \quad f_Y(y) = \lambda e^{-\lambda y} \qquad \leadsto \quad \mathrm{Gamma}(1, \lambda) = \mathrm{Exp}(\lambda) \quad \text{(exponential distribution)}
+    \Longrightarrow \qquad f_Y(y) = \lambda e^{-\lambda y} \qquad \leadsto \qquad \mathrm{Gamma}(1, \lambda) = \mathrm{Exp}(\lambda) \quad \text{(exponential distribution)}
     $$
 
     $$

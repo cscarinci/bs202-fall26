@@ -184,17 +184,19 @@ def _(mo):
     - rolling a die: $S = \{1, 2, 3, 4, 5, 6\}$, &nbsp; $\mathcal{E} = \big\{ \emptyset, \{1\}, \{2\}, \dots, \{1, 2\}, \dots, \{1, 2, 3, 4, 5, 6\} \big\}$; for a “fair” die (extra assumption): $P(\{i\}) = P(\{j\}) \quad \forall\, i \neq j \in S$
 
         $$
-        \text{axioms} \quad \Longrightarrow \quad P(\{i\}) = \tfrac{1}{6}, \quad P(\{i, j\}) = \tfrac{2}{6}, \quad P(\{i, j, k\}) = \tfrac{3}{6}, \ \dots
-        \quad \Longrightarrow \quad P(A) = \frac{\# A}{\# S} \quad \forall\, A \in \mathcal{E}
+        \begin{aligned}
+        \text{axioms} \qquad & \Longrightarrow \qquad P(\{i\}) = \tfrac{1}{6}, \quad P(\{i, j\}) = \tfrac{2}{6}, \quad P(\{i, j, k\}) = \tfrac{3}{6}, \ \dots \\[4pt]
+        & \Longrightarrow \qquad P(A) = \frac{\# A}{\# S} \quad \forall\, A \in \mathcal{E}
+        \end{aligned}
         $$
 
     - but not every die is fair… a different assumption is also possible
 
         $$
         P(\{i\}) = \begin{cases} 0, & i \neq 6 \\ 1, & i = 6 \end{cases}
-        \quad \overset{\text{axioms}}{\Longrightarrow} \quad
+        \qquad \overset{\text{axioms}}{\Longrightarrow} \qquad
         P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases}
-        \quad \Longrightarrow \quad
+        \qquad \Longrightarrow \qquad
         P(A) = \begin{cases} 0, & 6 \notin A \\ 1, & 6 \in A \end{cases}
         $$
 
@@ -285,7 +287,7 @@ def _(Arc, BLUE, HALF, RED, blank, mo, theorem, venn_row):
     $$
 
     $$
-    \Longrightarrow \quad P(B) = P(A) + \underbrace{P(B \cap A^c)}_{\geq\, 0} \geq P(A) \qquad \square
+    \Longrightarrow \qquad P(B) = P(A) + \underbrace{P(B \cap A^c)}_{\geq\, 0} \geq P(A) \qquad \square
     $$
     """
             ),
@@ -306,7 +308,7 @@ def _(Arc, BLUE, HALF, RED, blank, mo, theorem, venn_row):
     $(A^c \cap B) \cup (A \cap B) = B$ &nbsp; (with $(A^c \cap B) \cap (A \cap B) = \emptyset$) &nbsp; $\Longrightarrow$ &nbsp; $P(A^c \cap B) + P(A \cap B) = P(B)$
 
     $$
-    \Longrightarrow \quad P(A \cup B) = P(A) + P(B) - P(A \cap B) \qquad \square
+    \Longrightarrow \qquad P(A \cup B) = P(A) + P(B) - P(A \cap B) \qquad \square
     $$
     """
             ),
@@ -465,7 +467,7 @@ def _(definition, mo, theorem):
     **Example** (Flipping a coin and rolling a die).
 
     $$
-    S = \{(H, 1), (H, 2), \dots, (H, 6), (T, 1), \dots, (T, 6)\} \quad \Longrightarrow \quad \# S = 12 = 2 \times 6
+    S = \{(H, 1), (H, 2), \dots, (H, 6), (T, 1), \dots, (T, 6)\} \qquad \Longrightarrow \qquad \# S = 12 = 2 \times 6
     $$
 
     $\leadsto$ &nbsp; useful to count total number of outcomes on random experiments with **successive stages** (1st the coin, then the die)
@@ -473,7 +475,7 @@ def _(definition, mo, theorem):
     **Remark.** The rule easily extends to more than two sets
 
     $$
-    \text{e.g.} \quad \# A = m, \ \# B = n, \ \# C = p \quad \Longrightarrow \quad \#(\underbrace{A \times B \times C}_{\text{ordered triples}}) = m\, n\, p
+    \text{e.g.} \quad \# A = m, \ \# B = n, \ \# C = p \qquad \Longrightarrow \qquad \#(\underbrace{A \times B \times C}_{\text{ordered triples}}) = m\, n\, p
     $$
 
     **Example** (ordered hands of poker).
@@ -542,7 +544,7 @@ def _(definition, mo, theorem):
     $$
 
     $$
-    \Longrightarrow \quad P^{52}_5 = C^{52}_5 \cdot 5! \qquad \square
+    \Longrightarrow \qquad P^{52}_5 = C^{52}_5 \cdot 5! \qquad \square
     $$
     """
             ),
@@ -590,11 +592,11 @@ def _(mo):
     $$
 
     $$
-    \leadsto \quad \# A = \#(\text{suits}) \cdot \#\left(\substack{\text{hands of} \\ \text{given suit}}\right) = 4 \cdot C^{13}_5 = 4 \cdot \frac{13!}{5!\, 8!} = \cdots = 4 \cdot 1287 = 5148
+    \leadsto \qquad \# A = \#(\text{suits}) \cdot \#\left(\substack{\text{hands of} \\ \text{given suit}}\right) = 4 \cdot C^{13}_5 = 4 \cdot \frac{13!}{5!\, 8!} = \cdots = 4 \cdot 1287 = 5148
     $$
 
     $$
-    \leadsto \quad \# S = C^{52}_5 = 2\,598\,960 \qquad \Longrightarrow \qquad P(A) = \frac{\# A}{\# S} \approx 0.002 = 0.2\%
+    \leadsto \qquad \# S = C^{52}_5 = 2\,598\,960 \qquad \Longrightarrow \qquad P(A) = \frac{\# A}{\# S} \approx 0.002 = 0.2\%
     $$
 
     **Example** (defective items).
@@ -618,7 +620,7 @@ def _(mo):
     $$
 
     $$
-    \Longrightarrow \quad P(\text{at least one}) = 1 - P(\text{none}) = 1 - \frac{C^{17}_4}{C^{20}_4} = 1 - \underbrace{\frac{17!}{20!} \frac{16!}{13!}}_{\textstyle \frac{16 \cdot 15 \cdot 14}{20 \cdot 19 \cdot 18}} \approx 50.9\%
+    \Longrightarrow \qquad P(\text{at least one}) = 1 - P(\text{none}) = 1 - \frac{C^{17}_4}{C^{20}_4} = 1 - \underbrace{\frac{17!}{20!} \frac{16!}{13!}}_{\textstyle \frac{16 \cdot 15 \cdot 14}{20 \cdot 19 \cdot 18}} \approx 50.9\%
     $$
     """)
     return

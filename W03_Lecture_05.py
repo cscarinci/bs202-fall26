@@ -296,7 +296,7 @@ def _(BLUE, FULL, Figure, GREEN, HALF, arrow, definition, mo, stems, steps):
     **Example** (roll two fair 4-sided dice).
 
     $$
-    S = \{\, (i, j) \mid i, j = 1, 2, 3, 4 \,\}, \qquad X(i, j) = \max(i, j) \quad \leadsto \quad S_X = \{1, 2, 3, 4\}
+    S = \{\, (i, j) \mid i, j = 1, 2, 3, 4 \,\}, \qquad X(i, j) = \max(i, j) \qquad \leadsto \qquad S_X = \{1, 2, 3, 4\}
     $$
 
     $$
@@ -361,19 +361,19 @@ def _(definition, mo):
     **Example.** &nbsp; $X(i, j) = \max(i, j)$
 
     $$
-    \leadsto \quad E[X] = \sum_{x=1}^{4} x\, f_X(x) = 1 \cdot \tfrac{1}{16} + 2 \cdot \tfrac{3}{16} + 3 \cdot \tfrac{5}{16} + 4 \cdot \tfrac{7}{16} = \tfrac{50}{16} \approx 3.1
+    \leadsto \qquad E[X] = \sum_{x=1}^{4} x\, f_X(x) = 1 \cdot \tfrac{1}{16} + 2 \cdot \tfrac{3}{16} + 3 \cdot \tfrac{5}{16} + 4 \cdot \tfrac{7}{16} = \tfrac{50}{16} \approx 3.1
     $$
 
     **Example.** Game: pay 3000 won to roll a 6-sided die, get 1000 won times the face value $X$. How much do you expect to win?
 
     $$
-    \text{fair die} \quad \leadsto \quad E[1000 X - 3000] = \sum_{x=1}^{6} (1000 x - 3000) \times \tfrac{1}{6} = 500
+    \text{fair die} \qquad \leadsto \qquad E[1000 X - 3000] = \sum_{x=1}^{6} (1000 x - 3000) \times \tfrac{1}{6} = 500
     $$
 
     not fair &nbsp; (say $f_X(1) = f_X(2) = f_X(3) = \tfrac{1}{3}$, &nbsp; $f_X(4) = f_X(5) = f_X(6) = 0$)
 
     $$
-    \leadsto \quad E[1000 X - 3000] = \sum_{x=1}^{3} (1000 x - 3000) \times \tfrac{1}{3} + \sum_{x=4}^{6} (1000 x - 3000) \times 0 = -1000
+    \leadsto \qquad E[1000 X - 3000] = \sum_{x=1}^{3} (1000 x - 3000) \times \tfrac{1}{3} + \sum_{x=4}^{6} (1000 x - 3000) \times 0 = -1000
     $$
     """
             ),
@@ -573,15 +573,15 @@ def _(corollary, mo, theorem):
     **Example.** Flip a fair coin 4 times, $X$ = number of heads
 
     $$
-    \leadsto \quad E[X] = 0 \times \tfrac{1}{16} + 1 \times \tfrac{4}{16} + 2 \times \tfrac{6}{16} + 3 \times \tfrac{4}{16} + 4 \times \tfrac{1}{16} = \tfrac{32}{16} = 2
+    \leadsto \qquad E[X] = 0 \times \tfrac{1}{16} + 1 \times \tfrac{4}{16} + 2 \times \tfrac{6}{16} + 3 \times \tfrac{4}{16} + 4 \times \tfrac{1}{16} = \tfrac{32}{16} = 2
     $$
 
     $$
-    \leadsto \quad E[X^2] = 0^2 \times \tfrac{1}{16} + 1^2 \times \tfrac{4}{16} + 2^2 \times \tfrac{6}{16} + 3^2 \times \tfrac{4}{16} + 4^2 \times \tfrac{1}{16} = \tfrac{80}{16} = 5
+    \leadsto \qquad E[X^2] = 0^2 \times \tfrac{1}{16} + 1^2 \times \tfrac{4}{16} + 2^2 \times \tfrac{6}{16} + 3^2 \times \tfrac{4}{16} + 4^2 \times \tfrac{1}{16} = \tfrac{80}{16} = 5
     $$
 
     $$
-    \Longrightarrow \quad \sigma_X^2 = E[X^2] - E[X]^2 = 5 - 2^2 = 1
+    \Longrightarrow \qquad \sigma_X^2 = E[X^2] - E[X]^2 = 5 - 2^2 = 1
     $$
     """
             ),

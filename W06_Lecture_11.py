@@ -281,7 +281,7 @@ def _(BLUE, FULL, Figure, math, mo, np, theorem):
 
     $$
     \begin{aligned}
-    \Longrightarrow \quad \int_{0}^{\infty} \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-\lambda x}\, dx
+    \Longrightarrow \qquad \int_{0}^{\infty} \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-\lambda x}\, dx
     &= \frac{1}{(r - 1)!} \int_{0}^{\infty} (\lambda x)^{r-1} e^{-\lambda x}\, d(\lambda x) = \frac{1}{(r - 2)!} \int_{0}^{\infty} (\lambda x)^{r-2} e^{-\lambda x}\, d(\lambda x) \\[6pt]
     &= \frac{1}{(r - 3)!} \int_{0}^{\infty} (\lambda x)^{r-3} e^{-\lambda x}\, d(\lambda x) = \cdots = \frac{1}{0!} \int_{0}^{\infty} e^{-\lambda x}\, d(\lambda x) \\[6pt]
     &= -e^{-\lambda x}\, \Big|_{0}^{\infty} = 0 - (-1) = 1
@@ -289,7 +289,7 @@ def _(BLUE, FULL, Figure, math, mo, np, theorem):
     $$
 
     $$
-    \leadsto \quad \boxed{\int_{0}^{\infty} x^{r-1} e^{-x}\, dx = (r - 1)!}
+    \leadsto \qquad \boxed{\int_{0}^{\infty} x^{r-1} e^{-x}\, dx = (r - 1)!}
     $$
 
     $\leadsto$ &nbsp; the left-hand side, $\Gamma(r)$, can be defined for any $r > 0$ &nbsp; (factorials for positive numbers!)
@@ -433,7 +433,7 @@ def _(definition, mo, theorem):
     $$
 
     $$
-    \text{and} \quad K_X'''(0) = E[(X - \mu_X)^3] \quad \Longrightarrow \quad \mathrm{Skew}(X) = \frac{K_X'''(0)}{\big( K_X''(0) \big)^{3/2}}
+    \text{and} \quad K_X'''(0) = E[(X - \mu_X)^3] \qquad \Longrightarrow \qquad \mathrm{Skew}(X) = \frac{K_X'''(0)}{\big( K_X''(0) \big)^{3/2}}
     $$
     """,
                 "Moments from the mgf",
@@ -482,7 +482,7 @@ def _(definition, mo, theorem):
     $$
 
     $$
-    \leadsto \quad \gamma_X = \frac{K_X'''(0)}{\sigma_X^3} = \frac{npq (q - p)}{(npq)^{3/2}} = \frac{q - p}{\sqrt{npq}}
+    \leadsto \qquad \gamma_X = \frac{K_X'''(0)}{\sigma_X^3} = \frac{npq (q - p)}{(npq)^{3/2}} = \frac{q - p}{\sqrt{npq}}
     $$
 
     $X \sim \mathrm{Pois}(\lambda)$ &nbsp; $\leadsto$ &nbsp; $m_X(t) = e^{\lambda (e^t - 1)}$, &nbsp; $K_X(t) = \lambda (e^t - 1)$

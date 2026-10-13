@@ -280,12 +280,12 @@ def _(definition, mo):
     where we are measuring the number $X$ of “successes” in $n$ trials!
 
     $$
-    \Longrightarrow \quad f_X(x) \approx B(n, \lambda t/n)(x) \qquad (\text{for large } n)
+    \Longrightarrow \qquad f_X(x) \approx B(n, \lambda t/n)(x) \qquad (\text{for large } n)
     $$
 
     $$
     \begin{aligned}
-    \Longrightarrow \quad f_X(x) &= \lim_{n \to \infty} \binom{n}{x} \left( \frac{\lambda t}{n} \right)^{\!x} \left( 1 - \frac{\lambda t}{n} \right)^{\!n-x} \\[6pt]
+    \Longrightarrow \qquad f_X(x) &= \lim_{n \to \infty} \binom{n}{x} \left( \frac{\lambda t}{n} \right)^{\!x} \left( 1 - \frac{\lambda t}{n} \right)^{\!n-x} \\[6pt]
     &= \lim_{n \to \infty} \underbrace{\frac{n (n - 1) \cdots (n - x + 1)}{n^x}}_{\approx\, 1}\, \frac{(\lambda t)^x}{x!} \left( 1 - \frac{\lambda t}{n} \right)^{\!n} \underbrace{\left( 1 - \frac{\lambda t}{n} \right)^{\!-x}}_{\approx\, 1} \\[6pt]
     &= \frac{(\lambda t)^x}{x!} \underbrace{\lim_{n \to \infty} \left( 1 - \frac{\lambda t}{n} \right)^{\!n}}_{e^{-\lambda t}} = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \qquad x = 0, 1, 2, \dots
     \end{aligned}
