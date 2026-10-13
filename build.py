@@ -13,8 +13,8 @@ SITE = HERE / "site"
 
 PARTS = [  # (name, first lecture, last lecture); ranges after part III are tentative
     ("I. Probability spaces and counting methods", 1, 3),
-    ("II. Discrete random variables and their distributions", 4, 8),
-    ("III. Continuous random variables and their distributions", 9, 13),
+    ("II. Discrete random variables", 4, 8),
+    ("III. Continuous random variables", 9, 13),
     ("IV. Joint distributions and sampling distributions", 14, 19),
     ("V. Estimation and hypothesis testing", 20, 25),
     ("VI. Simple linear regression", 26, 28),
