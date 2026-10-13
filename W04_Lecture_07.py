@@ -200,8 +200,10 @@ def _(mo, theorem):
     - **Binomial models** &nbsp; $\leadsto$ &nbsp; count number of “successes” in a fixed number of trials
 
         $$
-        S = \{\, c_1 c_2 \cdots c_n \mid c_i = H \text{ or } T \,\} \quad (n: \text{number of trials}), \qquad
+        \begin{gathered}
+        S = \{\, c_1 c_2 \cdots c_n \mid c_i = H \text{ or } T \,\} \quad (n: \text{number of trials}), \\[6pt]
         \underbrace{P(\{H\}) = p}_{\text{success}}, \quad \underbrace{P(\{T\}) = 1 - p = q}_{\text{failure}}
+        \end{gathered}
         $$
 
         $$
@@ -280,7 +282,10 @@ def _(definition, mo):
     $\leadsto$ &nbsp; draw colored coins from a bag with $K$ red coins and $N - K$ blue coins and without replacing the coins; count $X = \#(\text{red coins in } n \text{ draws})$
 
     $$
-    S = \{\, c_1 c_2 \cdots c_n \mid c_i = R \text{ or } B,\ i = 1, \dots, n \,\}, \qquad S_X = \{0, 1, \dots, n\} \quad (\text{if } n \leq K \text{ and } n \leq N - K)
+    \begin{gathered}
+    S = \{\, c_1 c_2 \cdots c_n \mid c_i = R \text{ or } B,\ i = 1, \dots, n \,\}, \\[4pt]
+    S_X = \{0, 1, \dots, n\} \quad (\text{if } n \leq K \text{ and } n \leq N - K)
+    \end{gathered}
     $$
 
     $$

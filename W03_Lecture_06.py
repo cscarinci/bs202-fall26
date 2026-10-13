@@ -234,7 +234,12 @@ def _(definition, mo):
 
     **Example.** 30% of patients recover without treatment. What is the probability that 9 out of 10 patients will recover without treatment?
 
-    $X = \#(\text{recovering patients out of } 10)$ &nbsp; ($n = 10$), &nbsp; $0.3 = P(\text{one patient recovers}) = p$ &nbsp; (one patient out of one)
+    $$
+    \begin{aligned}
+    X &= \#(\text{recovering patients out of } 10) && (n = 10) \\[4pt]
+    0.3 &= P(\text{one patient recovers}) = p && (\text{one patient out of one})
+    \end{aligned}
+    $$
 
     $$
     \Longrightarrow \qquad f_X(9) = \binom{10}{9} (0.3)^9 (0.7)^{10 - 9} \approx 0.01\%

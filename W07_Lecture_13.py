@@ -349,14 +349,16 @@ def _(corollary, mo, theorem):
     $$
 
     $$
-    \Longrightarrow \qquad f_Y(y) = \begin{cases}
+    \begin{aligned}
+    \Longrightarrow \qquad f_Y(y) &= \begin{cases}
     F_Y(y) - F_Y(y^-) = F_X(u^{-1}(y)) - F_X(u^{-1}(y^-)) & \text{discrete} \\[8pt]
     \dfrac{d}{dy} F_Y(y) = \dfrac{d}{dy} F_X(u^{-1}(y)) & \text{continuous}
-    \end{cases}
-    \ = \ \begin{cases}
+    \end{cases} \\[10pt]
+    &= \begin{cases}
     f_X(u^{-1}(y)) \\[8pt]
     \dfrac{d}{dy} u^{-1}(y)\ f_X(u^{-1}(y))
     \end{cases}
+    \end{aligned}
     $$
 
     **Example.** &nbsp; $Y = aX + b$, &nbsp; $a > 0$

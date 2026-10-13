@@ -177,11 +177,24 @@ def _(mo):
     - to be precise, we need a bit more from additivity (**countable additivity**; we won't need to be this precise)
 
         $$
-        P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots \qquad \text{for } \underbrace{A_1, A_2, \dots}_{\text{possibly infinite}} \text{ pairwise disjoint} \quad (A_i \cap A_j = \emptyset \ \ \forall\, i \neq j)
+        \begin{gathered}
+        P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots \\[4pt]
+        \text{for } \underbrace{A_1, A_2, \dots}_{\text{possibly infinite}} \text{ pairwise disjoint} \quad (A_i \cap A_j = \emptyset \ \ \forall\, i \neq j)
+        \end{gathered}
         $$
 
     - we call a triple $(S, \mathcal{E}, P)$ a **probability space** &nbsp; $\leadsto$ &nbsp; a mathematical model for a random experiment
-    - rolling a die: $S = \{1, 2, 3, 4, 5, 6\}$, &nbsp; $\mathcal{E} = \big\{ \emptyset, \{1\}, \{2\}, \dots, \{1, 2\}, \dots, \{1, 2, 3, 4, 5, 6\} \big\}$; for a “fair” die (extra assumption): $P(\{i\}) = P(\{j\}) \quad \forall\, i \neq j \in S$
+    - rolling a die:
+
+        $$
+        S = \{1, 2, 3, 4, 5, 6\}, \qquad \mathcal{E} = \big\{ \emptyset, \{1\}, \{2\}, \dots, \{1, 2\}, \dots, \{1, 2, 3, 4, 5, 6\} \big\}
+        $$
+
+        for a “fair” die (extra assumption):
+
+        $$
+        P(\{i\}) = P(\{j\}) \quad \forall\, i \neq j \in S
+        $$
 
         $$
         \begin{aligned}
@@ -276,9 +289,17 @@ def _(Arc, BLUE, HALF, RED, blank, mo, theorem, venn_row):
 
     **Proof.**
 
-    (i) &nbsp; $A \subseteq S \ \Longrightarrow \ A \cup A^c = S$ and $A \cap A^c = \emptyset$ &nbsp; $\Longrightarrow$ &nbsp; $P(A \cup A^c) = 1 = P(A) + P(A^c)$
+    (i) &nbsp; $A \subseteq S \ \Longrightarrow \ A \cup A^c = S$ and $A \cap A^c = \emptyset$
 
-    (ii) &nbsp; $A = S \ \Longrightarrow \ A^c = S^c = \emptyset$ &nbsp; $\Longrightarrow$ &nbsp; $P(S \cup \emptyset) = 1 = P(S) + P(\emptyset)$ &nbsp; $\Longrightarrow$ &nbsp; $P(\emptyset) = 0$
+    $$
+    \Longrightarrow \qquad P(A \cup A^c) = 1 = P(A) + P(A^c)
+    $$
+
+    (ii) &nbsp; $A = S \ \Longrightarrow \ A^c = S^c = \emptyset$
+
+    $$
+    \Longrightarrow \qquad P(S \cup \emptyset) = 1 = P(S) + P(\emptyset) \qquad \Longrightarrow \qquad P(\emptyset) = 0
+    $$
 
     (iii) &nbsp; $A \subseteq B \ \Longrightarrow \ B = (B \cap A) \cup (B \cap A^c) = A \cup (B \cap A^c)$
 
@@ -303,9 +324,17 @@ def _(Arc, BLUE, HALF, RED, blank, mo, theorem, venn_row):
             ),
             mo.md(
                 r"""
-    **Proof.** &nbsp; $A \cup B = A \cup (A^c \cap B)$ &nbsp; (with $A \cap (B \cap A^c) = \emptyset$) &nbsp; $\Longrightarrow$ &nbsp; $P(A \cup B) = P(A) + P(A^c \cap B)$
+    **Proof.** &nbsp; $A \cup B = A \cup (A^c \cap B)$ &nbsp; (with $A \cap (B \cap A^c) = \emptyset$)
 
-    $(A^c \cap B) \cup (A \cap B) = B$ &nbsp; (with $(A^c \cap B) \cap (A \cap B) = \emptyset$) &nbsp; $\Longrightarrow$ &nbsp; $P(A^c \cap B) + P(A \cap B) = P(B)$
+    $$
+    \Longrightarrow \qquad P(A \cup B) = P(A) + P(A^c \cap B)
+    $$
+
+    $(A^c \cap B) \cup (A \cap B) = B$ &nbsp; (with $(A^c \cap B) \cap (A \cap B) = \emptyset$)
+
+    $$
+    \Longrightarrow \qquad P(A^c \cap B) + P(A \cap B) = P(B)
+    $$
 
     $$
     \Longrightarrow \qquad P(A \cup B) = P(A) + P(B) - P(A \cap B) \qquad \square
@@ -433,7 +462,13 @@ def _(definition, mo, theorem):
             mo.md(r"""### Equally likely outcomes"""),
             definition(
                 r"""
-    If $S = \{o_1, \dots, o_n\}$ is finite and $P(\{o_i\}) = P(\{o_j\}) \quad \forall\, i, j \in \{1, \dots, n\}$ we say $(S, \mathcal{E}, P)$ has **equally likely outcomes**.
+    If $S = \{o_1, \dots, o_n\}$ is finite and
+
+    $$
+    P(\{o_i\}) = P(\{o_j\}) \qquad \forall\, i, j \in \{1, \dots, n\}
+    $$
+
+    we say $(S, \mathcal{E}, P)$ has **equally likely outcomes**.
     """,
                 "Equally likely outcomes",
             ),
@@ -489,7 +524,11 @@ def _(definition, mo, theorem):
     = 52 \cdot 51 \cdot 50 \cdot 49 \cdot 48 = \frac{52!}{47!} = P^{52}_{5}
     $$
 
-    $P^{52}_5 = \#(\text{orderings of 52 objects taken 5 at a time})$ &nbsp; (orderings: arrangements or permutations)
+    $$
+    P^{52}_5 = \#(\text{orderings of 52 objects taken 5 at a time})
+    $$
+
+    (orderings: arrangements or permutations)
     """
             ),
             theorem(

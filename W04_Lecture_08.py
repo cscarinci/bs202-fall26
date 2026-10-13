@@ -215,7 +215,10 @@ def _(mo):
     - hypergeometric:
 
         $$
-        HG(N, K, n)(x) = \frac{\dbinom{n}{x} \dbinom{N - n}{K - x}}{\dbinom{N}{K}} = \frac{\dbinom{K}{x} \dbinom{N - K}{n - x}}{\dbinom{N}{n}}, \qquad \max(0, n + K - N) \leq x \leq \min(n, K)
+        \begin{gathered}
+        HG(N, K, n)(x) = \frac{\dbinom{n}{x} \dbinom{N - n}{K - x}}{\dbinom{N}{K}} = \frac{\dbinom{K}{x} \dbinom{N - K}{n - x}}{\dbinom{N}{n}}, \\[6pt]
+        \max(0, n + K - N) \leq x \leq \min(n, K)
+        \end{gathered}
         $$
 
     - negative hypergeometric:
