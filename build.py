@@ -11,13 +11,14 @@ from pathlib import Path
 HERE = Path(__file__).parent
 SITE = HERE / "site"
 
-PARTS = [  # (name, first lecture, last lecture); ranges after part II are tentative
+PARTS = [  # (name, first lecture, last lecture); ranges after part III are tentative
     ("I. Probability spaces and counting methods", 1, 3),
-    ("II. Random variables and their distributions", 4, 13),
-    ("III. Joint distributions and independence", 14, 16),
-    ("IV. Random samples and sampling distributions", 17, 19),
-    ("V. Estimation and hypothesis testing", 20, 25),
-    ("VI. Simple linear regression", 26, 28),
+    ("II. Discrete random variables and their distributions", 4, 8),
+    ("III. Continuous random variables and their distributions", 9, 13),
+    ("IV. Joint distributions and independence", 14, 16),
+    ("V. Random samples and sampling distributions", 17, 19),
+    ("VI. Estimation and hypothesis testing", 20, 25),
+    ("VII. Simple linear regression", 26, 28),
 ]
 
 TITLES = {  # lecture number -> title shown on the index
@@ -55,7 +56,7 @@ PAGE = """<!doctype html>
   a {{ color: #1b458f; }}
   .none {{ opacity: .55; font-style: italic; }}
 </style></head><body>
-<div class="title">Introduction to Probability and Mathematical Statistics</div>
+<div class="title">Introduction to Probability<br>and Mathematical Statistics</div>
 <div class="inst">Daegu Gyeongbuk Institute of Science and Technology<br>School of Undergraduate Studies</div>
 <div class="meta"><b>Document</b><span>Lecture notes</span><b>Course</b><span>BS202a</span>
 <b>Lectures</b><span>{count} available</span><b>Instructor</b><span>Professor Scarinci</span></div>

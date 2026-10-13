@@ -40,7 +40,7 @@ def _(mo):
             f"""
     <div class="bs-head">
       <div class="bs-running">BS202 &bull; {running}</div>
-      <div class="bs-title">Introduction to Probability and Mathematical Statistics</div>
+      <div class="bs-title">Introduction to Probability<br>and Mathematical Statistics</div>
       <div class="bs-inst">Daegu Gyeongbuk Institute of Science and Technology<br>School of Undergraduate Studies</div>
       <div class="bs-meta">
         <b>Document</b><span>{document}</span><b>Course</b><span>BS202a</span>
@@ -215,7 +215,7 @@ def _(BLUE, GREY, HALF, arrow, blank, definition, mo, theorem):
         [
             mo.md(
                 r"""
-    ## II.8 &nbsp; Uniform, beta and Gaussian distributions
+    ## III.3 &nbsp; Uniform, beta and Gaussian distributions
 
     ### The uniform distribution
     """
