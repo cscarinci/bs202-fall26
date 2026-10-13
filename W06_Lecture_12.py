@@ -186,7 +186,7 @@ def _(mo):
     - moments and the mgf: &nbsp; $m_X(t) = E[e^{tX}]$, &nbsp; $K_X(t) = \ln(m_X(t))$ (cumulant generating function)
 
         $$
-        \Longrightarrow \quad \begin{cases}
+        \Longrightarrow \qquad \begin{cases}
         E[X^k] = \dfrac{d^k}{dt^k} \Big|_{t=0}\, m_X(t) \\[10pt]
         E[(X - \mu_X)^k] = \dfrac{d^k}{dt^k} \Big|_{t=0}\, K_X(t) \qquad (\text{for } k = 2, 3)
         \end{cases}
@@ -235,12 +235,12 @@ def _(BLUE, GREY, HALF, arrow, blank, definition, mo, theorem):
     $\leadsto$ &nbsp; a bakery is open from 9AM to 9PM; assuming sales are equally likely at any time
 
     $$
-    Y = \text{clock time of a sale} \ (9 = \text{9AM}) \quad \leadsto \quad S_Y = (9, 21)
+    Y = \text{clock time of a sale} \ (9 = \text{9AM}) \qquad \leadsto \qquad S_Y = (9, 21)
     $$
 
     $$
-    \Longrightarrow \quad P(Y \leq y) = \frac{y - 9}{21 - 9} = \frac{y - 9}{12}
-    \qquad \Longrightarrow \quad f_Y(y) = \frac{1}{12}, \quad y \in (9, 21)
+    \Longrightarrow \qquad P(Y \leq y) = \frac{y - 9}{21 - 9} = \frac{y - 9}{12}
+    \qquad \Longrightarrow \qquad f_Y(y) = \frac{1}{12}, \quad y \in (9, 21)
     $$
     """
             ),
@@ -294,7 +294,7 @@ def _(definition, mo):
     $\leadsto$ &nbsp; a bakery sells 10 cakes in one shift; &nbsp; $Y$ = time (in “shifts”) until sale of the 3rd cake &nbsp; (assuming sales are equally likely at any time)
 
     $$
-    \Longrightarrow \quad S_Y = (0, 1), \qquad f_Y(y) = \ ?
+    \Longrightarrow \qquad S_Y = (0, 1), \qquad f_Y(y) = \ ?
     $$
 
     Let $X = \#(\text{cakes sold in } y \text{ shifts})$, &nbsp; $y \in (0, 1)$
@@ -302,12 +302,12 @@ def _(definition, mo):
     (2) $\Longrightarrow$ each sale happens in $(0, y)$ with probability $y$ &nbsp; $\Longrightarrow$ &nbsp; $X \sim \mathrm{Binom}(10, y)$
 
     $$
-    \Longrightarrow \quad P(Y \leq y) = P(X \geq 3) = \sum_{x=3}^{10} \binom{10}{x} y^x (1 - y)^{10-x}
+    \Longrightarrow \qquad P(Y \leq y) = P(X \geq 3) = \sum_{x=3}^{10} \binom{10}{x} y^x (1 - y)^{10-x}
     $$
 
     $$
     \begin{aligned}
-    \Longrightarrow \quad f_Y(y) &= \frac{d}{dy} \left[ \sum_{x=3}^{10} \binom{10}{x} y^x (1 - y)^{10-x} \right] \\[4pt]
+    \Longrightarrow \qquad f_Y(y) &= \frac{d}{dy} \left[ \sum_{x=3}^{10} \binom{10}{x} y^x (1 - y)^{10-x} \right] \\[4pt]
     &= \sum_{x=3}^{10} \underbrace{\binom{10}{x} x}_{10 \binom{9}{x-1}}\, y^{x-1} (1 - y)^{10-x} - \sum_{x=3}^{9} \underbrace{\binom{10}{x} (10 - x)}_{10 \binom{9}{x},\ x \neq 10}\, y^x (1 - y)^{9-x} \\[4pt]
     &= 10 \left[ \sum_{x=3}^{10} \binom{9}{x - 1} y^{x-1} (1 - y)^{10-x} - \sum_{x=3}^{9} \binom{9}{x} y^x (1 - y)^{9-x} \right] \\[4pt]
     &= 10 \left[ \sum_{\tilde{x}=2}^{9} \binom{9}{\tilde{x}} y^{\tilde{x}} (1 - y)^{9-\tilde{x}} - \sum_{x=3}^{9} \binom{9}{x} y^x (1 - y)^{9-x} \right] \\[4pt]
@@ -449,13 +449,13 @@ def _(definition, mo, theorem):
     $Y$ = time (measured in “shifts”) until sales of 1st cake $\sim \mathrm{Beta}(1, 10)$
 
     $$
-    \Longrightarrow \quad f_Y(y) = \frac{10!}{0!\, 9!}\, y^0 (1 - y)^9 = 10 (1 - y)^9
+    \Longrightarrow \qquad f_Y(y) = \frac{10!}{0!\, 9!}\, y^0 (1 - y)^9 = 10 (1 - y)^9
     $$
 
     1 shift $= 12$ hours, so 2 hours $= \tfrac{1}{6}$ shifts:
 
     $$
-    \Longrightarrow \quad P(Y \leq \tfrac{1}{6}) = \int_0^{1/6} 10 (1 - y)^9\, dy = -(1 - y)^{10}\, \Big|_0^{1/6} = 1 - (1 - \tfrac{1}{6})^{10} \approx 0.84
+    \Longrightarrow \qquad P(Y \leq \tfrac{1}{6}) = \int_0^{1/6} 10 (1 - y)^9\, dy = -(1 - y)^{10}\, \Big|_0^{1/6} = 1 - (1 - \tfrac{1}{6})^{10} \approx 0.84
     $$
 
     (with $\tfrac{1}{12}$ in place of $\tfrac{1}{6}$: $\approx 0.58$; &nbsp; with $\tfrac{0.5}{12}$: $\approx 0.35$)
@@ -463,7 +463,7 @@ def _(definition, mo, theorem):
     **Remark.** If $\tilde{Y}$ is the location of the $r$th point out of $n$ in $(a, b)$
 
     $$
-    \Longrightarrow \quad f_{\tilde{Y}}(\tilde{y}) = \frac{1}{b - a}\, \mathrm{Beta}(r, n - r + 1)\!\left( \frac{\tilde{y} - a}{b - a} \right)
+    \Longrightarrow \qquad f_{\tilde{Y}}(\tilde{y}) = \frac{1}{b - a}\, \mathrm{Beta}(r, n - r + 1)\!\left( \frac{\tilde{y} - a}{b - a} \right)
     $$
     """
             ),
@@ -503,12 +503,12 @@ def _(definition, mo, theorem):
     Assuming $n = 2m - 1$, &nbsp; $X$ = location of the $m$th occurrence
 
     $$
-    \Longrightarrow \quad U = \frac{X - (\mu - \ell)}{2\ell} \sim \mathrm{Beta}(m, m)
+    \Longrightarrow \qquad U = \frac{X - (\mu - \ell)}{2\ell} \sim \mathrm{Beta}(m, m)
     $$
 
     $$
     \begin{aligned}
-    \Longrightarrow \quad f_X(x) &= \lim_{m \to \infty} \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\!\left( \frac{1}{2} + \frac{x - \mu}{2\ell} \right) \qquad (\text{with } \ell^2 / n = \sigma^2) \\[6pt]
+    \Longrightarrow \qquad f_X(x) &= \lim_{m \to \infty} \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\!\left( \frac{1}{2} + \frac{x - \mu}{2\ell} \right) \qquad (\text{with } \ell^2 / n = \sigma^2) \\[6pt]
     &= \lim_{m \to \infty} \frac{1}{2\ell}\, \frac{(2m - 1)!}{(m - 1)!\,(m - 1)!} \left( \frac{1}{2} + \frac{x - \mu}{2\ell} \right)^{\!m-1} \left( \frac{1}{2} - \frac{x - \mu}{2\ell} \right)^{\!m-1} \\[6pt]
     &= \lim_{m \to \infty} \underbrace{\frac{1}{2\ell}\, m \binom{2m - 1}{m - 1} \frac{1}{4^{m-1}}}_{\textstyle \longrightarrow\ \frac{1}{\sqrt{2\pi\sigma^2}}}\ \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{\!m-1}}_{\textstyle \longrightarrow\ \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)} \\[6pt]
     &= \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)

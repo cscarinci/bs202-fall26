@@ -532,8 +532,8 @@ def _(BLUE, HALF, ORANGE, RED, blank, definition, mo, np):
 
     $$
     \begin{aligned}
-    \Longrightarrow \quad & P(\{i, j\}) = P(\{i\}) + P(\{j\}) = \tfrac{2}{6} && \forall\, i \neq j \\
-    \Longrightarrow \quad & P(\{i, j, k\}) = \tfrac{3}{6} && \forall\, i \neq j \neq k \\
+    \Longrightarrow \qquad & P(\{i, j\}) = P(\{i\}) + P(\{j\}) = \tfrac{2}{6} && \forall\, i \neq j \\
+    \Longrightarrow \qquad & P(\{i, j, k\}) = \tfrac{3}{6} && \forall\, i \neq j \neq k \\
     & \ \vdots
     \end{aligned}
     $$
@@ -543,7 +543,7 @@ def _(BLUE, HALF, ORANGE, RED, blank, definition, mo, np):
     Not fair die (one example): &nbsp; $P(\{6\}) = 1$, &nbsp; $P(\{i\}) = 0$ for $i \neq 6$
 
     $$
-    \Longrightarrow \quad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases}
+    \Longrightarrow \qquad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases}
     \qquad \Longrightarrow \qquad P(\{\text{even faces}\}) = 1
     $$
 

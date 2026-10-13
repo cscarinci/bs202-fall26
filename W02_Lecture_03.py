@@ -182,7 +182,7 @@ def _(mo):
         $$
 
         $$
-        \Longrightarrow \quad P(\text{at least one}) = 1 - \frac{\ \dfrac{17!}{4!\, 13!}\ }{\dfrac{20!}{4!\, 16!}} = 1 - \frac{17!\, 16!}{20!\, 13!} \approx 50.9\%
+        \Longrightarrow \qquad P(\text{at least one}) = 1 - \frac{\ \dfrac{17!}{4!\, 13!}\ }{\dfrac{20!}{4!\, 16!}} = 1 - \frac{17!\, 16!}{20!\, 13!} \approx 50.9\%
         $$
 
     **In this lecture:** how knowledge about one event changes the probability of another
@@ -304,12 +304,12 @@ def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
     Once we know $B$ has occurred
 
     $$
-    P(A) \ \leadsto \ P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \qquad
-    P(B) \ \leadsto \ P(B \mid B) = \frac{P(B \cap B)}{P(B)} = 1
+    P(A) \qquad \leadsto \qquad P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \qquad
+    P(B) \qquad \leadsto \qquad P(B \mid B) = \frac{P(B \cap B)}{P(B)} = 1
     $$
 
     $$
-    \leadsto \quad P(S \mid B) = \frac{P(S \cap B)}{P(B)} = 1
+    \leadsto \qquad P(S \mid B) = \frac{P(S \cap B)}{P(B)} = 1
     $$
 
     $\leadsto$ &nbsp; for the purpose of calculating $P(A \mid B)$, we think of $B$ as the “new version” of $S$, and of $A \cap B$ as the “new version” of $A$ inside $B$
@@ -375,7 +375,7 @@ def _(definition, mo):
     $$
 
     $$
-    \leadsto \quad P\left(\substack{\text{sum is 8 and} \\ \text{1st is even}}\right) = \underbrace{P\left(\substack{\text{sum is 8 given} \\ \text{1st is even}}\right)}_{\text{2nd stage}}\ \underbrace{P(\text{1st is even})}_{\text{1st stage}} \qquad (\text{stages of the random experiment})
+    \leadsto \qquad P\left(\substack{\text{sum is 8 and} \\ \text{1st is even}}\right) = \underbrace{P\left(\substack{\text{sum is 8 given} \\ \text{1st is even}}\right)}_{\text{2nd stage}}\ \underbrace{P(\text{1st is even})}_{\text{1st stage}} \qquad (\text{stages of the random experiment})
     $$
 
     $\leadsto$ &nbsp; generalizations:
@@ -407,7 +407,7 @@ def _(definition, mo):
     Two events $A, B \subseteq S$ are called **independent** if
 
     $$
-    P(A \mid B) = P(A) \quad \Longleftrightarrow \quad P(A \cap B) = P(A)\, P(B) \quad \Longleftrightarrow \quad P(B \mid A) = P(B)
+    P(A \mid B) = P(A) \qquad \Longleftrightarrow \qquad P(A \cap B) = P(A)\, P(B) \qquad \Longleftrightarrow \qquad P(B \mid A) = P(B)
     $$
 
     (knowledge about $B$ does not influence our belief about $A$; the conditional forms require $P(B) > 0$, $P(A) > 0$)
@@ -456,11 +456,11 @@ def _(definition, mo, theorem):
     **Remark.** independence $\neq$ mutually exclusive!
 
     $$
-    P(A \cap B) = P(A)\, P(B) \quad \not\Longleftrightarrow \quad A \cap B = \emptyset
+    P(A \cap B) = P(A)\, P(B) \qquad \not\Longleftrightarrow \qquad A \cap B = \emptyset
     $$
 
     $$
-    A \cap B = \emptyset \quad \Longrightarrow \quad P(A \cap B) = 0 \quad \Longrightarrow \quad \text{not independent if } P(A) \neq 0 \text{ and } P(B) \neq 0
+    A \cap B = \emptyset \qquad \Longrightarrow \qquad P(A \cap B) = 0 \qquad \Longrightarrow \qquad \text{not independent if } P(A) \neq 0 \text{ and } P(B) \neq 0
     $$
     """
             ),
@@ -585,7 +585,7 @@ def _(mo):
     $$
 
     $$
-    \leadsto \quad P(D \mid T) = \ ?
+    \leadsto \qquad P(D \mid T) = \ ?
     $$
 
     $$

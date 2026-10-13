@@ -172,7 +172,7 @@ def _(mo):
 
         $$
         \begin{aligned}
-        \Longrightarrow \quad f_X(x) &= \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\Big( \underbrace{\frac{x - \mu + \ell}{2\ell}}_{\in\, (0, 1) \text{ if } x \,\in\, (\mu - \ell,\, \mu + \ell)} \Big) \\[6pt]
+        \Longrightarrow \qquad f_X(x) &= \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\Big( \underbrace{\frac{x - \mu + \ell}{2\ell}}_{\in\, (0, 1) \text{ if } x \,\in\, (\mu - \ell,\, \mu + \ell)} \Big) \\[6pt]
         &= \frac{1}{2\ell}\, \frac{(2m - 1)!}{(m - 1)!\,(m - 1)!} \left( \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1} \left( 1 - \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1} \\[6pt]
         &= \underbrace{\frac{1}{2\ell}\, m \binom{2m - 1}{m - 1} \frac{1}{4^{m-1}}}_{\textstyle \longrightarrow\ \frac{1}{\sqrt{2\pi\sigma^2}}}\ \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{\!m-1}}_{\textstyle \longrightarrow\ \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)}
         \end{aligned}
@@ -203,7 +203,7 @@ def _(definition, mo, theorem):
     $$
 
     $$
-    \leadsto \quad m_X(t) = E[e^{tX}] = \exp\!\left( \mu t + \sigma^2 \frac{t^2}{2} \right) \qquad (\text{proved below})
+    \leadsto \qquad m_X(t) = E[e^{tX}] = \exp\!\left( \mu t + \sigma^2 \frac{t^2}{2} \right) \qquad (\text{proved below})
     $$
     """,
                 "Moments of the normal distribution",
@@ -211,11 +211,11 @@ def _(definition, mo, theorem):
             definition(
                 r"""
     $$
-    Z \sim \mathcal{N}(0, 1) \quad \Longrightarrow \quad f_Z(z) = \frac{1}{\sqrt{2\pi}} \exp\!\left( -\frac{z^2}{2} \right)
+    Z \sim \mathcal{N}(0, 1) \qquad \Longrightarrow \qquad f_Z(z) = \frac{1}{\sqrt{2\pi}} \exp\!\left( -\frac{z^2}{2} \right)
     $$
 
     $$
-    \Longrightarrow \quad \underbrace{F_Z(z)}_{P(Z \leq z)} = \int_{-\infty}^{z} \frac{1}{\sqrt{2\pi}} \exp\!\left( -\frac{w^2}{2} \right) dw = \Phi(z) \qquad \text{standard normal cdf}
+    \Longrightarrow \qquad \underbrace{F_Z(z)}_{P(Z \leq z)} = \int_{-\infty}^{z} \frac{1}{\sqrt{2\pi}} \exp\!\left( -\frac{w^2}{2} \right) dw = \Phi(z) \qquad \text{standard normal cdf}
     $$
 
     (no simple formula, but its values are well-known)
@@ -311,18 +311,18 @@ def _(mo):
     mo.md(r"""
     $$
     \begin{aligned}
-    \leadsto \quad m_Z(t) = E[e^{tZ}] &= \int_{-\infty}^{\infty} e^{tz} f_Z(z)\, dz = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} e^{tz} e^{-z^2/2}\, dz
+    \leadsto \qquad m_Z(t) = E[e^{tZ}] &= \int_{-\infty}^{\infty} e^{tz} f_Z(z)\, dz = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} e^{tz} e^{-z^2/2}\, dz
     = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} e^{\frac{t^2}{2} - \frac{(z - t)^2}{2}}\, dz \\[6pt]
     &= e^{t^2/2} \int_{-\infty}^{\infty} f_Z(z - t)\, dz = e^{t^2/2}
     \end{aligned}
     $$
 
     $$
-    \leadsto \quad K_Z(t) = \ln(m_Z(t)) = \frac{t^2}{2}
+    \leadsto \qquad K_Z(t) = \ln(m_Z(t)) = \frac{t^2}{2}
     $$
 
     $$
-    \Longrightarrow \quad E[Z] = K_Z'(0) = 0, \qquad \mathrm{Var}(Z) = K_Z''(0) = 1, \qquad \mathrm{Skew}(Z) = \frac{K_Z'''(0)}{\big( K_Z''(0) \big)^{3/2}} = 0
+    \Longrightarrow \qquad E[Z] = K_Z'(0) = 0, \qquad \mathrm{Var}(Z) = K_Z''(0) = 1, \qquad \mathrm{Skew}(Z) = \frac{K_Z'''(0)}{\big( K_Z''(0) \big)^{3/2}} = 0
     $$
     """)
     return
@@ -339,17 +339,17 @@ def _(corollary, mo, theorem):
     $X : S \longrightarrow \mathbb{R}$ random variable with cdf $F_X : \mathbb{R} \longrightarrow \mathbb{R}$, &nbsp; $u : \mathbb{R} \longrightarrow \mathbb{R}$ single variable function
 
     $$
-    \Longrightarrow \quad Y = u(X) = u \circ X : S \longrightarrow \mathbb{R} \quad \text{also random variable}
+    \Longrightarrow \qquad Y = u(X) = u \circ X : S \longrightarrow \mathbb{R} \quad \text{also random variable}
     $$
 
     If $u$ is **strictly increasing function** (in particular invertible!)
 
     $$
-    \Longrightarrow \quad F_Y(y) = P(Y \leq y) = P(u(X) \leq y) = P(X \leq u^{-1}(y)) = F_X(u^{-1}(y))
+    \Longrightarrow \qquad F_Y(y) = P(Y \leq y) = P(u(X) \leq y) = P(X \leq u^{-1}(y)) = F_X(u^{-1}(y))
     $$
 
     $$
-    \Longrightarrow \quad f_Y(y) = \begin{cases}
+    \Longrightarrow \qquad f_Y(y) = \begin{cases}
     F_Y(y) - F_Y(y^-) = F_X(u^{-1}(y)) - F_X(u^{-1}(y^-)) & \text{discrete} \\[8pt]
     \dfrac{d}{dy} F_Y(y) = \dfrac{d}{dy} F_X(u^{-1}(y)) & \text{continuous}
     \end{cases}
@@ -362,7 +362,7 @@ def _(corollary, mo, theorem):
     **Example.** &nbsp; $Y = aX + b$, &nbsp; $a > 0$
 
     $$
-    \Longrightarrow \quad f_Y(y) = \begin{cases}
+    \Longrightarrow \qquad f_Y(y) = \begin{cases}
     f_X\!\left( \dfrac{y - b}{a} \right) & \text{discrete} \\[10pt]
     \dfrac{1}{a}\, f_X\!\left( \dfrac{y - b}{a} \right) & \text{continuous}
     \end{cases}
@@ -374,11 +374,11 @@ def _(corollary, mo, theorem):
     $Y = aX + b$, &nbsp; $\pm a > 0$
 
     $$
-    \Longrightarrow \quad m_Y(t) = E[e^{tY}] = E[e^{t(aX + b)}] = E[e^{taX} e^{tb}] = e^{tb}\, m_X(ta)
+    \Longrightarrow \qquad m_Y(t) = E[e^{tY}] = E[e^{t(aX + b)}] = E[e^{taX} e^{tb}] = e^{tb}\, m_X(ta)
     $$
 
     $$
-    \Longrightarrow \quad E[Y] = a\, E[X] + b, \qquad \mathrm{Var}(Y) = a^2\, \mathrm{Var}(X), \qquad \mathrm{Skew}(Y) = \pm\, \mathrm{Skew}(X)
+    \Longrightarrow \qquad E[Y] = a\, E[X] + b, \qquad \mathrm{Var}(Y) = a^2\, \mathrm{Var}(X), \qquad \mathrm{Skew}(Y) = \pm\, \mathrm{Skew}(X)
     $$
     """,
                 "Linear transformation of a random variable",
@@ -386,7 +386,7 @@ def _(corollary, mo, theorem):
             theorem(
                 r"""
     $$
-    X \sim \mathcal{N}(\mu, \sigma^2) \quad \Longleftrightarrow \quad Z = \frac{X - \mu}{\sigma} \sim \mathcal{N}(0, 1)
+    X \sim \mathcal{N}(\mu, \sigma^2) \qquad \Longleftrightarrow \qquad Z = \frac{X - \mu}{\sigma} \sim \mathcal{N}(0, 1)
     $$
     """,
                 "Standardization",
@@ -421,7 +421,7 @@ def _(corollary, mo, theorem):
     $Z \sim \mathcal{N}(0, 1)$ &nbsp; $\leadsto$ &nbsp; $X = \mu + \sigma Z \sim \mathcal{N}(\mu, \sigma^2)$
 
     $$
-    \Longrightarrow \quad m_X(t) = e^{t\mu}\, m_Z(t\sigma) = e^{t\mu + \frac{t^2}{2} \sigma^2}
+    \Longrightarrow \qquad m_X(t) = e^{t\mu}\, m_Z(t\sigma) = e^{t\mu + \frac{t^2}{2} \sigma^2}
     $$
 
     $$
@@ -447,7 +447,7 @@ def _(corollary, mo, theorem):
     How can the instructor give fairer grades?
 
     $$
-    Y = aX + b \sim \mathcal{N}(75, 15^2) \quad \Longleftrightarrow \quad \begin{cases} 75 = a\, 50 + b \\ 15^2 = a^2\, 20^2 \end{cases} \quad \Longleftrightarrow \quad \begin{cases} a = 3/4 \\ b = 37.5 \end{cases}
+    Y = aX + b \sim \mathcal{N}(75, 15^2) \qquad \Longleftrightarrow \qquad \begin{cases} 75 = a\, 50 + b \\ 15^2 = a^2\, 20^2 \end{cases} \qquad \Longleftrightarrow \qquad \begin{cases} a = 3/4 \\ b = 37.5 \end{cases}
     $$
 
     $\mathcal{N}(50, 20^2)$ &nbsp; (to get same % of As, Bs, Cs, Ds, Fs):
@@ -506,7 +506,7 @@ def _(BLUE, Figure, GREY, HALF, LIGHT, mo, np):
             mo.md(
                 r"""
     $$
-    \text{symmetry} \quad \Longrightarrow \quad \Phi(-z) = 1 - \Phi(z)
+    \text{symmetry} \qquad \Longrightarrow \qquad \Phi(-z) = 1 - \Phi(z)
     $$
     """
             ),
@@ -609,14 +609,14 @@ def _(definition, mo, theorem):
     | $z_p$ | 0 | 0.674 | 0.842 | 1.282 | 1.645 | 1.960 | 2.326 | 2.576 |
 
     $$
-    \Phi(-z) = 1 - \Phi(z) \quad \Longrightarrow \quad -z_p = z_{1-p}
+    \Phi(-z) = 1 - \Phi(z) \qquad \Longrightarrow \qquad -z_p = z_{1-p}
     $$
     """
             ),
             theorem(
                 r"""
     $$
-    X \sim \mathcal{N}(\mu, \sigma^2) \quad \Longrightarrow \quad q_p(X) = \mu + \sigma z_p
+    X \sim \mathcal{N}(\mu, \sigma^2) \qquad \Longrightarrow \qquad q_p(X) = \mu + \sigma z_p
     $$
     """,
                 "Quantiles of the normal distribution",

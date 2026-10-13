@@ -237,7 +237,7 @@ def _(definition, mo):
     $X = \#(\text{recovering patients out of } 10)$ &nbsp; ($n = 10$), &nbsp; $0.3 = P(\text{one patient recovers}) = p$ &nbsp; (one patient out of one)
 
     $$
-    \Longrightarrow \quad f_X(9) = \binom{10}{9} (0.3)^9 (0.7)^{10 - 9} \approx 0.01\%
+    \Longrightarrow \qquad f_X(9) = \binom{10}{9} (0.3)^9 (0.7)^{10 - 9} \approx 0.01\%
     $$
     """
             ),
@@ -346,20 +346,20 @@ def _(definition, mo, theorem):
 
     $$
     \begin{aligned}
-    \leadsto \quad E[X(X - 1)] &= \sum_{x=0}^{n} x (x - 1)\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x} \\[6pt]
+    \leadsto \qquad E[X(X - 1)] &= \sum_{x=0}^{n} x (x - 1)\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x} \\[6pt]
     &= \sum_{x=2}^{n} \frac{n (n - 1) (n - 2)!}{(x - 2)!\,(n - 2 - x + 2)!}\, p^2 p^{x-2} q^{n-x} \\[6pt]
     &= n (n - 1) p^2 \underbrace{\sum_{x-2=0}^{n-2} \frac{(n - 2)!}{(x - 2)!\,(n - 2 - x + 2)!}\, p^{x-2} q^{n-x}}_{(p + q)^{n-2} \,=\, 1}
     \end{aligned}
     $$
 
     $$
-    \Longrightarrow \quad E[X(X - 1)] = n (n - 1) p^2
+    \Longrightarrow \qquad E[X(X - 1)] = n (n - 1) p^2
     \qquad \Longrightarrow \qquad E[X^2] = E[X(X - 1)] + E[X] = n (n - 1) p^2 + np
     $$
 
     $$
     \begin{aligned}
-    \Longrightarrow \quad \mathrm{Var}(X) &= E[X^2] - E[X]^2 = n (n - 1) p^2 + np - (np)^2 \\
+    \Longrightarrow \qquad \mathrm{Var}(X) &= E[X^2] - E[X]^2 = n (n - 1) p^2 + np - (np)^2 \\
     &= -np^2 + np = np (1 - p) = npq \qquad \square
     \end{aligned}
     $$
