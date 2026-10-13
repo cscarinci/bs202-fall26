@@ -15,10 +15,9 @@ PARTS = [  # (name, first lecture, last lecture); ranges after part III are tent
     ("I. Probability spaces and counting methods", 1, 3),
     ("II. Discrete random variables and their distributions", 4, 8),
     ("III. Continuous random variables and their distributions", 9, 13),
-    ("IV. Joint distributions and independence", 14, 16),
-    ("V. Random samples and sampling distributions", 17, 19),
-    ("VI. Estimation and hypothesis testing", 20, 25),
-    ("VII. Simple linear regression", 26, 28),
+    ("IV. Joint distributions and sampling distributions", 14, 19),
+    ("V. Estimation and hypothesis testing", 20, 25),
+    ("VI. Simple linear regression", 26, 28),
 ]
 
 TITLES = {  # lecture number -> title shown on the index
