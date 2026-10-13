@@ -595,11 +595,34 @@ def _(mo):
     mo.md(r"""
     ## Summary
 
-    - pmf of a discrete random variable: $f_X(x) = P(X = x)$, with $f_X \geq 0$, $f_X(x) = 0$ for $x \notin S_X$ and $\sum_{x \in A} f_X(x) = P_X(A)$ &nbsp; $\leadsto$ &nbsp; $f_X$ completely determines $P_X$
-    - cdf: $F_X(x) = P(X \leq x) = \sum_{t \leq x} f_X(t)$, non-decreasing from $0$ to $1$, with jumps $F_X(x) - F_X(x^-) = f_X(x)$
+    - pmf of a discrete random variable: $f_X(x) = P(X = x)$, with
+
+        $$
+        f_X \geq 0, \qquad f_X(x) = 0 \ \text{ for } x \notin S_X \qquad \text{and} \qquad \sum_{x \in A} f_X(x) = P_X(A)
+        $$
+
+        $\leadsto$ &nbsp; $f_X$ completely determines $P_X$
+    - cdf:
+
+        $$
+        F_X(x) = P(X \leq x) = \sum_{t \leq x} f_X(t)
+        $$
+
+        non-decreasing from $0$ to $1$, with jumps $F_X(x) - F_X(x^-) = f_X(x)$
     - expectation of a function of $X$: $E[u(X)] = \sum_{x} u(x)\, f_X(x)$
-    - mean $\mu_X = E[X]$ (“center”), variance $\sigma_X^2 = E[(X - \mu_X)^2]$ (“width”), skewness $\gamma_X = E\big[\big(\tfrac{X - \mu_X}{\sigma_X}\big)^3\big]$ (“symmetry”)
-    - expectation is linear: $E[a\, u(X) + b\, v(X)] = a\, E[u(X)] + b\, E[v(X)]$, $E[c] = c$ &nbsp; $\Longrightarrow$ &nbsp; $\sigma_X^2 = E[X^2] - E[X]^2$
+    - mean $\mu_X = E[X]$ (“center”), variance $\sigma_X^2 = E[(X - \mu_X)^2]$ (“width”), skewness
+
+        $$
+        \gamma_X = E\Big[\Big(\frac{X - \mu_X}{\sigma_X}\Big)^3\Big] \qquad (\text{“symmetry”})
+        $$
+    - expectation is linear:
+
+        $$
+        \begin{gathered}
+        E[a\, u(X) + b\, v(X)] = a\, E[u(X)] + b\, E[v(X)], \qquad E[c] = c \\[4pt]
+        \Longrightarrow \qquad \sigma_X^2 = E[X^2] - E[X]^2
+        \end{gathered}
+        $$
 
     **Next:** binomial and negative binomial models
     """)

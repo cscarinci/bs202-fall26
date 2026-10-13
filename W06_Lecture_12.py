@@ -655,9 +655,30 @@ def _(mo):
     mo.md(r"""
     ## Summary
 
-    - uniform model (a single occurrence along $(a, b)$, all positions equally likely): $\mathrm{Unif}(a, b)(y) = \dfrac{1}{b - a}$ on $(a, b)$, with $E[Y] = \dfrac{a + b}{2}$, $\mathrm{Var}(Y) = \dfrac{(b - a)^2}{12}$, $\mathrm{Skew}(Y) = 0$
-    - beta model (position of the $r$th of $n$ independent uniform occurrences along $(0, 1)$): $\mathrm{Beta}(\alpha, \beta)(y) = \dfrac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, y^{\alpha-1} (1 - y)^{\beta-1}$ with $\alpha = r$, $\beta = n - r + 1$, and $E[Y] = \dfrac{\alpha}{\alpha + \beta}$
-    - Gaussian model (middle occurrence of $n \to \infty$ uniform occurrences along $(\mu - \ell, \mu + \ell)$ with $\ell^2 / n = \sigma^2$): $\mathcal{N}(\mu, \sigma^2)(x) = \dfrac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\dfrac{(x - \mu)^2}{2\sigma^2} \right)$, with $E[X] = \mu$, $\mathrm{Var}(X) = \sigma^2$, $\mathrm{Skew}(X) = 0$
+    - uniform model (a single occurrence along $(a, b)$, all positions equally likely):
+
+        $$
+        \begin{gathered}
+        \mathrm{Unif}(a, b)(y) = \frac{1}{b - a} \ \text{ on } (a, b) \\[4pt]
+        \text{with } \ E[Y] = \frac{a + b}{2}, \qquad \mathrm{Var}(Y) = \frac{(b - a)^2}{12}, \qquad \mathrm{Skew}(Y) = 0
+        \end{gathered}
+        $$
+    - beta model (position of the $r$th of $n$ independent uniform occurrences along $(0, 1)$):
+
+        $$
+        \begin{gathered}
+        \mathrm{Beta}(\alpha, \beta)(y) = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, y^{\alpha-1} (1 - y)^{\beta-1} \\[4pt]
+        \text{with } \ \alpha = r, \ \ \beta = n - r + 1, \qquad \text{and} \qquad E[Y] = \frac{\alpha}{\alpha + \beta}
+        \end{gathered}
+        $$
+    - Gaussian model (middle occurrence of $n \to \infty$ uniform occurrences along $(\mu - \ell, \mu + \ell)$ with $\ell^2 / n = \sigma^2$):
+
+        $$
+        \begin{gathered}
+        \mathcal{N}(\mu, \sigma^2)(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right) \\[4pt]
+        \text{with } \ E[X] = \mu, \qquad \mathrm{Var}(X) = \sigma^2, \qquad \mathrm{Skew}(X) = 0
+        \end{gathered}
+        $$
 
     **Next:** the standard normal distribution; functions of random variables; quantiles
     """)

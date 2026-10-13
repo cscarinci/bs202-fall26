@@ -553,10 +553,29 @@ def _(mo):
     mo.md(r"""
     ## Summary
 
-    - $X$ is a continuous random variable if $S_X$ is uncountable and there is a pdf $f_X$ with $P(a \leq X \leq b) = \int_a^b f_X(x)\, dx = F_X(b) - F_X(a)$ &nbsp; $\Longrightarrow$ &nbsp; $P(X = x) = 0$ for all $x$ (no notion of pmf)
+    - $X$ is a continuous random variable if $S_X$ is uncountable and there is a pdf $f_X$ with
+
+        $$
+        \begin{gathered}
+        P(a \leq X \leq b) = \int_a^b f_X(x)\, dx = F_X(b) - F_X(a) \\[4pt]
+        \Longrightarrow \qquad P(X = x) = 0 \ \text{ for all } x
+        \end{gathered}
+        $$
+
+        (no notion of pmf)
     - $f_X(x) = \frac{d}{dx} F_X(x)$ and $F_X(x) = \int_{-\infty}^{x} f_X(u)\, du$, with $f_X \geq 0$ and $\int_{-\infty}^{+\infty} f_X(x)\, dx = 1$
-    - $P(X \geq r) = P(Y \leq t)$ for $X$ Poisson and $Y$ the length until $r$ occurrences &nbsp; $\Longrightarrow$ &nbsp; gamma distribution: $f_Y(y) = \frac{\lambda^r y^{r-1}}{(r - 1)!}\, e^{-\lambda y}$ for $y \in (0, +\infty)$
-    - $\mathrm{Gamma}(1, \lambda) = \mathrm{Exp}(\lambda)$, the exponential distribution, has no memory: $P(Y \leq s + t \mid Y > s) = P(Y \leq t)$; so does $NB(1, p) = \mathrm{Geom}(p)$, the geometric distribution
+    - $P(X \geq r) = P(Y \leq t)$ for $X$ Poisson and $Y$ the length until $r$ occurrences
+
+        $$
+        \Longrightarrow \qquad \text{gamma distribution: } \ f_Y(y) = \frac{\lambda^r y^{r-1}}{(r - 1)!}\, e^{-\lambda y} \quad \text{for } y \in (0, +\infty)
+        $$
+    - $\mathrm{Gamma}(1, \lambda) = \mathrm{Exp}(\lambda)$, the exponential distribution, has no memory:
+
+        $$
+        P(Y \leq s + t \mid Y > s) = P(Y \leq t)
+        $$
+
+        so does $NB(1, p) = \mathrm{Geom}(p)$, the geometric distribution
 
     **Next:** Guided Practice 1; then expectations for continuous random variables and moment generating functions
     """)

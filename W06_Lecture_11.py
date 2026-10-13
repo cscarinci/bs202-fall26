@@ -620,11 +620,33 @@ def _(mo):
     mo.md(r"""
     ## Summary
 
-    - for a continuous random variable, $E[u(X)] = \int_{-\infty}^{\infty} u(x)\, f_X(x)\, dx$; it is linear, and $E[c] = c$
-    - mean $\mu_X = E[X]$, variance $\sigma_X^2 = E[(X - \mu_X)^2]$, skewness $\gamma_X = E\big[\big((X - \mu_X)/\sigma_X\big)^3\big]$; $k$th moment $E[X^k]$ and $k$th central moment $E[(X - \mu_X)^k]$
-    - $X \sim \mathrm{Gamma}(r, \lambda)$: &nbsp; $E[X] = r/\lambda$, $\mathrm{Var}(X) = r/\lambda^2$, $\mathrm{Skew}(X) = 2/\sqrt{r}$ &nbsp; (using $\Gamma(r) = (r - 1)!$)
+    - for a continuous random variable,
+
+        $$
+        E[u(X)] = \int_{-\infty}^{\infty} u(x)\, f_X(x)\, dx
+        $$
+
+        it is linear, and $E[c] = c$
+    - mean $\mu_X = E[X]$, variance $\sigma_X^2 = E[(X - \mu_X)^2]$, skewness
+
+        $$
+        \gamma_X = E\Big[\Big(\frac{X - \mu_X}{\sigma_X}\Big)^3\Big]
+        $$
+
+        $k$th moment $E[X^k]$ and $k$th central moment $E[(X - \mu_X)^k]$
+    - $X \sim \mathrm{Gamma}(r, \lambda)$:
+
+        $$
+        E[X] = \frac{r}{\lambda}, \qquad \mathrm{Var}(X) = \frac{r}{\lambda^2}, \qquad \mathrm{Skew}(X) = \frac{2}{\sqrt{r}}
+        $$
+
+        (using $\Gamma(r) = (r - 1)!$)
     - moment generating function $m_X(t) = E[e^{tX}]$: &nbsp; $E[X^k] = m_X^{(k)}(0)$
-    - $K_X(t) = \ln(m_X(t))$: &nbsp; $K_X'(0) = \mu_X$, $K_X''(0) = \sigma_X^2$, $K_X'''(0) = E[(X - \mu_X)^3]$
+    - $K_X(t) = \ln(m_X(t))$:
+
+        $$
+        K_X'(0) = \mu_X, \qquad K_X''(0) = \sigma_X^2, \qquad K_X'''(0) = E[(X - \mu_X)^3]
+        $$
 
     **Next:** uniform, beta and Gaussian distributions
     """)

@@ -694,10 +694,32 @@ def _(mo):
     mo.md(r"""
     ## Summary
 
-    - conditional probability $P(A \mid B) = \dfrac{P(A \cap B)}{P(B)}$ (for $P(B) > 0$): $B$ is the “new version” of $S$, and $P(\,\cdot \mid B)$ is again a probability measure; in general $P(A \mid B) \neq P(B \mid A)$
-    - multiplication by stages: $P(A \cap B) = P(A \mid B)\, P(B)$, and $P(A \cap B \cap C) = P(A \mid B \cap C)\, P(B \mid C)\, P(C)$
+    - conditional probability
+
+        $$
+        P(A \mid B) = \frac{P(A \cap B)}{P(B)} \qquad (\text{for } P(B) > 0)
+        $$
+
+        $B$ is the “new version” of $S$, and $P(\,\cdot \mid B)$ is again a probability measure; in general $P(A \mid B) \neq P(B \mid A)$
+    - multiplication by stages:
+
+        $$
+        P(A \cap B) = P(A \mid B)\, P(B) \qquad \text{and} \qquad P(A \cap B \cap C) = P(A \mid B \cap C)\, P(B \mid C)\, P(C)
+        $$
     - $A, B$ independent if $P(A \cap B) = P(A)\, P(B)$ (not the same as mutually exclusive!); pairwise independence does not imply mutual independence
-    - for a partition $\{B_1, \dots, B_k\}$ of $S$: law of total probability $P(A) = \sum_{i} P(A \mid B_i)\, P(B_i)$ and Bayes' rule $P(B_j \mid A) = \dfrac{P(A \mid B_j)\, P(B_j)}{\sum_{i} P(A \mid B_i)\, P(B_i)}$ (posterior from prior and likelihood)
+    - for a partition $\{B_1, \dots, B_k\}$ of $S$: law of total probability
+
+        $$
+        P(A) = \sum_{i} P(A \mid B_i)\, P(B_i)
+        $$
+
+        and Bayes' rule
+
+        $$
+        P(B_j \mid A) = \frac{P(A \mid B_j)\, P(B_j)}{\sum_{i} P(A \mid B_i)\, P(B_i)}
+        $$
+
+        (posterior from prior and likelihood)
 
     **Next:** random variables
     """)
