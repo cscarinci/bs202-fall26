@@ -316,7 +316,7 @@ def _(mo):
     }
     # The pair shown in the two panels; a law sets both sides, the left/right dropdowns set one each
     get_venn, set_venn = mo.state(_laws["distributivity (∩ over ∪)"])
-    venn_law = mo.ui.dropdown(_laws, label="law", on_change=lambda pair: pair and set_venn(pair))
+    venn_law = mo.ui.dropdown(_laws, value="distributivity (∩ over ∪)", label="law", on_change=lambda pair: pair and set_venn(pair))
     return get_venn, set_venn, venn_law, venn_options
 
 

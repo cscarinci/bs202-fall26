@@ -600,10 +600,14 @@ def _(BLUE, FULL, Figure, GREEN, LIGHT, math, mg_a, mg_b, mg_dist, mo, np, table
         ]
         _t = np.linspace(-1, _tmax, 300)
         _left.plot(_t, np.exp(_K(_t)), color=BLUE, lw=1.4)
+        _left.plot(0, 1, "o", color="black", ms=4, zorder=4)
+        # m_X grows very fast for t > 0: the frame stops at 5, so that m_X(0) = 1 and the slope at 0 stay visible
+        _left.set_ylim(0, min(1.05 * float(np.exp(_K(_t)).max()), 5))
         _right.plot(_t, _mu * _t, color=GREEN, lw=1.4)
         _right.plot(_t, _K(_t), color=BLUE, lw=1.4)
         _right.plot(0, 0, "o", color="black", ms=4, zorder=4)
-        _right.annotate(r"$t\, K_X'(0)$", (1, 0), xycoords="axes fraction", textcoords="offset points", xytext=(-4, 4), color=GREEN, fontsize=12, ha="right", va="bottom", bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
+        # K_X is convex, so the tangent lies below the curve: the label goes just below the tangent, at t = -1/2
+        _right.annotate(r"$t\, K_X'(0)$", (-0.5, -0.5 * _mu), textcoords="offset points", xytext=(4, -6), color=GREEN, fontsize=12, ha="left", va="top", bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
 
     mo.vstack(
         [
