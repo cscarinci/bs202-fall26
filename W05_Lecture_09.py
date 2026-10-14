@@ -179,6 +179,8 @@ def _(mo):
         $$
 
     **In this lecture:** random variables with continuous state spaces
+
+    **References:** WMS 4.1, 4.2, 4.6
     """)
     return
 

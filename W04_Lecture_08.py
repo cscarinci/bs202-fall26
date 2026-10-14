@@ -228,6 +228,8 @@ def _(mo):
         $$
 
     **In this lecture:** Poisson and gamma models
+
+    **References:** WMS 3.8
     """)
     return
 

@@ -186,6 +186,8 @@ def _(mo):
         $$
 
     **In this lecture:** how knowledge about one event changes the probability of another
+
+    **References:** WMS 2.7–2.10
     """)
     return
 
@@ -277,7 +279,7 @@ def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
         [
             mo.md(
                 r"""
-    ## I.3 &nbsp; Conditioning, independence, and Bayes' rule (WMS 2.7–2.10)
+    ## I.3 &nbsp; Conditioning, independence, and Bayes' rule
 
     ### Conditional probability
 

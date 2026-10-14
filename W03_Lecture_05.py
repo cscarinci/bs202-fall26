@@ -163,13 +163,15 @@ def _(mo):
     mo.md(r"""
     ## Last time
 
-    - random variables on probability spaces = measurements on random experiments (WMS 3.1, 3.2)
+    - random variables on probability spaces = measurements on random experiments
     - $(S, \mathcal{E}, P)$ probability space, random variable = function on the sample space $S$: &nbsp; $X : S \longrightarrow \mathbb{R}$
     - $\leadsto$ &nbsp; $S_X$ = state space $= \mathrm{Im}\, X \subseteq \mathbb{R}$
     - $\leadsto$ &nbsp; $\mathcal{E}_X$ = algebra of subsets of $\mathbb{R}$
     - $\leadsto$ &nbsp; $P_X$ = probability distribution $P_X : \mathcal{E}_X \longrightarrow \mathbb{R}$, &nbsp; $P_X(A) = P(X \in A)$ &nbsp; (probability that the measurement of $X$ is valued in $A$)
 
     **In this lecture:** discrete random variables: pmf, cdf and expectation
+
+    **References:** WMS 3.1–3.3
     """)
     return
 
@@ -236,7 +238,7 @@ def _(BLUE, FULL, Figure, GREEN, HALF, arrow, definition, mo, stems, steps):
                 r"""
     ## II.2 &nbsp; Discrete random variables: pmf, cdf, expectation
 
-    ### pmf and cdf (WMS 3.1, 3.2)
+    ### pmf and cdf
     """
             ),
             definition(
@@ -339,7 +341,7 @@ def _(definition, mo):
         [
             mo.md(
                 r"""
-    ### Expectation (WMS 3.3)
+    ### Expectation
 
     $\leadsto$ &nbsp; pmf of a discrete random variable $X : S \longrightarrow \mathbb{R}$ gives the relative frequency of a result $x$ over infinitely many independent measurements
 

@@ -179,6 +179,8 @@ def _(mo):
         $$
 
     **In this lecture:** the standard normal distribution; functions of random variables; quantiles
+
+    **References:** WMS 4.2, 4.5, 6.3–6.5
     """)
     return
 

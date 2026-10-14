@@ -280,7 +280,9 @@ def _(definition, dice, mo):
         [
             mo.md(
                 r"""
-    ## I.1 &nbsp; Probability Basics (WMS 2.1–2.4)
+    ## I.1 &nbsp; Probability Basics
+
+    **References:** WMS 2.1–2.4
 
     $\leadsto$ &nbsp; mathematical language used to describe unpredictable phenomena
     """

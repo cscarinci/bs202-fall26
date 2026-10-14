@@ -232,6 +232,8 @@ def _(BLUE, HALF, LIGHT, blank, mo):
     - law of total probability: &nbsp; $P(A) = \displaystyle\sum_{i=1}^{k} P(A \mid B_i)\, P(B_i)$
 
     **In this lecture:** random variables and their probability distributions: pmf and cdf
+
+    **References:** WMS 2.11, 3.1, 3.2, 4.2
     """
             ),
         ]

@@ -169,6 +169,8 @@ def _(mo):
     - **Remark.** For continuous random variables &nbsp; $f_X(x) \neq \underbrace{P(X = x)}_{=\, 0 \ \forall x}$
 
     **In this lecture:** expectations for continuous random variables; moment generating functions
+
+    **References:** WMS 3.9, 4.3, 4.9
     """)
     return
 
