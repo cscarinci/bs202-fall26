@@ -168,7 +168,9 @@ def _(mo):
     - probability distributions &nbsp; $f_X : \mathbb{R} \longrightarrow \mathbb{R}$, &nbsp; $x \longmapsto P(X = x)$
     - expectation &nbsp; $E[u(X)] = \displaystyle\sum_{x \in S_X} u(x)\, f_X(x)$
 
-    **In this lecture:** probabilistic models (specific pmfs) &nbsp; $\leadsto$ &nbsp; binomial and negative binomial &nbsp; (WMS 3.4, 3.6)
+    **In this lecture:** probabilistic models (specific pmfs) &nbsp; $\leadsto$ &nbsp; binomial and negative binomial
+
+    **References:** WMS 3.4, 3.6
     """)
     return
 

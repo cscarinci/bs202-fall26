@@ -193,6 +193,8 @@ def _(mo):
         $$
 
     **In this lecture:** families of continuous random variables &nbsp; $\leadsto$ &nbsp; uniform, beta, Gaussian
+
+    **References:** WMS 4.4, 4.5, 4.7
     """)
     return
 

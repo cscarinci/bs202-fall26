@@ -216,6 +216,8 @@ def _(mo):
         different probability measure on $(S, \mathcal{E})$ &nbsp; $\leadsto$ &nbsp; different mathematical model for the “dice experiment”
 
     **In this lecture:** properties of probability (axioms + algebra of events) and counting methods
+
+    **References:** WMS 2.5, 2.6, 2.8
     """)
     return
 
@@ -486,7 +488,7 @@ def _(definition, mo, theorem):
                 r"""
     $\leadsto$ &nbsp; probability becomes a counting problem!
 
-    ### Counting methods (WMS 2.6)
+    ### Counting methods
     """
             ),
             theorem(
