@@ -233,7 +233,7 @@ def _(BLUE, HALF, LIGHT, blank, mo):
 
     **In this lecture:** random variables and their probability distributions: pmf and cdf
 
-    **References:** WMS 2.11, 3.1, 3.2, 4.2
+    **References:** WMS 2.11, 3.1–3.2, 4.2
     """
             ),
         ]
