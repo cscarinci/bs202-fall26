@@ -127,9 +127,9 @@ def _(mo):
         if not s:
             return ""
         try:
-            return "✅" if abs(float(s) - answer) < 1e-6 else "❌ try again"
+            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
         except ValueError:
-            return "⚠️ enter a number"
+            return "enter a number"
 
     return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
@@ -214,26 +214,15 @@ def _(corollary, definition, mo):
     A random variable $X : S \longrightarrow \mathbb{R}$ is **continuous** if
 
     - $S_X$ is uncountable
-    - there exists $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ integrable (pdf: probability density function) such that
+    - there exists $F_X : \mathbb{R} \longrightarrow \mathbb{R}$ continuous (cdf) such that
 
         $$
-        P(a \leq X \leq b) = \int_a^b f_X(x)\, dx
+        P(X \leq x) = F_X(x)
         $$
 
         (does not follow from the assumption on $S_X$ only!)
     """,
-                "Continuous random variable",
-            ),
-            mo.md(
-                r"""
-    $\Longrightarrow$ &nbsp; the cdf of $X$ is continuous
-
-    $$
-    F_X(x) = P(X \leq x) = \int_{-\infty}^{x} f_X(u)\, du
-    $$
-
-    (a continuous cdf alone does not guarantee a pdf)
-    """
+                "Continuous random variable, via the cdf",
             ),
             corollary(
                 r"""
@@ -244,6 +233,19 @@ def _(corollary, definition, mo):
     $$
     """,
                 "Single values have probability zero",
+            ),
+            definition(
+                r"""
+    A random variable $X : S \longrightarrow \mathbb{R}$ is **continuous** if
+
+    - $S_X$ is uncountable
+    - there exists $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ integrable (pdf: probability density function) such that
+
+        $$
+        P(a \leq X \leq b) = \int_a^b f_X(x)\, dx = F_X(b) - F_X(a)
+        $$
+    """,
+                "Continuous random variable, via the pdf",
             ),
             mo.md(
                 r"""
@@ -583,8 +585,6 @@ def _(mo):
         $$
 
         so does $NB(1, p) = \mathrm{Geom}(p)$, the geometric distribution
-
-    **Next:** Guided Practice 1; then expectations for continuous random variables and moment generating functions
     """)
     return
 

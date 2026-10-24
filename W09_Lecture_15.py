@@ -127,9 +127,9 @@ def _(mo):
         if not s:
             return ""
         try:
-            return "✅" if abs(float(s) - answer) < 1e-6 else "❌ try again"
+            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
         except ValueError:
-            return "⚠️ enter a number"
+            return "enter a number"
 
     return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
@@ -167,9 +167,9 @@ def _(mo):
         if raw:
             try:
                 value = float(raw.rstrip("%").replace(",", ".")) / (100 if raw.endswith("%") else 1)
-                mark = "✅" if abs(value - answer) <= tol else "❌ try again"
+                mark = "correct" if abs(value - answer) <= tol else "try again"
             except ValueError:
-                mark = "⚠️ enter a number"
+                mark = "enter a number"
         return mo.hstack([mo.md(label), field, mo.md(mark)], justify="start", align="center")
 
     def box():

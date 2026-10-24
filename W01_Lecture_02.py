@@ -127,9 +127,9 @@ def _(mo):
         if not s:
             return ""
         try:
-            return "✅" if abs(float(s) - answer) < 1e-6 else "❌ try again"
+            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
         except ValueError:
-            return "⚠️ enter a number"
+            return "enter a number"
 
     return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
@@ -278,9 +278,11 @@ def _(Arc, BLUE, HALF, RED, blank, mo, theorem, venn_row):
                 r"""
     Given $A, B \in \mathcal{E}$
 
-    1. $P(A^c) = 1 - P(A)$
-    2. $P(\emptyset) = 0$
-    3. if $A \subseteq B$ then $P(A) \leq P(B)$
+    (i) &nbsp; $P(A^c) = 1 - P(A)$
+
+    (ii) &nbsp; $P(\emptyset) = 0$
+
+    (iii) &nbsp; if $A \subseteq B$ then $P(A) \leq P(B)$
     """,
                 "Basic properties",
             ),
@@ -499,7 +501,7 @@ def _(definition, mo, theorem):
             ),
             mo.md(
                 r"""
-    **Proof.** Think of elements $a_i$ as labels of rows and elements $b_j$ as labels of columns of a matrix &nbsp; $\Longrightarrow$ &nbsp; $(a_i, b_j)$ labels its entries &nbsp; (not a proof… just verification) $\square$
+    **Proof.** Think of elements $a_i$ as labels of rows and elements $b_j$ as labels of columns of a matrix &nbsp; $\Longrightarrow$ &nbsp; $(a_i, b_j)$ labels its entries &nbsp; (not a proof… just verification)
 
     **Example** (Flipping a coin and rolling a die).
 
@@ -748,8 +750,8 @@ def _(mo, w1, w2, w3, w4):
         try:
             v = float(s) / (100 if field.value.strip().endswith("%") else 1)
         except ValueError:
-            return "⚠️ enter a number"
-        return "✅" if abs(v - answer) <= tol else "❌ try again"
+            return "enter a number"
+        return "correct" if abs(v - answer) <= tol else "try again"
 
     def _ask(label, field, answer, tol):
         return mo.hstack([mo.md(label), field, mo.md(_mark(field, answer, tol))], justify="start", align="center")
@@ -811,8 +813,6 @@ def _(mo):
         $$
 
         $n^r$ arrangements and $\binom{n + r - 1}{r}$ combinations with replacement
-
-    **Next:** conditioning, independence, and Bayes' rule
     """)
     return
 

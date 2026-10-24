@@ -127,9 +127,9 @@ def _(mo):
         if not s:
             return ""
         try:
-            return "✅" if abs(float(s) - answer) < 1e-6 else "❌ try again"
+            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
         except ValueError:
-            return "⚠️ enter a number"
+            return "enter a number"
 
     return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
@@ -167,9 +167,9 @@ def _(mo):
         if raw:
             try:
                 value = float(raw.rstrip("%").replace(",", ".")) / (100 if raw.endswith("%") else 1)
-                mark = "✅" if abs(value - answer) <= tol else "❌ try again"
+                mark = "correct" if abs(value - answer) <= tol else "try again"
             except ValueError:
-                mark = "⚠️ enter a number"
+                mark = "enter a number"
         return mo.hstack([mo.md(label), field, mo.md(mark)], justify="start", align="center")
 
     def box():
@@ -237,7 +237,7 @@ def _(BLUE, GREY, HALF, arrow, blank, definition, mo, theorem):
     $\leadsto$ &nbsp; a bakery is open from 9AM to 9PM; assuming sales are equally likely at any time
 
     $$
-    Y = \text{clock time of a sale} \ (9 = \text{9AM}) \qquad \leadsto \qquad S_Y = (9, 21)
+    Y = \text{time until sale} \qquad \leadsto \qquad S_Y = (9, 21)
     $$
 
     $$
@@ -325,7 +325,7 @@ def _(definition, mo):
     A random variable $Y$ has a **beta distribution** with parameters $\alpha$ and $\beta$ if its pdf is
 
     $$
-    \underbrace{f_Y(y)}_{\mathrm{Beta}(\alpha, \beta)(y)} = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, y^{\alpha-1} (1 - y)^{\beta-1}, \qquad y \in (0, 1) \qquad (\alpha, \beta \text{ positive integers})
+    \underbrace{f_Y(y)}_{\mathrm{Beta}(\alpha, \beta)(y)} = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, y^{\alpha-1} (1 - y)^{\beta-1}, \qquad y \in (0, 1) \qquad (\alpha, \beta \in \mathbb{Z}_{>0})
     $$
 
     ($\alpha = r$: counting from start; &nbsp; $\beta = n - r + 1$: counting from end)
@@ -681,8 +681,6 @@ def _(mo):
         \text{with } \ E[X] = \mu, \qquad \mathrm{Var}(X) = \sigma^2, \qquad \mathrm{Skew}(X) = 0
         \end{gathered}
         $$
-
-    **Next:** the standard normal distribution; functions of random variables; quantiles
     """)
     return
 

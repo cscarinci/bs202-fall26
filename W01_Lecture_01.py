@@ -127,9 +127,9 @@ def _(mo):
         if not s:
             return ""
         try:
-            return "✅" if abs(float(s) - answer) < 1e-6 else "❌ try again"
+            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
         except ValueError:
-            return "⚠️ enter a number"
+            return "enter a number"
 
     return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
@@ -461,10 +461,10 @@ def _(BLUE, HALF, LIGHT, RED, arrow, blank, die, face, math, mo, np, table, tota
             mo.hstack([total, face], justify="start", gap=2, wrap=True),
             table(
                 [
-                    (rf"$\lvert A \rvert$ &nbsp; ($A$ = faces add to ${_t}$)", rf"$\textcolor{{{BLUE}}}{{{len(_inA)}}}$"),
-                    (rf"$\lvert B \rvert$ &nbsp; ($B$ = at least one face is ${_k}$)", rf"$\textcolor{{{RED}}}{{11}}$"),
+                    (rf"$\# A$ &nbsp; ($A$ = faces add to ${_t}$)", rf"$\textcolor{{{BLUE}}}{{{len(_inA)}}}$"),
+                    (rf"$\# B$ &nbsp; ($B$ = at least one face is ${_k}$)", rf"$\textcolor{{{RED}}}{{11}}$"),
                     (r"$A \cap B$", rf"$\{{\,$ {_pairs} $\,\}}$" if _both else r"$\emptyset$"),
-                    (r"$\lvert A \cap B \rvert$", rf"${len(_both)}$"),
+                    (r"$\# (A \cap B)$", rf"${len(_both)}$"),
                 ]
             ),
             _fig,
@@ -566,7 +566,7 @@ def _(BLUE, HALF, ORANGE, RED, blank, definition, mo, np):
 @app.cell(hide_code=True)
 def _(mo):
     die_preset = mo.ui.dropdown(
-        {"fair": (1, 1, 1, 1, 1, 1), "loaded (always 6)": (0, 0, 0, 0, 0, 1), "loaded (even faces)": (1, 3, 1, 3, 1, 3)},
+        {"fair": (1, 1, 1, 1, 1, 1), "not fair": (0, 0, 0, 0, 0, 1)},
         value="fair",
         label="preset",
     )
@@ -687,8 +687,6 @@ def _(mo):
 
         for pairwise disjoint events
     - a **probability space** is a triple $(S, \mathcal{E}, P)$; there can be many distinct probability measures on the same sample space / event space (fair and not fair die)
-
-    **Next:** properties of probability; counting methods
     """)
     return
 

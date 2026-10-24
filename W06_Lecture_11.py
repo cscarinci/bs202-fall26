@@ -127,9 +127,9 @@ def _(mo):
         if not s:
             return ""
         try:
-            return "✅" if abs(float(s) - answer) < 1e-6 else "❌ try again"
+            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
         except ValueError:
-            return "⚠️ enter a number"
+            return "enter a number"
 
     return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
@@ -265,7 +265,7 @@ def _(BLUE, FULL, Figure, math, mo, np, theorem):
     E[X] = \frac{r}{\lambda}, \qquad \mathrm{Var}(X) = \frac{r}{\lambda^2}, \qquad \mathrm{Skew}(X) = \frac{2}{\sqrt{r}}
     $$
     """,
-                "Moments of the Gamma distribution",
+                "Mean, variance and skewness of the Gamma distribution",
             ),
             mo.md(
                 r"""
@@ -397,7 +397,7 @@ def _(definition, mo, theorem):
     m_X(t) = E[e^{tX}] \qquad (\text{expectation of exponential of } t \text{ times } X)
     $$
 
-    (defined for the $t$ where this expectation is finite; for the moment formulas below we need this on an open interval around $t = 0$)
+    (finite for $t$ near $0$)
     """,
                 "Moment generating function",
             ),
@@ -653,8 +653,6 @@ def _(mo):
         $$
         K_X'(0) = \mu_X, \qquad K_X''(0) = \sigma_X^2, \qquad K_X'''(0) = E[(X - \mu_X)^3]
         $$
-
-    **Next:** uniform, beta and Gaussian distributions
     """)
     return
 

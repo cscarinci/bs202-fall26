@@ -127,9 +127,9 @@ def _(mo):
         if not s:
             return ""
         try:
-            return "✅" if abs(float(s) - answer) < 1e-6 else "❌ try again"
+            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
         except ValueError:
-            return "⚠️ enter a number"
+            return "enter a number"
 
     return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
@@ -589,8 +589,6 @@ def _(mo):
         $$
 
         for $p = \tfrac{K}{N}$; &nbsp; $E[Y] = r\, \tfrac{N + 1}{K + 1}$
-
-    **Next:** Poisson models
     """)
     return
 

@@ -127,9 +127,9 @@ def _(mo):
         if not s:
             return ""
         try:
-            return "✅" if abs(float(s) - answer) < 1e-6 else "❌ try again"
+            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
         except ValueError:
-            return "⚠️ enter a number"
+            return "enter a number"
 
     return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
@@ -165,14 +165,14 @@ def _(mo):
 
     - probability spaces with equally likely outcomes: &nbsp; $P(A) = \dfrac{\# A}{\# S}$ &nbsp; $\leadsto$ &nbsp; calculating probability reduces to counting
     - basic counting rules ($n$ objects, $r$ positions):
-    - **ordered** without repetitions: &nbsp; $P^n_r = \dfrac{n!}{(n - r)!}$ &nbsp; (ranking of a competition)
-    - **unordered** without repetitions: &nbsp; $C^n_r = \dfrac{n!}{r!\,(n - r)!}$ &nbsp; (hands of poker)
-    - **ordered** with repetitions: &nbsp; $n^r = n \times n \times \cdots \times n$ &nbsp; (passwords of given length)
-    - **unordered** with repetitions: &nbsp; $C^{n + r - 1}_r = \dfrac{(n + r - 1)!}{r!\,(n - 1)!}$ &nbsp; (ice cream cups)
+        - **ordered** without repetitions: &nbsp; $P^n_r = \dfrac{n!}{(n - r)!}$ &nbsp; (ranking of a competition)
+        - **unordered** without repetitions: &nbsp; $C^n_r = \dfrac{n!}{r!\,(n - r)!}$ &nbsp; (hands of poker)
+        - **ordered** with repetitions: &nbsp; $n^r = n \times n \times \cdots \times n$ &nbsp; (passwords of given length)
+        - **unordered** with repetitions: &nbsp; $C^{n + r - 1}_r = \dfrac{(n + r - 1)!}{r!\,(n - 1)!}$ &nbsp; (ice cream cups)
 
-        $$
-        \text{e.g.} \quad \#\left(\substack{\text{cups of 4 scoops} \\ \text{from 6 flavours}}\right) = C^{6 + 4 - 1}_4 = C^9_4 = \frac{9!}{4!\, 5!} = 126
-        $$
+            $$
+            \text{e.g.} \quad \#\left(\substack{\text{cups of 4 scoops} \\ \text{from 6 flavours}}\right) = C^{6 + 4 - 1}_4 = C^9_4 = \frac{9!}{4!\, 5!} = 126
+            $$
 
     - **Example** (defective items). 20 items, 3 defective &nbsp; $\leadsto$ &nbsp; pick 4 (samples): &nbsp; $P(\text{at least one is defective}) = \ ?$ &nbsp; (not easy to compute…)
 
@@ -418,7 +418,7 @@ def _(definition, mo):
     P(A \mid B) = P(A) \qquad \Longleftrightarrow \qquad P(A \cap B) = P(A)\, P(B) \qquad \Longleftrightarrow \qquad P(B \mid A) = P(B)
     $$
 
-    (knowledge about $B$ does not influence our belief about $A$; the conditional forms require $P(B) > 0$, $P(A) > 0$)
+    (knowledge about $B$ does not influence our belief about $A$)
     """,
                 "Independent events",
             ),
@@ -567,7 +567,7 @@ def _(BLUE, GREEN, RED, mo, outcome_grid, strip):
     $$
 
     $$
-    \# A \cap B = {len(_A & _B)}, \quad \# B \cap C = {len(_B & _C)}, \quad \# C \cap A = {len(_C & _A)}, \qquad \underbrace{{\# A \cap B \cap C = {len(_A & _B & _C)}}}_{{\text{{odd + odd is even}}}}
+    \# A \cap B = {len(_A & _B)}, \quad \# B \cap C = {len(_B & _C)}, \quad \# C \cap A = {len(_C & _A)}, \qquad \# A \cap B \cap C = {len(_A & _B & _C)}
     $$
 
     $\leadsto$ &nbsp; knowledge about $A$ does not affect our belief in $C$; &nbsp; $B$ does not affect our belief in $C$; &nbsp; knowledge about **$A$ and $B$** affects our belief in $C$!
@@ -643,25 +643,12 @@ def _(BLUE, FULL, Figure, LIGHT, RED, mo, prev, sens, spec, table):
     for _s in ("top", "right", "left"):
         _ax.spines[_s].set_visible(False)
 
-    _N = 1_000_000  # every count below is then a whole number for all slider positions
-
-    def _n(v):
-        return f"{round(v):,}".replace(",", r"\,")
-
-    _nD = _N * _p
-
     mo.vstack(
         [
             mo.hstack([prev, sens, spec], justify="start", gap=2, wrap=True),
             table(
                 [
                     (r"$P(D \mid T) = \dfrac{P(T \mid D)\, P(D)}{P(T \mid D)\, P(D) + P(T \mid D^c)\, P(D^c)}$", rf"$\dfrac{{{_se:g} \times {_p:g}}}{{{_se:g} \times {_p:g} + {1 - _sp:.3g} \times {1 - _p:g}}} \approx {100 * _post:.1f}\%$"),
-                    (r"out of $1\,000\,000$ people: have the disease ($D$)", rf"${_n(_nD)}$"),
-                    (r"&nbsp;&nbsp; of which test positive ($T \cap D$)", rf"$\textcolor{{{BLUE}}}{{{_n(_nD * _se)}}}$"),
-                    (r"do not have the disease ($D^c$)", rf"${_n(_N - _nD)}$"),
-                    (r"&nbsp;&nbsp; of which test positive ($T \cap D^c$)", rf"$\textcolor{{{RED}}}{{{_n((_N - _nD) * (1 - _sp))}}}$"),
-                    (r"test positive in total ($T$)", rf"${_n(_N * (_tp + _fp))}$"),
-                    (r"$P(D \mid T)$ = positives with the disease / all positives", rf"${100 * _post:.1f}\%$"),
                 ]
             ),
             _fig,
@@ -704,7 +691,7 @@ def _(mo):
         $$
 
         $B$ is the “new version” of $S$, and $P(\,\cdot \mid B)$ is again a probability measure; in general $P(A \mid B) \neq P(B \mid A)$
-    - multiplication by stages:
+    - reading $P(A \cap B) = P(A \mid B)\, P(B)$ by stages of the random experiment:
 
         $$
         P(A \cap B) = P(A \mid B)\, P(B) \qquad \text{and} \qquad P(A \cap B \cap C) = P(A \mid B \cap C)\, P(B \mid C)\, P(C)
@@ -722,9 +709,7 @@ def _(mo):
         P(B_j \mid A) = \frac{P(A \mid B_j)\, P(B_j)}{\sum_{i} P(A \mid B_i)\, P(B_i)}
         $$
 
-        (posterior from prior and likelihood)
-
-    **Next:** random variables
+        ($P(B_i)$ = prior, $P(B_i \mid A)$ = posterior, $P(A \mid B_i)$ = likelihood)
     """)
     return
 

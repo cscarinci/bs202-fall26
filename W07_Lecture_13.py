@@ -127,9 +127,9 @@ def _(mo):
         if not s:
             return ""
         try:
-            return "✅" if abs(float(s) - answer) < 1e-6 else "❌ try again"
+            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
         except ValueError:
-            return "⚠️ enter a number"
+            return "enter a number"
 
     return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
@@ -168,15 +168,16 @@ def _(mo):
     - $\mathrm{Unif}(a, b)$, pdf $\dfrac{1}{b - a}$ &nbsp; $\leadsto$ &nbsp; measures position of occurrence in $(a, b)$, assuming probability $P((c, d)) = \dfrac{d - c}{b - a}$ for $(c, d) \subset (a, b)$
     - $\mathrm{Beta}(\alpha, \beta)$, pdf $\dfrac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, x^{\alpha-1} (1 - x)^{\beta-1}$ &nbsp; $\leadsto$ &nbsp; measures position of the $\alpha$th occurrence in $(0, 1)$, out of $\alpha + \beta - 1$ uniform and independent total occurrences
     - $\mathcal{N}(\mu, \sigma^2)$, pdf $\dfrac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\dfrac{(x - \mu)^2}{2\sigma^2} \right)$ &nbsp; $\leadsto$ &nbsp; measures position of middle occurrence in $(\mu - \ell, \mu + \ell)$, out of $n$ uniform and independent total occurrences, where $\ell \to +\infty$, $n = 2m - 1 \to +\infty$ with $\ell^2 / n = \sigma^2$ fixed
-    - for $n = 2m - 1$, the middle is $\tfrac{n + 1}{2} = m$; &nbsp; $X$ = position of the $m$th occurrence on $(\mu - \ell, \mu + \ell)$
 
-        $$
-        \begin{aligned}
-        \Longrightarrow \qquad f_X(x) &= \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\Big( \underbrace{\frac{x - \mu + \ell}{2\ell}}_{\in\, (0, 1) \text{ if } x \,\in\, (\mu - \ell,\, \mu + \ell)} \Big) \\[6pt]
-        &= \frac{1}{2\ell}\, \frac{(2m - 1)!}{(m - 1)!\,(m - 1)!} \left( \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1} \left( 1 - \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1} \\[6pt]
-        &= \underbrace{\frac{1}{2\ell}\, m \binom{2m - 1}{m - 1} \frac{1}{4^{m-1}}}_{\textstyle \longrightarrow\ \frac{1}{\sqrt{2\pi\sigma^2}}}\ \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{\!m-1}}_{\textstyle \longrightarrow\ \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)}
-        \end{aligned}
-        $$
+    For $n = 2m - 1$, the middle is $\tfrac{n + 1}{2} = m$; &nbsp; $X$ = position of the $m$th occurrence on $(\mu - \ell, \mu + \ell)$
+
+    $$
+    \begin{aligned}
+    \Longrightarrow \qquad f_X(x) &= \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\Big( \underbrace{\frac{x - \mu + \ell}{2\ell}}_{\in\, (0, 1) \text{ if } x \,\in\, (\mu - \ell,\, \mu + \ell)} \Big) \\[6pt]
+    &= \frac{1}{2\ell}\, \frac{(2m - 1)!}{(m - 1)!\,(m - 1)!} \left( \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1} \left( 1 - \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1} \\[6pt]
+    &= \underbrace{\frac{1}{2\ell}\, m \binom{2m - 1}{m - 1} \frac{1}{4^{m-1}}}_{\textstyle \longrightarrow\ \frac{1}{\sqrt{2\pi\sigma^2}}}\ \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{\!m-1}}_{\textstyle \longrightarrow\ \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)}
+    \end{aligned}
+    $$
 
     **In this lecture:** the standard normal distribution; functions of random variables; quantiles
 
