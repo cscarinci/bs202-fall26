@@ -178,7 +178,7 @@ def main():
         sections.append(f"<h2>{name}</h2>{body}")
 
     SITE.mkdir(exist_ok=True)
-    (SITE / "index.html").write_text(PAGE.format(count=len(notebooks), parts="\n".join(sections)).replace("</body>", NAV_CSS + ask_html() + "</body>", 1).replace("</head>", COUNTER + "</head>", 1), encoding="utf-8")
+    (SITE / "index.html").write_text(PAGE.format(count=len(set(notebooks) - UNLISTED), parts="\n".join(sections)).replace("</body>", NAV_CSS + ask_html() + "</body>", 1).replace("</head>", COUNTER + "</head>", 1), encoding="utf-8")
     (SITE / ".nojekyll").write_text("")
     print(f"wrote {SITE / 'index.html'}")
 
