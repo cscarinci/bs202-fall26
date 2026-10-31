@@ -30,7 +30,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +75,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,24 +120,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 06", "Week 03", "Lecture 06 · Binomial and negative binomial models")
+    header("Lecture 06", "Week 03", "Lecture 06 • Binomial and negative binomial models")
     return
 
 
@@ -168,7 +160,7 @@ def _(mo):
     - probability distributions &nbsp; $f_X : \mathbb{R} \longrightarrow \mathbb{R}$, &nbsp; $x \longmapsto P(X = x)$
     - expectation &nbsp; $E[u(X)] = \displaystyle\sum_{x \in S_X} u(x)\, f_X(x)$
 
-    **In this lecture:** probabilistic models (specific pmfs) &nbsp; $\leadsto$ &nbsp; binomial and negative binomial
+    **In this lecture:** probabilistic models (specific pmfs) &nbsp; <span class="nw">$\leadsto$ &nbsp; binomial</span> and negative binomial
 
     **References:** WMS 3.4, 3.6
     """)
@@ -204,25 +196,16 @@ def _(definition, mo):
     S = \{\, (c_1, c_2, \dots, c_n) \mid c_i = H \text{ or } T \,\}, \qquad S_X = \{0, 1, 2, \dots, n\}
     $$
 
-    $$
-    \begin{aligned}
-    P(\{(c_1, c_2, \dots, c_n)\}) &= \underbrace{P(\{c_1\})}_{\substack{p \text{ if } c_1 = H \\ q \text{ if } c_1 = T}}\ \underbrace{P(\{c_2\})}_{\substack{p \text{ if } c_2 = H \\ q \text{ if } c_2 = T}} \cdots \underbrace{P(\{c_n\})}_{\substack{p \text{ if } c_n = H \\ q \text{ if } c_n = T}} \\[6pt]
-    &= \underbrace{p^k q^{n-k}}_{\substack{\text{probability of one specific} \\ \text{outcome with } k \text{ heads}}} \quad \text{if } X(c_1, c_2, \dots, c_n) = k \qquad (\text{if } k \in S_X)
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle P(\{(c_1, c_2, \dots, c_n)\}) = \underbrace{P(\{c_1\})}_{\footnotesize \begin{matrix} p \text{ if } c_1 = H \\ q \text{ if } c_1 = T \end{matrix}} \qquad \underbrace{P(\{c_2\})}_{\footnotesize \begin{matrix} p \text{ if } c_2 = H \\ q \text{ if } c_2 = T \end{matrix}} \cdots \underbrace{P(\{c_n\})}_{\footnotesize \begin{matrix} p \text{ if } c_n = H \\ q \text{ if } c_n = T \end{matrix}}$ $\displaystyle = \underbrace{p^x q^{n-x}}_{\mathrlap{\footnotesize \begin{matrix} \text{probability of one specific} \\ \text{outcome with } x \text{ heads} \end{matrix}}} \quad \text{if } X(c_1, c_2, \dots, c_n) = x$ $\displaystyle \quad (\text{if } x \in S_X)$</span>
 
-    $$
-    f_X(x) = p^x q^{n-x} \times \underbrace{\#(\text{outcomes with } x \text{ heads})}_{\binom{n}{x}} = \binom{n}{x} p^x q^{n-x}
-    $$
+    <span class="chain">$\displaystyle f_X(x) = p^x q^{n-x} \times \#(\text{outcomes with } x \text{ heads})$ $\displaystyle = p^x q^{n-x} \times \binom{n}{x} = \binom{n}{x} p^x q^{n-x}$</span>
     """
             ),
             definition(
                 r"""
     A random variable $X$ is said to have a **binomial distribution** on $n$ trials with bias $p$ if its pmf is
 
-    $$
-    f_X(x) = \binom{n}{x} p^x (1 - p)^{n-x} \qquad \text{for } x = 0, 1, 2, \dots, n \quad (\text{and } f_X(x) = 0 \text{ otherwise})
-    $$
+    <span class="chain">$\displaystyle f_X(x) = \binom{n}{x} p^x (1 - p)^{n-x} \qquad \text{for } x = 0, 1, 2, \dots, n$ $\displaystyle \quad (\text{and } f_X(x) = 0 \text{ otherwise})$</span>
     """,
                 "Binomial distribution",
             ),
@@ -230,9 +213,7 @@ def _(definition, mo):
                 r"""
     **Remark.**
 
-    $$
-    \sum_{x=0}^{n} f_X(x) = \sum_{x=0}^{n} \binom{n}{x} p^x (1 - p)^{n-x} = (p + 1 - p)^n = (1)^n = 1 = P(X \in \{0, 1, 2, \dots, n\})
-    $$
+    <span class="chain">$\displaystyle \sum_{x=0}^{n} f_X(x) = \sum_{x=0}^{n} \binom{n}{x} p^x (1 - p)^{n-x} = (p + 1 - p)^n$ $\displaystyle = (1)^n = 1 = P(X \in \{0, 1, 2, \dots, n\})$</span>
 
     **Example.** 30% of patients recover without treatment. What is the probability that 9 out of 10 patients will recover without treatment?
 
@@ -254,75 +235,7 @@ def _(definition, mo):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    bn = mo.ui.slider(1, 40, 1, value=10, label="$n$", show_value=True)
-    bp = mo.ui.slider(0.01, 0.99, 0.01, value=0.3, label="$p$", show_value=True)
-    bx = mo.ui.slider(0, 40, 1, value=9, label="$x$", show_value=True)
-    b_reps = mo.ui.slider(10, 2000, 10, value=200, label="repetitions of the experiment", show_value=True)
-    b_redo = mo.ui.button(value=0, on_click=lambda v: v + 1, label="Repeat")
-    return b_redo, b_reps, bn, bp, bx
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, LIGHT, RED, b_redo, b_reps, bn, bp, bx, math, mo, np, table):
-    _n, _p, _x = bn.value, bp.value, bx.value
-    _xs = list(range(_n + 1))
-    _pmf = [math.comb(_n, _k) * _p**_k * (1 - _p) ** (_n - _k) for _k in _xs]
-    _in_support = _x <= _n
-
-    # Simulation: toss n coins, count heads, repeat
-    _rng = np.random.default_rng(606 + b_redo.value)
-    _N = b_reps.value
-    _heads = (_rng.random((_N, _n)) < _p).sum(axis=1)
-    _freq = np.bincount(_heads, minlength=_n + 1) / _N
-
-    _fx = _pmf[_x] if _in_support else 0.0
-    _le = min(1.0, sum(_pmf[: _x + 1])) if _in_support else 1.0  # min() guards against rounding only
-    _ge = min(1.0, sum(_pmf[_x:])) if _in_support else 0.0
-    _rel = float(_freq[_x]) if _in_support else 0.0
-
-    _fig = Figure(figsize=(FULL, 3.0), layout="constrained")
-    _ax = _fig.subplots()
-    _top = max(max(_pmf), float(_freq.max())) * 1.15
-    _ax.axvspan(_x - 0.5, _x + 0.5, color=LIGHT, lw=0, zorder=0)  # the chosen x
-    _ax.plot([_n * _p] * 2, [0, _top], color=GREEN, lw=1.2, ls=(0, (4, 3)), zorder=1)
-    _ax.text(_n * _p, _top, "$np$", color=GREEN, fontsize=12, ha="center", va="bottom", clip_on=False)
-    _ax.vlines(_xs, 0, _pmf, color=BLUE, lw=1.2, zorder=3)
-    _ax.plot(_xs, _pmf, "o", color=BLUE, ms=3.5, zorder=4)
-    _ax.plot(_xs, _freq, "o", mfc="none", mec=RED, ms=6.5, mew=1.1, zorder=5)
-    _right = max(_n, _x)  # the frame follows the chosen x, also outside the support
-    _ax.set_xlim(-0.7, _right + 0.7)
-    _ax.set_ylim(0, _top)
-    _ax.set_xlabel("$x$")
-    _ax.set_ylabel("$f_X(x)$")
-    if _right <= 20:
-        _ax.set_xticks(range(_right + 1))
-    for _s in ("top", "right"):
-        _ax.spines[_s].set_visible(False)
-
-    mo.vstack(
-        [
-            mo.hstack([bn, bp, bx], justify="start", gap=2, wrap=True),
-            mo.hstack([b_reps, b_redo], justify="start", gap=2, align="center", wrap=True),
-            table(
-                [
-                    (rf"$x \in S_X = \{{0, 1, \dots, {_n}\}}$", "yes" if _in_support else "no"),
-                    (r"$f_X(x) = \binom{n}{x} p^x q^{n-x}$", rf"$\textcolor{{{BLUE}}}{{{100 * _fx:.3f}\%}}$"),
-                    (rf"relative frequency of $X = x$ in ${_N}$ repetitions", rf"$\textcolor{{{RED}}}{{{100 * _rel:.3f}\%}}$"),
-                    (r"$P(X \leq x)$", rf"${100 * _le:.3f}\%$"),
-                    (r"$P(X \geq x)$", rf"${100 * _ge:.3f}\%$"),
-                    (r"$np$", rf"$\textcolor{{{GREEN}}}{{{_n * _p:.2f}}}$"),
-                    (r"$npq$", rf"${_n * _p * (1 - _p):.2f}$"),
-                ]
-            ),
-            _fig,
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(definition, mo, theorem):
+def _(mo, theorem):
     mo.vstack(
         [
             mo.md(r"""### Mean and variance of a binomial random variable"""),
@@ -340,40 +253,85 @@ def _(definition, mo, theorem):
                 r"""
     **Proof.**
 
-    $$
-    \begin{aligned}
-    E[X] &= \sum_{x=0}^{n} x \binom{n}{x} p^x q^{n-x} = \sum_{x=0}^{n} x\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x} = \sum_{x=1}^{n} \frac{n!}{(x - 1)!\,(n - x)!}\, p^x q^{n-x} \\[6pt]
-    &= np \underbrace{\sum_{x-1=0}^{n-1} \frac{(n - 1)!}{(x - 1)!\,(n - 1 - x + 1)!}\, p^{x-1} q^{n-1-x+1}}_{(p + q)^{n-1} \,=\, 1}
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle E[X] = \sum_{x=0}^{n} x \binom{n}{x} p^x q^{n-x} = \sum_{x=0}^{n} x\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x}$ $\displaystyle = \sum_{x=1}^{n} \frac{n!}{(x - 1)!\,(n - x)!}\, p^x q^{n-x}$ $\displaystyle = np \underbrace{\sum_{x-1=0}^{n-1} \frac{(n - 1)!}{(x - 1)!\,(n - 1 - x + 1)!}\, p^{x-1} q^{n-1-x+1}}_{\footnotesize (p + q)^{n-1} = 1}$ $\displaystyle = np$</span>
+
+    <span class="chain">$\displaystyle \mathrm{Var}(X) = E[X^2] - E[X]^2 = E[X^2] - (np)^2$ $\displaystyle \qquad \leadsto \qquad E[X^2] = E[X(X - 1)] + E[X]$</span>
+
+    <span class="chain">$\displaystyle \leadsto \quad E[X(X - 1)] = \sum_{x=0}^{n} x (x - 1)\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x}$ $\displaystyle = \sum_{x=2}^{n} \frac{n (n - 1) (n - 2)!}{(x - 2)!\,(n - 2 - x + 2)!}\, p^2 p^{x-2} q^{n-x}$ $\displaystyle = n (n - 1) p^2 \underbrace{\sum_{x-2=0}^{n-2} \frac{(n - 2)!}{(x - 2)!\,(n - 2 - x + 2)!}\, p^{x-2} q^{n-x}}_{\footnotesize (p + q)^{n-2} = 1}$</span>
 
     $$
-    \mathrm{Var}(X) = E[X^2] - \underbrace{E[X]^2}_{(np)^2} \qquad \leadsto \qquad E[X^2] = E[X(X - 1)] + E[X]
+    \begin{align*}
+    \Longrightarrow \quad & E[X(X - 1)] = n (n - 1) p^2 \\[6pt]
+    \Longrightarrow \quad & E[X^2] = E[X(X - 1)] + E[X] = n (n - 1) p^2 + np \\[6pt]
+    \Longrightarrow \quad & \mathrm{Var}(X) = E[X^2] - E[X]^2 = n (n - 1) p^2 + np - (np)^2 \\[14pt]
+    & \qquad = n^2 p^2 - np^2 + np - n^2 p^2 \\[14pt]
+    & \qquad = -np^2 + np = np (1 - p) = npq \tag*{$\square$}
+    \end{align*}
     $$
-
-    $$
-    \begin{aligned}
-    \leadsto \qquad E[X(X - 1)] &= \sum_{x=0}^{n} x (x - 1)\, \frac{n!}{x!\,(n - x)!}\, p^x q^{n-x} \\[6pt]
-    &= \sum_{x=2}^{n} \frac{n (n - 1) (n - 2)!}{(x - 2)!\,(n - 2 - x + 2)!}\, p^2 p^{x-2} q^{n-x} \\[6pt]
-    &= n (n - 1) p^2 \underbrace{\sum_{x-2=0}^{n-2} \frac{(n - 2)!}{(x - 2)!\,(n - 2 - x + 2)!}\, p^{x-2} q^{n-x}}_{(p + q)^{n-2} \,=\, 1}
-    \end{aligned}
-    $$
-
-    $$
-    \Longrightarrow \qquad E[X(X - 1)] = n (n - 1) p^2
-    \qquad \Longrightarrow \qquad E[X^2] = E[X(X - 1)] + E[X] = n (n - 1) p^2 + np
-    $$
-
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad \mathrm{Var}(X) &= E[X^2] - E[X]^2 = n (n - 1) p^2 + np - (np)^2 \\
-    &= -np^2 + np = np (1 - p) = npq \qquad \square
-    \end{aligned}
-    $$
-
-    ### The negative binomial model
     """
             ),
+        ]
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    bn = mo.ui.slider(1, 40, 1, value=10, label="$n$", show_value=True)
+    bp = mo.ui.slider(0.01, 0.99, 0.01, value=0.3, label="$p$", show_value=True)
+    b_reps = mo.ui.slider(10, 2000, 10, value=200, label="repetitions of the experiment", show_value=True)
+    b_redo = mo.ui.button(value=0, on_click=lambda v: v + 1, label="Repeat")
+    return b_redo, b_reps, bn, bp
+
+
+@app.cell(hide_code=True)
+def _(BLUE, Figure, GREEN, RED, b_redo, b_reps, bn, bp, math, mo, np):
+    _n, _p = bn.value, bp.value
+    _xs = list(range(_n + 1))
+    _pmf = [math.comb(_n, _k) * _p**_k * (1 - _p) ** (_n - _k) for _k in _xs]
+
+    # Simulation: toss n coins, count heads, repeat
+    _rng = np.random.default_rng(606 + b_redo.value)
+    _N = b_reps.value
+    _heads = (_rng.random((_N, _n)) < _p).sum(axis=1)
+    _freq = np.bincount(_heads, minlength=_n + 1) / _N
+
+    _fig = Figure(figsize=(5.6, 3.0), layout="constrained")
+    _ax = _fig.subplots()
+    _high = max(max(_pmf), float(_freq.max()))
+    _top = _high * 1.3
+    _ax.plot([_n * _p] * 2, [0, _high * 1.12], color=GREEN, lw=1.2, ls=(0, (4, 3)), zorder=1)
+    _ax.text(_n * _p, _high * 1.13, "$np$", color=GREEN, fontsize=13, ha="center", va="bottom")
+    _ax.text(1.0, 1.0, "relative frequencies", transform=_ax.transAxes, color=RED, fontsize=13, ha="right", va="bottom", clip_on=False)
+    _ax.vlines(_xs, 0, _pmf, color=BLUE, lw=1.2, zorder=3)
+    _ax.plot(_xs, _pmf, "o", color=BLUE, ms=3.5, zorder=4)
+    _ax.plot(_xs, _freq, "o", mfc="none", mec=RED, ms=6.5, mew=1.1, zorder=5)
+    _right = _n
+    _ax.set_xlim(-0.7, _right + 0.7)
+    _ax.set_ylim(0, _top)
+    _ax.set_xlabel("$x$")
+    _ax.set_ylabel("$f_X(x)$")
+    _ax.yaxis.set_major_formatter(lambda _v, _i: f"${_v:g}$")
+    if _right <= 20:
+        _ax.set_xticks(range(_right + 1))
+    for _s in ("top", "right"):
+        _ax.spines[_s].set_visible(False)
+
+    mo.vstack(
+        [
+            mo.hstack([bn, bp], justify="start", gap=2, wrap=True),
+            mo.hstack([b_reps, b_redo], justify="start", gap=2, align="center", wrap=True),
+            _fig,
+        ]
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(definition, mo):
+    mo.vstack(
+        [
+            mo.md(r"""### The negative binomial model"""),
             definition(
                 r"""
     A **negative binomial model** is an experiment that
@@ -390,18 +348,17 @@ def _(definition, mo, theorem):
 
     $$
     \begin{aligned}
-    S &= \{\, (c_1, \dots, c_k) \mid c_i = H \text{ or } T \text{ with } c_k = H \text{ and } r - 1 \text{ other } c_i = H \text{ for } 1 \leq i < k \,\} \qquad (\Longrightarrow \ k \geq r) \\[4pt]
+    S &= \{\, (c_1, \dots, c_k) \mid c_i = H \text{ or } T \text{ with } c_k = H \\
+    &\qquad \text{and } r - 1 \text{ other } c_i = H \text{ for } 1 \leq i < k \,\} \qquad (\Longrightarrow \ k \geq r) \\[4pt]
     S_Y &= \{r, r + 1, r + 2, \dots\}
     \end{aligned}
     $$
 
     $$
-    P(\{(\underbrace{c_1, \dots, c_{k-1}}_{\text{exactly } r - 1\ H\text{s}}, \underbrace{c_k}_{H})\}) = p^r q^{k-r} \quad \text{if } Y(c_1, \dots, c_k) = k
+    P(\{(\underbrace{c_1, \dots, c_{k-1}}_{\footnotesize \begin{matrix} \text{exactly} \\ r - 1\ H\text{s} \end{matrix}}, \underbrace{c_k}_{\footnotesize \rule{0pt}{1.05em} H})\}) = p^r q^{k-r} \quad \text{if } Y(c_1, \dots, c_k) = k
     $$
 
-    $$
-    f_Y(y) = p^r q^{y-r} \underbrace{\#(\text{outcomes with } y \text{ trials})}_{\binom{y-1}{r-1}} = \binom{y - 1}{r - 1} p^r q^{y-r}
-    $$
+    <span class="chain">$\displaystyle f_Y(y) = p^r q^{y-r}\, \#(\text{outcomes with } y \text{ trials})$ $\displaystyle = p^r q^{y-r} \binom{y - 1}{r - 1} = \binom{y - 1}{r - 1} p^r q^{y-r}$</span>
     """
             ),
             definition(
@@ -422,89 +379,47 @@ def _(definition, mo, theorem):
 @app.cell(hide_code=True)
 def _(mo):
     nr = mo.ui.slider(1, 10, 1, value=3, label="$r$", show_value=True)
-    np_ = mo.ui.slider(0.05, 0.95, 0.01, value=0.4, label="$p$", show_value=True)
-    ny = mo.ui.slider(1, 60, 1, value=5, label="$y$", show_value=True)
-    return np_, nr, ny
+    np_ = mo.ui.slider(0.1, 0.95, 0.01, value=0.4, label="$p$", show_value=True)
+    return np_, nr
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, LIGHT, math, mo, np_, nr, ny, table):
-    _r, _p, _y = nr.value, np_.value, ny.value
+def _(BLUE, Figure, math, mo, np_, nr):
+    _r, _p = nr.value, np_.value
 
     def _f(y):
         return math.comb(y - 1, _r - 1) * _p**_r * (1 - _p) ** (y - _r) if y >= _r else 0.0
 
-    # The support is infinite: the frame runs until 99.5 % of the mass is inside, and at least until the chosen y
+    # The support is infinite: the frame runs until 99.5 % of the mass is inside
     _ys, _pmf, _mass = [], [], 0.0
-    while _mass < 0.995 or _r + len(_ys) <= _y:
+    while _mass < 0.995:
         _ys.append(_r + len(_ys))
         _pmf.append(_f(_ys[-1]))
         _mass += _pmf[-1]
-    _mass = min(1.0, _mass)  # guards against rounding only
-    _in_support = _y >= _r
-    _le = min(1.0, sum(_pmf[: _y - _r + 1])) if _in_support else 0.0
 
-    _fig = Figure(figsize=(FULL, 3.0), layout="constrained")
+    _fig = Figure(figsize=(5.6, 3.0), layout="constrained")
     _ax = _fig.subplots()
     _top = max(_pmf) * 1.15
     _many = len(_ys) > 80
-    _ax.axvspan(_y - 0.5, _y + 0.5, color=LIGHT, lw=0, zorder=0)  # the chosen y
-    _ax.plot([_r / _p] * 2, [0, _top], color=GREEN, lw=1.2, ls=(0, (4, 3)), zorder=1)
-    _ax.text(_r / _p, _top, "$r/p$", color=GREEN, fontsize=12, ha="center", va="bottom", clip_on=False)
     _ax.vlines(_ys, 0, _pmf, color=BLUE, lw=0.8 if _many else 1.2, zorder=3)
     _ax.plot(_ys, _pmf, "o", color=BLUE, ms=2 if _many else 3.5, zorder=4)
-    _left = min(_r, _y)
+    _left = 1  # the frame starts at y = 1: the empty stretch before r shows that S_Y starts at r
     _ax.set_xlim(_left - 0.7, _ys[-1] + 0.7)
     _ax.set_ylim(0, _top)
     _ax.set_xlabel("$y$")
     _ax.set_ylabel("$f_Y(y)$")
-    if _ys[-1] - _left <= 20:
+    _ax.yaxis.set_major_formatter(lambda _v, _i: f"${_v:g}$")
+    if _ys[-1] - _left <= 14:
         _ax.set_xticks(range(_left, _ys[-1] + 1))
+    elif _ys[-1] - _left <= 28:  # every second y, so that the numbers stay apart
+        _ax.set_xticks(range(_left, _ys[-1] + 1, 2))
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
 
-    if _in_support:
-        _value = rf"$\binom{{{_y - 1}}}{{{_r - 1}}} ({_p:.2f})^{{{_r}}} ({1 - _p:.2f})^{{{_y - _r}}} = \textcolor{{{BLUE}}}{{{100 * _f(_y):.3f}\%}}$"
-    else:
-        _value = rf"$\textcolor{{{BLUE}}}{{{0:.3f}\%}}$"
     mo.vstack(
         [
-            mo.hstack([nr, np_, ny], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (rf"$y \in S_Y = \{{{_r}, {_r + 1}, {_r + 2}, \dots\}}$", "yes" if _in_support else "no"),
-                    (r"$f_Y(y) = \binom{y-1}{r-1} p^r q^{y-r}$", _value),
-                    (r"$P(Y \leq y)$", rf"${100 * _le:.3f}\%$"),
-                    (r"$r/p$", rf"$\textcolor{{{GREEN}}}{{{_r / _p:.3f}}}$"),
-                    (rf"mass inside the frame, $P(Y \leq {_ys[-1]})$", rf"${100 * _mass:.3f}\%$"),
-                ]
-            ),
+            mo.hstack([nr, np_], justify="start", gap=2, wrap=True),
             _fig,
         ]
     )
     return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - **binomial model**: $n$ identical independent trials with two outcomes, $P(\text{“success”}) = p$, $P(\text{“failure”}) = q = 1 - p$; $X$ = number of “successes”
-
-        $$
-        \Longrightarrow \qquad f_X(x) = \binom{n}{x} p^x q^{n-x} \quad \text{for } x = 0, 1, 2, \dots, n
-        $$
-    - $\sum_{x=0}^{n} f_X(x) = (p + 1 - p)^n = 1$
-    - a binomial random variable has $\mu_X = np$ and $\sigma_X^2 = npq$ &nbsp; (via $E[X^2] = E[X(X - 1)] + E[X]$)
-    - **negative binomial model**: same trials; $Y$ = number of trials until a fixed number $r$ of “successes”
-
-        $$
-        \Longrightarrow \qquad f_Y(y) = \binom{y-1}{r-1} p^r q^{y-r} \quad \text{for } y = r, r + 1, r + 2, \dots
-        $$
-    """)
-    return
-
-
-if __name__ == "__main__":
-    app.run()

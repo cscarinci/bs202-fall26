@@ -30,7 +30,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +75,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,24 +120,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 12", "Week 06", "Lecture 12 · Uniform, beta and Gaussian distributions")
+    header("Lecture 12", "Week 06", "Lecture 12 • Uniform, beta and Gaussian distributions")
     return
 
 
@@ -160,26 +152,6 @@ def _(arrow, math):
 
 @app.cell(hide_code=True)
 def _(mo):
-    def ask(label, field, answer, tol=1e-6):
-        """A labelled answer box with a feedback mark; accepts decimals, decimal commas and percentages."""
-        raw = field.value.strip()
-        mark = ""
-        if raw:
-            try:
-                value = float(raw.rstrip("%").replace(",", ".")) / (100 if raw.endswith("%") else 1)
-                mark = "correct" if abs(value - answer) <= tol else "try again"
-            except ValueError:
-                mark = "enter a number"
-        return mo.hstack([mo.md(label), field, mo.md(mark)], justify="start", align="center")
-
-    def box():
-        return mo.ui.text(placeholder="?", debounce=True)
-
-    return ask, box
-
-
-@app.cell(hide_code=True)
-def _(mo):
     mo.md(r"""
     ## Last time
 
@@ -192,7 +164,7 @@ def _(mo):
         \end{cases}
         $$
 
-    **In this lecture:** families of continuous random variables &nbsp; $\leadsto$ &nbsp; uniform, beta, Gaussian
+    **In this lecture:** families of continuous random variables &nbsp; <span class="nw">$\leadsto$ &nbsp; uniform,</span> beta, Gaussian
 
     **References:** WMS 4.4, 4.5, 4.7
     """)
@@ -207,8 +179,9 @@ def _(BLUE, GREY, HALF, arrow, blank, definition, mo, theorem):
     _ax.plot([1, 1], [0, 1.2], color=GREY, lw=1.0, ls=(0, (4, 3)))
     _ax.plot([3, 3], [0, 1.2], color=GREY, lw=1.0, ls=(0, (4, 3)))
     _ax.plot([1, 3], [1.2, 1.2], color=BLUE, lw=1.4)
+    _ax.plot([1, 3], [1.2, 1.2], "o", mfc="white", mec=BLUE, ms=5, mew=1.2, zorder=3)
     _ax.plot([-0.07, 0.07], [1.2, 1.2], color="black", lw=0.9)
-    _ax.text(-0.18, 1.2, r"$\frac{1}{b-a}$", ha="right", va="center", fontsize=15)
+    _ax.text(-0.18, 1.2, r"$\dfrac{1}{b-a}$", ha="right", va="center", fontsize=13)
     _ax.text(1, -0.14, "$a$", ha="center", va="top", fontsize=13)
     _ax.text(3, -0.14, "$b$", ha="center", va="top", fontsize=13)
     _ax.text(4.2, -0.14, "$y$", ha="center", va="top", fontsize=13)
@@ -237,13 +210,10 @@ def _(BLUE, GREY, HALF, arrow, blank, definition, mo, theorem):
     $\leadsto$ &nbsp; a bakery is open from 9AM to 9PM; assuming sales are equally likely at any time
 
     $$
-    Y = \text{time until sale} \qquad \leadsto \qquad S_Y = (9, 21)
+    Y = \text{time of a sale} \qquad \leadsto \qquad S_Y = (9, 21)
     $$
 
-    $$
-    \Longrightarrow \qquad P(Y \leq y) = \frac{y - 9}{21 - 9} = \frac{y - 9}{12}
-    \qquad \Longrightarrow \qquad f_Y(y) = \frac{1}{12}, \quad y \in (9, 21)
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \qquad P(Y \leq y) = \frac{y - 9}{21 - 9} = \frac{y - 9}{12}$ $\displaystyle \quad \Longrightarrow \quad f_Y(y) = \frac{1}{12}, \quad y \in (9, 21)$</span>
     """
             ),
             definition(
@@ -251,7 +221,7 @@ def _(BLUE, GREY, HALF, arrow, blank, definition, mo, theorem):
     A random variable $Y$ has **uniform distribution** over $[a, b]$ if its pdf is
 
     $$
-    \underbrace{f_Y(y)}_{\mathrm{Unif}(a, b)(y)} = \begin{cases} \dfrac{1}{b - a}, & y \in (a, b) \\[8pt] 0, & y \notin (a, b) \end{cases}
+    \underbrace{f_Y(y)}_{\mathclap{\footnotesize \mathrm{Unif}(a, b)(y)}} = \begin{cases} \dfrac{1}{b - a}, & y \in (a, b) \\[8pt] 0, & y \notin (a, b) \end{cases}
     $$
     """,
                 "Uniform distribution",
@@ -301,23 +271,15 @@ def _(definition, mo):
 
     Let $X = \#(\text{cakes sold in } y \text{ shifts})$, &nbsp; $y \in (0, 1)$
 
-    (2) $\Longrightarrow$ each sale happens in $(0, y)$ with probability $y$ &nbsp; $\Longrightarrow$ &nbsp; $X \sim \mathrm{Binom}(10, y)$
+    (2) <span class="nw">$\Longrightarrow$ each</span> sale happens in $(0, y)$ with probability $y$ &nbsp; <span style="white-space:nowrap">$\Longrightarrow$ &nbsp; $X \sim \mathrm{Binom}(10, y)$</span>
 
     $$
     \Longrightarrow \qquad P(Y \leq y) = P(X \geq 3) = \sum_{x=3}^{10} \binom{10}{x} y^x (1 - y)^{10-x}
     $$
 
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad f_Y(y) &= \frac{d}{dy} \left[ \sum_{x=3}^{10} \binom{10}{x} y^x (1 - y)^{10-x} \right] \\[4pt]
-    &= \sum_{x=3}^{10} \underbrace{\binom{10}{x} x}_{10 \binom{9}{x-1}}\, y^{x-1} (1 - y)^{10-x} - \sum_{x=3}^{9} \underbrace{\binom{10}{x} (10 - x)}_{10 \binom{9}{x},\ x \neq 10}\, y^x (1 - y)^{9-x} \\[4pt]
-    &= 10 \left[ \sum_{x=3}^{10} \binom{9}{x - 1} y^{x-1} (1 - y)^{10-x} - \sum_{x=3}^{9} \binom{9}{x} y^x (1 - y)^{9-x} \right] \\[4pt]
-    &= 10 \left[ \sum_{\tilde{x}=2}^{9} \binom{9}{\tilde{x}} y^{\tilde{x}} (1 - y)^{9-\tilde{x}} - \sum_{x=3}^{9} \binom{9}{x} y^x (1 - y)^{9-x} \right] \\[4pt]
-    &= 10 \binom{9}{2} y^2 (1 - y)^7 = n \binom{n - 1}{r - 1} y^{r-1} (1 - y)^{n-r}, \qquad y \in (0, 1)
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \ \ f_Y(y) = \frac{d}{dy} \left[ \sum_{x=3}^{10} \binom{10}{x} y^x (1 - y)^{10-x} \right]$ $\displaystyle = \sum_{x=3}^{10} \underbrace{\binom{10}{x} x}_{\mathclap{\footnotesize 10 \dbinom{9}{x-1}}}\, y^{x-1} (1 - y)^{10-x} - \sum_{x=3}^{9} \underbrace{\binom{10}{x} (10 - x)}_{\mathclap{\footnotesize 10 \dbinom{9}{x},\ x \neq 10}}\, y^x (1 - y)^{9-x}$ $\displaystyle = 10 \left[ \sum_{x=3}^{10} \binom{9}{x - 1} y^{x-1} (1 - y)^{10-x} - \sum_{x=3}^{9} \binom{9}{x} y^x (1 - y)^{9-x} \right]$ $\displaystyle = 10 \left[ \sum_{\tilde{x}=2}^{9} \binom{9}{\tilde{x}} y^{\tilde{x}} (1 - y)^{9-\tilde{x}} - \sum_{x=3}^{9} \binom{9}{x} y^x (1 - y)^{9-x} \right] \quad (\tilde{x} = x - 1)$ $\displaystyle = 10 \binom{9}{2} y^2 (1 - y)^7 = n \binom{n - 1}{r - 1} y^{r-1} (1 - y)^{n-r}, \quad y \in (0, 1)$</span>
 
-    **Remark.** $r$ = target occurrence counting from the start; &nbsp; $n - r + 1$ = target occurrence counting from the end
+    **Remark.** $r$ = target occurrence counting from the start; &nbsp; <span style="white-space:nowrap">$n - r + 1$ = target occurrence counting from the end</span>
     """
             ),
             definition(
@@ -325,10 +287,10 @@ def _(definition, mo):
     A random variable $Y$ has a **beta distribution** with parameters $\alpha$ and $\beta$ if its pdf is
 
     $$
-    \underbrace{f_Y(y)}_{\mathrm{Beta}(\alpha, \beta)(y)} = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, y^{\alpha-1} (1 - y)^{\beta-1}, \qquad y \in (0, 1) \qquad (\alpha, \beta \in \mathbb{Z}_{>0})
+    \underbrace{f_Y(y)}_{\mathclap{\footnotesize \mathrm{Beta}(\alpha, \beta)(y)}} = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, y^{\alpha-1} (1 - y)^{\beta-1}, \qquad y \in (0, 1)
     $$
 
-    ($\alpha = r$: counting from start; &nbsp; $\beta = n - r + 1$: counting from end)
+    (<span style="white-space:nowrap">$\alpha, \beta \in \mathbb{Z}_{>0}$;</span> &nbsp; <span style="white-space:nowrap">$\alpha = r$: counting from start;</span> &nbsp; <span style="white-space:nowrap">$\beta = n - r + 1$: counting from end)</span>
     """,
                 "Beta distribution",
             ),
@@ -356,28 +318,25 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    b_redo = mo.ui.button(value=0, on_click=lambda v: v + 1, label="Repeat")
-    return (b_redo,)
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREY, LIGHT, b_n, b_r, b_redo, b_y, math, mo, np, table):
+def _(BLUE, Figure, GREY, LIGHT, RED, b_n, b_r, b_y, math, mo, np, table):
     _n, _r, _y0 = b_n.value, b_r.value, b_y.value
     _ok = _r <= _n
-    _box = {"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"}
-
     # Simulation of the beta model: n uniform points per run, the r-th from the left
-    _rng = np.random.default_rng(1212 + b_redo.value)
+    _rng = np.random.default_rng(1212)
     _runs, _rows = 10000, 10
     _pts = np.sort(_rng.random((_runs, _n)), axis=1)
 
-    _fig = Figure(figsize=(FULL, 5.0), layout="constrained")
+    _fig = Figure(figsize=(5.6, 4.6), layout="constrained")
     _top, _bot = _fig.subplots(2, 1, height_ratios=[1, 1.4])
     for _k in range(_rows):
-        _top.plot(_pts[_k], np.full(_n, -_k), "|", color="black", ms=8, mew=1.0)
+        # X = number of points left of the y line: red ticks, counted in the red column
+        _left = _pts[_k] <= _y0
+        _top.plot(_pts[_k][~_left], np.full((~_left).sum(), -_k), "|", color="black", ms=8, mew=1.0)
+        _top.plot(_pts[_k][_left], np.full(_left.sum(), -_k), "|", color=RED, ms=8, mew=1.4)
+        _top.text(1.03, -_k, f"${_left.sum()}$", color=RED, fontsize=11, ha="left", va="center", transform=_top.get_yaxis_transform())
         if _ok:
-            _top.plot(_pts[_k, _r - 1], -_k, "o", mfc="none", mec=BLUE, ms=9, mew=1.4)
+            _top.plot(_pts[_k, _r - 1], -_k, "o", mfc="none", mec=BLUE, ms=9, mew=1.4, clip_on=False)
+    _top.text(1.03, 1, "$X$", color=RED, fontsize=13, ha="left", va="bottom", transform=_top.transAxes)
     _top.axvline(_y0, color=GREY, lw=1.0, ls=(0, (4, 3)))
     _top.annotate("$y$", (_y0, 1), xycoords=("data", "axes fraction"), textcoords="offset points", xytext=(0, 3), ha="center", va="bottom", fontsize=13, color=GREY, annotation_clip=False)
     _top.set_xlim(0, 1)
@@ -398,41 +357,42 @@ def _(BLUE, FULL, Figure, GREY, LIGHT, b_n, b_r, b_redo, b_y, math, mo, np, tabl
         _bot.stairs(_counts, _edges, color=GREY, lw=0.9)
         _bot.plot(_y, _pdf, color=BLUE, lw=1.4)
         _bot.set_ylim(0, 1.35 * max(_pdf.max(), _counts.max()))
-        # the two labels sit in the upper corner that the curve leaves free
-        _x, _ha = (0.985, "right") if 2 * _r <= _n + 1 else (0.015, "left")
-        _bot.text(_x, 0.96, rf"$\mathrm{{Beta}}({_r}, {_n - _r + 1})$", color=BLUE, fontsize=12, ha=_ha, va="top", transform=_bot.transAxes, bbox=_box)
-        _bot.text(_x, 0.83, rf"$Y$ in {_runs:,} runs", color=GREY, fontsize=12, ha=_ha, va="top", transform=_bot.transAxes, bbox=_box)
-        _values = [
-            rf"$\textcolor{{{BLUE}}}{{\mathrm{{Beta}}({_r}, {_n - _r + 1})}}$",
-            rf"${_cdf:.4f}$",
-            rf"${(_Y <= _y0).mean():.4f}$",
-            rf"${_r / (_n + 1):.4f}$",
-            rf"${_r * (_n - _r + 1) / ((_n + 1) ** 2 * (_n + 2)):.5f}$",
-        ]
-    else:
-        _bot.set_ylim(0, 1)
-        _bot.text(0.5, 0.5, r"need $r \leq n$", fontsize=13, ha="center", va="center")
-        _values = [r"need $r \leq n$"] * 5
+        # the names stay fixed in the top band, which the curve never reaches (its top is at 1/1.35 of the height)
+        _bot.text(0.015, 0.97, rf"$\mathrm{{Beta}}({_r}, {_n - _r + 1})$", color=BLUE, fontsize=12, ha="left", va="top", transform=_bot.transAxes)
+        _bot.text(0.985, 0.97, rf"$Y$ (the ringed point) in {_runs:,} runs", color=GREY, fontsize=12, ha="right", va="top", transform=_bot.transAxes)
+
+        def _fmt(p):
+            # 0 and 1 exact; two decimals; three significant digits when small; two significant digits when tiny
+            if p in (0, 1):
+                return f"{p:g}"
+            if p > 0.995:
+                _q = 1 - p
+                if f"{p:.4f}" != "1.0000":
+                    return f"{p:.4f}"
+                _m, _e = f"{_q:.1e}".split("e")
+                return f"1 - {_m} \\times 10^{{{int(_e)}}}"
+            if p >= 0.1:
+                return f"{p:.2f}"
+            if p >= 0.001:
+                return f"{p:.{2 - math.floor(math.log10(p))}f}"
+            _e = math.floor(math.log10(p))
+            return f"{p / 10**_e:.1f} \\times 10^{{{_e}}}"
+
+        _values = [rf"${_fmt(_cdf)}$"]
     _bot.set_xlim(0, 1)
     _bot.set_xlabel("$y$")
+    _bot.yaxis.set_major_formatter(lambda _v, _p: f"${_v:g}$")
     for _ax in (_top, _bot):
+        _ax.xaxis.set_major_formatter(lambda _v, _p: f"${_v:g}$")
         for _s in ("top", "right"):
             _ax.spines[_s].set_visible(False)
 
     _labels = [
-        r"$Y \sim \mathrm{Beta}(r, n - r + 1)$ &nbsp; (the $r$th of $n$ uniform points, ringed in the first 10 runs)",
-        r"$P(Y \le y) = P(X \ge r)$, &nbsp; $X \sim \mathrm{Binom}(n, y)$",
-        rf"fraction of the {_runs:,} runs with $Y \le y$",
-        r"$E[Y] = r/(n + 1)$",
-        r"$\mathrm{Var}(Y) = r (n - r + 1) / ((n + 1)^2 (n + 2))$",
+        r"$P(Y \le y) = P(X \ge r)$, &nbsp; $X \sim \mathrm{Binom}(n, y)$ &nbsp; (shaded area)",
     ]
-    mo.vstack(
-        [
-            mo.hstack([b_n, b_r, b_y, b_redo], justify="start", gap=2, wrap=True),
-            table(list(zip(_labels, _values))),
-            _fig,
-        ]
-    )
+    _controls = mo.hstack([b_n, b_r, b_y], justify="start", gap=2, wrap=True)
+    # an invalid setting shows the message alone
+    mo.vstack([_controls, table(list(zip(_labels, _values))), _fig] if _ok else [_controls, mo.md(r"need $r \leq n$")])
     return
 
 
@@ -454,13 +414,13 @@ def _(definition, mo, theorem):
     \Longrightarrow \qquad f_Y(y) = \frac{10!}{0!\, 9!}\, y^0 (1 - y)^9 = 10 (1 - y)^9
     $$
 
-    1 shift $= 12$ hours, so 2 hours $= \tfrac{1}{6}$ shifts:
+    1 shift $= 12$ hours, so 2 hours $= 1/6$ shifts:
+
+    <span class="chain">$\displaystyle \Longrightarrow \qquad P(Y \leq 1/6) = \int_0^{1/6} 10 (1 - y)^9\, dy = -(1 - y)^{10}\, \Big|_0^{1/6}$ $\displaystyle = 1 - (1 - 1/6)^{10} \approx 0.84$</span>
 
     $$
-    \Longrightarrow \qquad P(Y \leq \tfrac{1}{6}) = \int_0^{1/6} 10 (1 - y)^9\, dy = -(1 - y)^{10}\, \Big|_0^{1/6} = 1 - (1 - \tfrac{1}{6})^{10} \approx 0.84
+    P(Y \leq 1/12) \approx 0.58, \qquad P(Y \leq 0.5/12) \approx 0.35
     $$
-
-    (with $\tfrac{1}{12}$ in place of $\tfrac{1}{6}$: $\approx 0.58$; &nbsp; with $\tfrac{0.5}{12}$: $\approx 0.35$)
 
     **Remark.** If $\tilde{Y}$ is the location of the $r$th point out of $n$ in $(a, b)$
 
@@ -475,8 +435,8 @@ def _(definition, mo, theorem):
 
     $$
     \begin{aligned}
-    E[Y] &= \frac{\alpha}{\alpha + \beta} = \frac{r}{n + 1} \\[6pt]
-    \mathrm{Var}(Y) &= \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)} = \frac{r (n - r + 1)}{(n + 1)^2 (n + 2)} \\[6pt]
+    E[Y] &= \frac{\alpha}{\alpha + \beta} = \frac{r}{n + 1} \\[14pt]
+    \mathrm{Var}(Y) &= \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)} = \frac{r (n - r + 1)}{(n + 1)^2 (n + 2)} \\[14pt]
     \mathrm{Skew}(Y) &= \frac{2 (\beta - \alpha) \sqrt{\alpha + \beta + 1}}{(\alpha + \beta + 2) \sqrt{\alpha \beta}} = \frac{2 (n + 1 - 2r) \sqrt{n + 2}}{(n + 3) \sqrt{r (n - r + 1)}}
     \end{aligned}
     $$
@@ -496,7 +456,7 @@ def _(definition, mo, theorem):
 
     1. consists of a large number $n \to \infty$ of occurrences along a large interval of radius $\ell \to \infty$, with fixed center $\mu$ and a fixed ratio $\ell^2 / n = \sigma^2$
     2. the location of each occurrence being independent and following a uniform distribution on $(\mu - \ell, \mu + \ell)$
-    3. measures the location $X$ of the middle occurrence $m = \tfrac{n + 1}{2}$ (we can assume $n$ is odd) in the limit $n \to \infty$ (with $\ell^2 / n = \sigma^2$)
+    3. measures the location $X$ of the middle occurrence $m = \dfrac{n + 1}{2}$ (we can assume $n$ is odd) in the limit $n \to \infty$ (with $\ell^2 / n = \sigma^2$)
     """,
                 "Gaussian model",
             ),
@@ -508,14 +468,7 @@ def _(definition, mo, theorem):
     \Longrightarrow \qquad U = \frac{X - (\mu - \ell)}{2\ell} \sim \mathrm{Beta}(m, m)
     $$
 
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad f_X(x) &= \lim_{m \to \infty} \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\!\left( \frac{1}{2} + \frac{x - \mu}{2\ell} \right) \qquad (\text{with } \ell^2 / n = \sigma^2) \\[6pt]
-    &= \lim_{m \to \infty} \frac{1}{2\ell}\, \frac{(2m - 1)!}{(m - 1)!\,(m - 1)!} \left( \frac{1}{2} + \frac{x - \mu}{2\ell} \right)^{\!m-1} \left( \frac{1}{2} - \frac{x - \mu}{2\ell} \right)^{\!m-1} \\[6pt]
-    &= \lim_{m \to \infty} \underbrace{\frac{1}{2\ell}\, m \binom{2m - 1}{m - 1} \frac{1}{4^{m-1}}}_{\textstyle \longrightarrow\ \frac{1}{\sqrt{2\pi\sigma^2}}}\ \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{\!m-1}}_{\textstyle \longrightarrow\ \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)} \\[6pt]
-    &= \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \quad f_X(x) = \lim_{m \to \infty} \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\!\left( \frac{1}{2} + \frac{x - \mu}{2\ell} \right) \qquad (\text{with } \ell^2 / n = \sigma^2)$ $\displaystyle = \lim_{m \to \infty} \frac{1}{2\ell}\, \frac{(2m - 1)!}{(m - 1)!\,(m - 1)!} \left( \frac{1}{2} + \frac{x - \mu}{2\ell} \right)^{\!m-1} \left( \frac{1}{2} - \frac{x - \mu}{2\ell} \right)^{\!m-1}$ $\displaystyle = \lim_{m \to \infty} \underbrace{\frac{1}{2\ell}\, m \binom{2m - 1}{m - 1} \frac{1}{4^{m-1}}}_{\footnotesize \longrightarrow\ \dfrac{1}{\sqrt{2\pi\sigma^2}}}\ \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{\!m-1}}_{\footnotesize \longrightarrow\ \exp\left( -\dfrac{(x - \mu)^2}{2\sigma^2} \right)}$ $\displaystyle = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)$</span>
     """
             ),
         ]
@@ -530,7 +483,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, RED, g_m, math, mo, np, table):
+def _(BLUE, Figure, RED, g_m, math, mo, np):
     _m = g_m.value
     _n = 2 * _m - 1
     _l = math.sqrt(_n)  # mu = 0, sigma^2 = 1
@@ -541,15 +494,16 @@ def _(BLUE, FULL, Figure, RED, g_m, math, mo, np, table):
     _beta = np.zeros_like(_x)
     _beta[_inside] = np.exp(_logc + (_m - 1) * np.log(_u[_inside]) + (_m - 1) * np.log(1 - _u[_inside])) / (2 * _l)
 
-    _box = {"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"}
-    _fig = Figure(figsize=(FULL, 3.0), layout="constrained")
+    _fig = Figure(figsize=(5.6, 3.0), layout="constrained")
     _ax = _fig.subplots()
     _ax.plot(_x, np.exp(-(_x**2) / 2) / math.sqrt(2 * math.pi), color=RED, lw=1.4)
-    _ax.plot(_x, _beta, color=BLUE, lw=1.4)
-    _ax.text(-3.9, 0.6, r"$\dfrac{1}{2\ell}\, \mathrm{Beta}(m, m)\left( \dfrac{1}{2} + \dfrac{x}{2\ell} \right)$", color=BLUE, fontsize=13, ha="left", va="top", bbox=_box)
-    _ax.text(3.9, 0.58, r"$\mathcal{N}(0, 1)(x)$", color=RED, fontsize=13, ha="right", va="top", bbox=_box)
+    _ax.plot(_x, _beta, color=BLUE, lw=1.4, ls=(0, (5, 3)))
+    _ax.text(-3.9, 0.74, r"$\dfrac{1}{2\ell}\, \mathrm{Beta}(m, m)\left( \dfrac{1}{2} + \dfrac{x}{2\ell} \right)$", color=BLUE, fontsize=13, ha="left", va="top")
+    _ax.text(3.9, 0.72, r"$\mathcal{N}(0, 1)(x)$", color=RED, fontsize=13, ha="right", va="top")
     _ax.set_xlim(-4, 4)
-    _ax.set_ylim(0, 0.62)
+    _ax.set_ylim(0, 0.76)
+    _ax.xaxis.set_major_formatter(lambda _v, _p: f"${_v:g}$")
+    _ax.yaxis.set_major_formatter(lambda _v, _p: f"${_v:g}$")
     _ax.set_xlabel("$x$")
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
@@ -557,13 +511,6 @@ def _(BLUE, FULL, Figure, RED, g_m, math, mo, np, table):
     mo.vstack(
         [
             mo.hstack([g_m], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$\mu, \ \sigma^2$", r"$0, \ 1$"),
-                    (r"$n = 2m - 1$", rf"${_n}$"),
-                    (r"$\ell = \sqrt{n \sigma^2}$", rf"${_l:.2f}$"),
-                ]
-            ),
             _fig,
         ]
     )
@@ -579,7 +526,7 @@ def _(definition, mo, theorem):
     A random variable $X$ has **Gaussian** (Normal) **distribution** with mean $\mu$ and variance $\sigma^2$ if its pdf is
 
     $$
-    \underbrace{f_X(x)}_{\mathcal{N}(\mu, \sigma^2)(x)} = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right), \qquad x \in (-\infty, +\infty)
+    \underbrace{f_X(x)}_{\mathclap{\footnotesize \mathcal{N}(\mu, \sigma^2)(x)}} = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right), \qquad x \in (-\infty, +\infty)
     $$
     """,
                 "Gaussian distribution",
@@ -600,18 +547,8 @@ def _(definition, mo, theorem):
 
 
 @app.cell(hide_code=True)
-def _(box):
-    answers = tuple(box() for _ in range(6))
-    return (answers,)
-
-
-@app.cell(hide_code=True)
-def _(answers, ask, mo):
-    _c1, _e1, _v1, _c2, _e2, _v2 = answers
-    mo.vstack(
-        [
-            mo.md(
-                r"""
+def _(mo):
+    mo.md(r"""
     ## Practice
 
     ### Question 1
@@ -619,25 +556,13 @@ def _(answers, ask, mo):
     Let $X$ have pdf $f_X(x) = \begin{cases} c\, x\, e^{-2x}, & x \in (0, +\infty) \\ 0, & x \notin (0, +\infty) \end{cases}$
 
     Find $c$, $E[X]$ and $\mathrm{Var}(X)$.
-    """
-            ),
-            ask("$c =$", _c1, 4),
-            ask("$E[X] =$", _e1, 1),
-            ask(r"$\mathrm{Var}(X) =$", _v1, 0.5),
-            mo.md(
-                r"""
+
     ### Question 2
 
     Let $Y$ have pdf $f_Y(y) = \begin{cases} c\, y (1 - y)^2, & y \in (0, 1) \\ 0, & y \notin (0, 1) \end{cases}$
 
     Find $c$, $E[Y]$ and $\mathrm{Var}(Y)$.
-    """
-            ),
-            ask("$c =$", _c2, 12),
-            ask("$E[Y] =$", _e2, 0.4, 0.0005),
-            ask(r"$\mathrm{Var}(Y) =$", _v2, 0.04, 0.0005),
-            mo.md(
-                r"""
+
     ### Question 3
 
     Let $Z \sim \mathcal{N}(0, 1)$, &nbsp; $f_Z(z) = \dfrac{1}{\sqrt{2\pi}}\, e^{-z^2/2}$, $z \in \mathbb{R}$
@@ -645,45 +570,5 @@ def _(answers, ask, mo):
     Show that $m_Z(t) = e^{t^2/2}$, use $K_Z(t) = \ln(m_Z(t))$ to compute $E[Z]$, $\mathrm{Var}(Z)$, $\mathrm{Skew}(Z)$.
 
     Hint: &nbsp; $tz - \dfrac{z^2}{2} = \dfrac{t^2}{2} - \dfrac{(z - t)^2}{2}$
-    """
-            ),
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - uniform model (a single occurrence along $(a, b)$, all positions equally likely):
-
-        $$
-        \begin{gathered}
-        \mathrm{Unif}(a, b)(y) = \frac{1}{b - a} \ \text{ on } (a, b) \\[4pt]
-        \text{with } \ E[Y] = \frac{a + b}{2}, \qquad \mathrm{Var}(Y) = \frac{(b - a)^2}{12}, \qquad \mathrm{Skew}(Y) = 0
-        \end{gathered}
-        $$
-    - beta model (position of the $r$th of $n$ independent uniform occurrences along $(0, 1)$):
-
-        $$
-        \begin{gathered}
-        \mathrm{Beta}(\alpha, \beta)(y) = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, y^{\alpha-1} (1 - y)^{\beta-1} \\[4pt]
-        \text{with } \ \alpha = r, \ \ \beta = n - r + 1, \qquad \text{and} \qquad E[Y] = \frac{\alpha}{\alpha + \beta}
-        \end{gathered}
-        $$
-    - Gaussian model (middle occurrence of $n \to \infty$ uniform occurrences along $(\mu - \ell, \mu + \ell)$ with $\ell^2 / n = \sigma^2$):
-
-        $$
-        \begin{gathered}
-        \mathcal{N}(\mu, \sigma^2)(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right) \\[4pt]
-        \text{with } \ E[X] = \mu, \qquad \mathrm{Var}(X) = \sigma^2, \qquad \mathrm{Skew}(X) = 0
-        \end{gathered}
-        $$
     """)
     return
-
-
-if __name__ == "__main__":
-    app.run()

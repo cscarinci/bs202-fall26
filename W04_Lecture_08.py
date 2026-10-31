@@ -30,7 +30,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +75,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,24 +120,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 08", "Week 04", "Lecture 08 · Poisson models")
+    header("Lecture 08", "Week 04", "Lecture 08 • Poisson models")
     return
 
 
@@ -159,26 +151,6 @@ def _(arrow, math):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    def ask(label, field, answer, tol=1e-6):
-        """A labelled answer box with a feedback mark; accepts decimals, decimal commas and percentages."""
-        raw = field.value.strip()
-        mark = ""
-        if raw:
-            try:
-                value = float(raw.rstrip("%").replace(",", ".")) / (100 if raw.endswith("%") else 1)
-                mark = "correct" if abs(value - answer) <= tol else "try again"
-            except ValueError:
-                mark = "enter a number"
-        return mo.hstack([mo.md(label), field, mo.md(mark)], justify="start", align="center")
-
-    def box():
-        return mo.ui.text(placeholder="?", debounce=True)
-
-    return ask, box
-
-
-@app.cell(hide_code=True)
 def _(math):
     def pois_pmf(m, x):
         """Pois(m)(x), computed through logarithms so that large m, x do not overflow."""
@@ -197,6 +169,7 @@ def _(math):
     def pmf_axis(ax, top):
         """Axis of a pmf plot, with head room for the labels of the two series."""
         ax.set_ylim(0, 1.25 * top)
+        ax.yaxis.set_major_formatter(lambda v, _pos: f"{v:g}")
         ax.set_xlabel("$x$")
         ax.xaxis.get_major_locator().set_params(integer=True)
         for _s in ("top", "right"):
@@ -214,18 +187,11 @@ def _(mo):
     - negative binomial: &nbsp; $NB(r, p)(y) = \dbinom{y - 1}{r - 1} p^r q^{y-r}, \quad y \geq r$
     - hypergeometric:
 
-        $$
-        \begin{gathered}
-        HG(N, K, n)(x) = \frac{\dbinom{n}{x} \dbinom{N - n}{K - x}}{\dbinom{N}{K}} = \frac{\dbinom{K}{x} \dbinom{N - K}{n - x}}{\dbinom{N}{n}}, \\[6pt]
-        \max(0, n + K - N) \leq x \leq \min(n, K)
-        \end{gathered}
-        $$
+        <span class="chain">$\displaystyle HG(N, K, n)(x) = \frac{\dbinom{n}{x} \dbinom{N - n}{K - x}}{\dbinom{N}{K}}$ $\displaystyle = \frac{\dbinom{K}{x} \dbinom{N - K}{n - x}}{\dbinom{N}{n}},$ $\displaystyle \quad \max(0, n + K - N) \leq x \leq \min(n, K)$</span>
 
     - negative hypergeometric:
 
-        $$
-        NHG(N, K, r)(y) = \frac{\dbinom{y - 1}{r - 1} \dbinom{N - y}{K - r}}{\dbinom{N}{K}} = \frac{K}{N}\, \frac{\dbinom{K - 1}{r - 1} \dbinom{N - K}{y - r}}{\dbinom{N - 1}{y - 1}}, \qquad r \leq y \leq N - K + r
-        $$
+        <span class="chain">$\displaystyle NHG(N, K, r)(y) = \frac{\dbinom{y - 1}{r - 1} \dbinom{N - y}{K - r}}{\dbinom{N}{K}}$ $\displaystyle = \frac{K}{N}\, \frac{\dbinom{K - 1}{r - 1} \dbinom{N - K}{y - r}}{\dbinom{N - 1}{y - 1}},$ $\displaystyle \quad r \leq y \leq N - K + r$</span>
 
     **In this lecture:** Poisson and gamma models
 
@@ -253,7 +219,10 @@ def _(definition, mo):
     2. the average rate of occurrences is a constant $\lambda > 0$, and for small subintervals of length $h$ we have:
 
         $$
-        P\left(\substack{\text{exactly one} \\ \text{occurrence}}\right) \approx \lambda h, \qquad P\left(\substack{\text{two or more} \\ \text{occurrences}}\right) \approx 0.
+        \begin{aligned}
+        P(\text{exactly one occurrence}) &\approx \lambda h, \\[6pt]
+        P(\text{two or more occurrences}) &\approx 0.
+        \end{aligned}
         $$
 
     3. measures the number $X$ of occurrences in a fixed interval of length $t$
@@ -262,7 +231,7 @@ def _(definition, mo):
             ),
             mo.md(
                 r"""
-    $\leadsto$ &nbsp; emails arrive with average rate $\lambda = 3$ per day; &nbsp; $X = \#(\text{emails in 7 days})$ &nbsp; $\Longrightarrow$ &nbsp; $S_X = \{0, 1, 2, \dots\}$
+    $\leadsto$ &nbsp; emails arrive with average rate $\lambda = 3$ per day; &nbsp; $X = \#(\text{emails in 7 days})$ &nbsp; <span class="nw">$\Longrightarrow$ &nbsp; $S_X = \{0, 1, 2, \dots\}$</span>
 
     To compute $f_X$
 
@@ -279,22 +248,12 @@ def _(definition, mo):
     $\therefore$ &nbsp; we can think of our Poisson model as a sequence of identical independent **trials** (occurrences in each subinterval), each with one of two possible outcomes with
 
     $$
-    P(\text{“success”}) \approx \lambda t/n, \qquad P(\text{“failure”}) \approx 1 - \lambda t/n \qquad (\text{“success”: occurrence})
+    P(\underbrace{\text{“success”}}_{\footnotesize \text{occurrence}}) \approx \lambda t/n, \qquad P(\text{“failure”}) \approx 1 - \lambda t/n
     $$
 
     where we are measuring the number $X$ of “successes” in $n$ trials!
 
-    $$
-    \Longrightarrow \qquad f_X(x) \approx B(n, \lambda t/n)(x) \qquad (\text{for large } n)
-    $$
-
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad f_X(x) &= \lim_{n \to \infty} \binom{n}{x} \left( \frac{\lambda t}{n} \right)^{\!x} \left( 1 - \frac{\lambda t}{n} \right)^{\!n-x} \\[6pt]
-    &= \lim_{n \to \infty} \underbrace{\frac{n (n - 1) \cdots (n - x + 1)}{n^x}}_{\approx\, 1}\, \frac{(\lambda t)^x}{x!} \left( 1 - \frac{\lambda t}{n} \right)^{\!n} \underbrace{\left( 1 - \frac{\lambda t}{n} \right)^{\!-x}}_{\approx\, 1} \\[6pt]
-    &= \frac{(\lambda t)^x}{x!} \underbrace{\lim_{n \to \infty} \left( 1 - \frac{\lambda t}{n} \right)^{\!n}}_{e^{-\lambda t}} = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \qquad x = 0, 1, 2, \dots
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \quad f_X(x) \approx B(n, \lambda t/n)(x) \quad (\text{for large } n)$ $\displaystyle \quad \Longrightarrow \quad f_X(x) = \lim_{n \to \infty} \binom{n}{x} \left( \frac{\lambda t}{n} \right)^{\!x} \left( 1 - \frac{\lambda t}{n} \right)^{\!n-x}$ $\displaystyle = \lim_{n \to \infty} \underbrace{\frac{n (n - 1) \cdots (n - x + 1)}{n^x}}_{\footnotesize \approx 1}\, \frac{(\lambda t)^x}{x!} \left( 1 - \frac{\lambda t}{n} \right)^{\!n} \underbrace{\left( 1 - \frac{\lambda t}{n} \right)^{\!-x}}_{\footnotesize \approx 1}$ $\displaystyle = \frac{(\lambda t)^x}{x!} \underbrace{\lim_{n \to \infty} \left( 1 - \frac{\lambda t}{n} \right)^{\!n}}_{\small e^{-\lambda t}} = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \qquad x = 0, 1, 2, \dots$</span>
 
     ### The Poisson distribution
     """
@@ -304,8 +263,8 @@ def _(definition, mo):
     A random variable $X$ is said to have a **Poisson distribution** with rate $\lambda$ over an interval of length $t$ if its pmf is
 
     $$
-    \underbrace{f_X(x)}_{\mathrm{Pois}(\lambda t)(x)} = \begin{cases} e^{-\lambda t}\, \dfrac{(\lambda t)^x}{x!}, & x = 0, 1, 2, \dots \\[8pt] 0, & x \neq 0, 1, 2, \dots \end{cases}
-    \qquad (\lambda t: \text{single parameter})
+    \underbrace{f_X(x)}_{\footnotesize \mathrm{Pois}(\lambda t)(x)} = \begin{cases} e^{-\lambda t}\, \dfrac{(\lambda t)^x}{x!}, & x = 0, 1, 2, \dots \\[8pt] 0, & x \neq 0, 1, 2, \dots \end{cases}
+    \quad (\lambda t: \text{single parameter})
     $$
     """,
                 "Poisson distribution",
@@ -317,23 +276,22 @@ def _(definition, mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    lam_t = mo.ui.slider(0.5, 20, 0.5, value=2, label=r"$\lambda t$", show_value=True)
-    n_sub = mo.ui.slider(1, 200, 1, value=10, label="$n$ (subintervals)", show_value=True)
-    px = mo.ui.slider(0, 40, 1, value=0, label="$x$", show_value=True)
+    lam_t = mo.ui.slider(0.5, 21, 0.5, value=2, label=r"$\lambda t$", show_value=True)
+    n_sub = mo.ui.slider(1, 200, 1, value=10, label="$n$", show_value=True)
     p_redo = mo.ui.button(value=0, on_click=lambda v: v + 1, label="Repeat")
-    return lam_t, n_sub, p_redo, px
+    return lam_t, n_sub, p_redo
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREY, RED, binom_pmf, lam_t, math, mo, n_sub, np, p_redo, pmf_axis, pois_pmf, px, stems, table):
-    _m, _n, _x = lam_t.value, n_sub.value, px.value
-    _top = max(int(_m + 4 * math.sqrt(_m) + 4), _x + 1)
+def _(BLUE, Figure, GREY, RED, binom_pmf, lam_t, math, mo, n_sub, np, p_redo, pmf_axis, pois_pmf, stems):
+    _m, _n = lam_t.value, n_sub.value
+    _top = int(_m + 4 * math.sqrt(_m) + 4)
     _xs = list(range(_top + 1))
     _pois = [pois_pmf(_m, _k) for _k in _xs]
     _p = _m / _n
     _need = r"need $n \geq \lambda t$"
 
-    _fig = Figure(figsize=(FULL, 4.0), layout="constrained")
+    _fig = Figure(figsize=(5.6, 3.6), layout="constrained")
     _ax, _tl = _fig.subplots(2, 1, height_ratios=[3, 1])
     _peak = max(_pois)
     if _p <= 1:
@@ -341,11 +299,8 @@ def _(BLUE, FULL, Figure, GREY, RED, binom_pmf, lam_t, math, mo, n_sub, np, p_re
         _peak = max(_peak, max(_bin))
         stems(_ax, _xs, _pois, BLUE, -0.12)
         stems(_ax, _xs, _bin, RED, 0.12)
-        _bx = rf"$\textcolor{{{RED}}}{{{100 * _bin[_x]:.2f}\%}}$"
     else:
         stems(_ax, _xs, _pois, BLUE, -0.12)
-        _bx = _need
-    _ax.plot(_x - 0.12, _pois[_x], "o", color="black", mfc="none", ms=8, mew=1.0)
     pmf_axis(_ax, _peak)
     _ax.text(0.99, 0.99, r"$\mathrm{Pois}(\lambda t)$", color=BLUE, fontsize=12, ha="right", va="top", transform=_ax.transAxes)
     if _p <= 1:
@@ -356,32 +311,22 @@ def _(BLUE, FULL, Figure, GREY, RED, binom_pmf, lam_t, math, mo, n_sub, np, p_re
     _tl.set_ylim(-1.6, 1)
     _tl.axis("off")
     _tl.plot([0, 1], [0, 0], color="black", lw=0.9)
-    _tl.vlines([_k / _n for _k in range(_n + 1)], -0.35, 0.35, color=GREY, lw=0.6)
+    # the subinterval marks merge into a grey band above about 50 subintervals: then only the ends are marked
+    _tl.vlines([_k / _n for _k in range(_n + 1)] if _n <= 50 else [0, 1], -0.35, 0.35, color=GREY, lw=0.6)
     _tl.text(0, -0.6, "$0$", fontsize=12, ha="center", va="top")
     _tl.text(1, -0.6, "$t$", fontsize=12, ha="center", va="top")
     if _p <= 1:
         _rng = np.random.default_rng(808 + p_redo.value)
         _hits = np.nonzero(_rng.random(_n) < _p)[0]
         _tl.plot((_hits + 0.5) / _n, np.zeros(len(_hits)), "o", color="black", ms=4 if _n <= 100 else 2.5, zorder=4)
-        _count = f"${len(_hits)}$"
+        _count = f"one run of the experiment: $X = {len(_hits)}$ " + ("occurrence" if len(_hits) == 1 else "occurrences")
     else:
         _count = _need
+    _tl.text(0, 0.55, _count, fontsize=12, ha="left", va="bottom")
 
-    _le = sum(pois_pmf(_m, _k) for _k in range(_x + 1))
-    _ge = 1 - sum(pois_pmf(_m, _k) for _k in range(_x))
     mo.vstack(
         [
-            mo.hstack([lam_t, px, n_sub, p_redo], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$\mathrm{Pois}(\lambda t)(x) = e^{-\lambda t} (\lambda t)^x / x!$", rf"$\textcolor{{{BLUE}}}{{{100 * _pois[_x]:.2f}\%}}$"),
-                    (r"$B(n, \lambda t/n)(x)$", _bx),
-                    (r"$P(X \leq x)$", rf"${100 * _le:.2f}\%$"),
-                    (r"$P(X \geq x)$", rf"${100 * abs(_ge):.2f}\%$"),
-                    (r"$\lambda t/n$", rf"${_p:.3f}$"),
-                    (r"occurrences in one run of the experiment with $n$ subintervals", _count),
-                ]
-            ),
+            mo.hstack([lam_t, n_sub, p_redo], justify="start", gap=2, wrap=True),
             _fig,
         ]
     )
@@ -404,9 +349,7 @@ def _(mo, theorem):
     P(X = 0) = e^{-2} \approx 13.5\%
     $$
 
-    $$
-    P(X \geq 3) = 1 - P(X < 3) = 1 - e^{-2} - e^{-2} \cdot 2 - e^{-2} \cdot \frac{4}{2!} = 1 - 5 e^{-2} \approx 32.3\%
-    $$
+    <span class="chain">$\displaystyle P(X \geq 3) = 1 - P(X < 3)$ $\displaystyle = 1 - e^{-2} - e^{-2} \cdot 2 - e^{-2} \cdot \frac{4}{2!} = 1 - 5 e^{-2} \approx 32.3\%$</span>
 
     ### Mean, variance and skewness
     """
@@ -425,23 +368,13 @@ def _(mo, theorem):
                 r"""
     **Proof.**
 
-    $$
-    E[X] = \sum_{x=0}^{\infty} x\, e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = \sum_{x=1}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{(x - 1)!}
-    = \underbrace{\sum_{x-1=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^{x-1}}{(x - 1)!}}_{=\, 1} \cdot (\lambda t)
-    $$
+    <span class="chain">$\displaystyle E[X] = \sum_{x=0}^{\infty} x\, e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = \sum_{x=1}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{(x - 1)!}$ $\displaystyle = \underbrace{\sum_{x-1=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^{x-1}}{(x - 1)!}}_{\footnotesize = 1} \cdot (\lambda t) = \lambda t$</span>
 
-    $$
-    \begin{aligned}
-    \mathrm{Var}(X) &= E[X(X - 1)] + E[X] - E[X]^2 = \sum_{x=0}^{\infty} x (x - 1)\, e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} + \lambda t - (\lambda t)^2 \\[6pt]
-    &= \underbrace{\sum_{x-2=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^{x-2}}{(x - 2)!}}_{1}\, (\lambda t)^2 + \lambda t - (\lambda t)^2 = \lambda t
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle \mathrm{Var}(X) = E[X(X - 1)] + E[X] - E[X]^2$ $\displaystyle = \sum_{x=0}^{\infty} x (x - 1)\, e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} + \lambda t - (\lambda t)^2$ $\displaystyle = \underbrace{\sum_{x-2=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^{x-2}}{(x - 2)!}}_{\footnotesize 1}\, (\lambda t)^2 + \lambda t - (\lambda t)^2 = \lambda t$</span>
 
-    $$
-    \mathrm{Skew}(X) = E\!\left[ \left( \frac{X - \mu_X}{\sigma_X} \right)^{\!3} \right] = E\!\left[ \left( \frac{X - \lambda t}{\sqrt{\lambda t}} \right)^{\!3} \right] = \sum_{x=0}^{\infty} \left( \frac{x - \lambda t}{\sqrt{\lambda t}} \right)^{\!3} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = \cdots
-    $$
+    <span class="chain">$\displaystyle \mathrm{Skew}(X) = E\!\left[ \left( \frac{X - \mu_X}{\sigma_X} \right)^{\!3} \right] = E\!\left[ \left( \frac{X - \lambda t}{\sqrt{\lambda t}} \right)^{\!3} \right]$ $\displaystyle = \sum_{x=0}^{\infty} \left( \frac{x - \lambda t}{\sqrt{\lambda t}} \right)^{\!3} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = \cdots$</span>
 
-    (we will learn later a simpler way…) $\square$
+    (we will learn later a simpler way…) <span class=qed>$\square$</span>
 
     ### Poisson approximation of the binomial
 
@@ -460,7 +393,7 @@ def _(mo, theorem):
 @app.cell(hide_code=True)
 def _(mo):
     an = mo.ui.slider(1, 500, 1, value=100, label="$n$", show_value=True)
-    ap = mo.ui.slider(0.005, 0.95, 0.005, value=0.02, label="$p$", show_value=True)
+    ap = mo.ui.slider(0.01, 0.5, 0.01, value=0.02, label="$p$", show_value=True)
     return an, ap
 
 
@@ -474,8 +407,10 @@ def _(BLUE, FULL, Figure, RED, an, ap, binom_pmf, math, mo, pmf_axis, pois_pmf, 
     _bin = [binom_pmf(_n, _p, _k) for _k in _xs]
     _pois = [pois_pmf(_m, _k) for _k in _xs]
     _err = max(abs(binom_pmf(_n, _p, _k) - pois_pmf(_m, _k)) for _k in range(max(_n, _top) + 1))
+    _r = float(f"{_err:.2g}")
+    _err_txt = f"${_err:.2f}$" if _err >= 0.1 else f"${_r:.{1 - math.floor(math.log10(_r))}f}$" if _r > 0 else "$0$"
 
-    _fig = Figure(figsize=(FULL, 3.0), layout="constrained")
+    _fig = Figure(figsize=(5.6, 3.0), layout="constrained")
     _ax = _fig.subplots()
     stems(_ax, _xs, _bin, RED, 0.12)
     stems(_ax, _xs, _pois, BLUE, -0.12)
@@ -488,8 +423,7 @@ def _(BLUE, FULL, Figure, RED, an, ap, binom_pmf, math, mo, pmf_axis, pois_pmf, 
             mo.hstack([an, ap], justify="start", gap=2, wrap=True),
             table(
                 [
-                    (r"$np$", rf"${_m:.3f}$"),
-                    (r"$\max_x \lvert B(n, p)(x) - \mathrm{Pois}(np)(x) \rvert$", rf"${_err:.5f}$"),
+                    (r"$\displaystyle \max_x \lvert B(n, p)(x) - \mathrm{Pois}(np)(x) \rvert$", _err_txt),
                 ]
             ),
             _fig,
@@ -511,7 +445,10 @@ def _(definition, mo):
     2. the average rate of occurrences is a constant $\lambda > 0$, and for small subintervals of length $h$ we have:
 
         $$
-        P\left(\substack{\text{exactly one} \\ \text{occurrence}}\right) \approx \lambda h, \qquad P\left(\substack{\text{two or more} \\ \text{occurrences}}\right) \approx 0.
+        \begin{aligned}
+        P(\text{exactly one occurrence}) &\approx \lambda h, \\[6pt]
+        P(\text{two or more occurrences}) &\approx 0.
+        \end{aligned}
         $$
 
     3. measures the length $Y$ until a fixed number $r$ of occurrences is achieved
@@ -533,19 +470,8 @@ def _(definition, mo):
 
 
 @app.cell(hide_code=True)
-def _(box):
-    answers = tuple(box() for _ in range(6))
-    pmf_answers = tuple(box() for _ in range(4))
-    return answers, pmf_answers
-
-
-@app.cell(hide_code=True)
-def _(answers, ask, math, mo, pmf_answers):
-    _e, _v, _n0, _n2, _y4, _z4 = answers
-    mo.vstack(
-        [
-            mo.md(
-                r"""
+def _(mo):
+    mo.md(r"""
     ## Practice
 
     ### Question 1
@@ -553,14 +479,9 @@ def _(answers, ask, math, mo, pmf_answers):
     A box contains 5 red, 4 blue, 3 green balls. Select 3 without replacement, and let $X = \#(\text{red balls out of 3})$.
 
     (a) What is the pmf of $X$?
-    """
-            ),
-            *[ask(rf"$f_X({_x}) =$", _f, _v, 0.005) for _x, _f, _v in zip(range(4), pmf_answers, (35 / 220, 105 / 220, 70 / 220, 10 / 220))],
-            mo.md(r"(b) Find $E[X]$ and $\mathrm{Var}(X)$."),
-            ask(r"$E[X] =$", _e, 1.25, 0.005),
-            ask(r"$\mathrm{Var}(X) =$", _v, 3 * (5 / 12) * (7 / 12) * (9 / 11), 0.005),
-            mo.md(
-                r"""
+
+    (b) Find $E[X]$ and $\mathrm{Var}(X)$.
+
     (c) If we allow replacement, what is the pmf?
 
     ### Question 2
@@ -570,12 +491,7 @@ def _(answers, ask, math, mo, pmf_answers):
     (a) What is the pmf of $N$? What is its state space?
 
     (b) Find $P(N = 0)$ and $P(N \geq 2)$.
-    """
-            ),
-            ask(r"$P(N = 0) =$", _n0, math.exp(-2), 0.005),
-            ask(r"$P(N \geq 2) =$", _n2, 1 - 3 * math.exp(-2), 0.005),
-            mo.md(
-                r"""
+
     ### Question 3
 
     For the same cable above, let $Y$ = distance until 1st defect, $Z$ = distance until 2nd defect.
@@ -583,32 +499,5 @@ def _(answers, ask, math, mo, pmf_answers):
     (a) Express $\{Y > 4\}$ and $\{Z > 4\}$ as events involving $N$.
 
     (b) Find $P(\{Y > 4\})$ and $P(\{Z > 4\})$.
-    """
-            ),
-            ask(r"$P(\{Y > 4\}) =$", _y4, math.exp(-2), 0.005),
-            ask(r"$P(\{Z > 4\}) =$", _z4, 3 * math.exp(-2), 0.005),
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - a Poisson model: independent occurrences along a continuous interval at a constant average rate $\lambda > 0$; $X$ = number of occurrences in a fixed interval of length $t$, $S_X = \{0, 1, 2, \dots\}$
-    - splitting $[0, t]$ into $n$ subintervals gives $f_X(x) \approx B(n, \lambda t/n)(x)$, and in the limit $n \to \infty$:
-
-        $$
-        \mathrm{Pois}(\lambda t)(x) = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!}, \qquad x = 0, 1, 2, \dots
-        $$
-    - $E[X] = \lambda t$, &nbsp; $\mathrm{Var}(X) = \lambda t$, &nbsp; $\mathrm{Skew}(X) = \dfrac{1}{\sqrt{\lambda t}}$
-    - for large $n$, small $p$: &nbsp; $B(n, p)(x) \approx \mathrm{Pois}(np)(x)$
-    - a gamma model measures instead the length $Y$ until the $r$-th occurrence, $S_Y = (0, \infty)$ (not discrete)
     """)
     return
-
-
-if __name__ == "__main__":
-    app.run()

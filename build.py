@@ -11,13 +11,13 @@ from pathlib import Path
 HERE = Path(__file__).parent
 SITE = HERE / "site"
 
-PARTS = [  # (name, first lecture, last lecture); ranges after part III are tentative
+PARTS = [  # (name, first lecture, last lecture); ranges after part IV are tentative
     ("I. Probability spaces and counting methods", 1, 3),
     ("II. Discrete random variables", 4, 8),
     ("III. Continuous random variables", 9, 13),
-    ("IV. Joint distributions and sampling distributions", 14, 19),
-    ("V. Estimation and hypothesis testing", 20, 25),
-    ("VI. Simple linear regression", 26, 28),
+    ("IV. Several random variables", 14, 17),
+    ("V. Estimation", 18, 22),
+    ("VI. Hypothesis testing and regression", 23, 27),
 ]
 
 TITLES = {  # lecture number -> title shown on the index
@@ -36,6 +36,8 @@ TITLES = {  # lecture number -> title shown on the index
     13: "The standard normal distribution; functions of random variables; quantiles",
     14: "Joint and conditional distributions",
     15: "Covariance and correlation",
+    16: "Random samples and the law of large numbers",
+    17: "The central limit theorem",
 }
 
 PAGE = """<!doctype html>

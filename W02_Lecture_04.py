@@ -30,7 +30,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +75,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,24 +120,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 04", "Week 02", "Lecture 04 · Random variables")
+    header("Lecture 04", "Week 02", "Lecture 04 • Random variables")
     return
 
 
@@ -156,26 +148,6 @@ def _(arrow, math):
             ax.annotate(label, tip, textcoords="offset points", xytext=(r * math.cos(d), r * math.sin(d)), ha="center", va="center", color=color, fontsize=13, zorder=5, bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
 
     return (vector,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    def ask(label, field, answer, tol=1e-6):
-        """A labelled answer box with a feedback mark; accepts decimals, decimal commas and percentages."""
-        raw = field.value.strip()
-        mark = ""
-        if raw:
-            try:
-                value = float(raw.rstrip("%").replace(",", ".")) / (100 if raw.endswith("%") else 1)
-                mark = "correct" if abs(value - answer) <= tol else "try again"
-            except ValueError:
-                mark = "enter a number"
-        return mo.hstack([mo.md(label), field, mo.md(mark)], justify="start", align="center")
-
-    def box():
-        return mo.ui.text(placeholder="?", debounce=True)
-
-    return ask, box
 
 
 @app.cell(hide_code=True)
@@ -200,10 +172,7 @@ def _(BLUE, HALF, LIGHT, blank, mo):
 
     - knowledge about an event can change our belief about other events
 
-        $$
-        \underbrace{P(A \mid B)}_{\substack{\text{probability of } A \\ \text{given } B \text{ has occurred}}} = \underbrace{\frac{P(A \cap B)}{P(B)}}_{\substack{\text{probability of } A \text{ and } B \\ \text{relative to probability of } B}}
-        \qquad \leadsto \qquad P(A \cap B) = P(A \mid B)\, P(B)
-        $$
+        <span class="chain">$\displaystyle \underbrace{P(A \mid B)}_{\footnotesize \begin{matrix}\text{probability of } A \\ \text{given } B \text{ has occurred}\end{matrix}} = \underbrace{\frac{P(A \cap B)}{P(B)}}_{\footnotesize \begin{matrix}\text{probability of } A \text{ and } B \\ \text{relative to probability of } B\end{matrix}}$ $\displaystyle \qquad \leadsto \qquad P(A \cap B) = P(A \mid B)\, P(B)$</span>
 
     - if knowledge about $B$ does not change our belief about $A$, then $A$ and $B$ are **independent**!
 
@@ -226,9 +195,9 @@ def _(BLUE, HALF, LIGHT, blank, mo):
             _fig,
             mo.md(
                 r"""
-    - $P(B_i)$ = prior level of belief &nbsp; $\leadsto$ &nbsp; probability of having a disease before testing
-    - $P(B_i \mid A)$ = posterior level of belief &nbsp; $\leadsto$ &nbsp; probability of having a disease after testing
-    - $P(A \mid B_i)$ = likelihoods &nbsp; $\leadsto$ &nbsp; true positive rates and false positive rates
+    - $P(B_i)$ = prior level of belief &nbsp; <span class="nw">$\leadsto$ &nbsp; probability</span> of having a disease before testing
+    - $P(B_i \mid A)$ = posterior level of belief &nbsp; <span class="nw">$\leadsto$ &nbsp; probability</span> of having a disease after testing
+    - $P(A \mid B_i)$ = likelihoods &nbsp; <span class="nw">$\leadsto$ &nbsp; true</span> positive rates and false positive rates
     - law of total probability: &nbsp; $P(A) = \displaystyle\sum_{i=1}^{k} P(A \mid B_i)\, P(B_i)$
 
     **In this lecture:** random variables and their probability distributions: pmf and cdf
@@ -304,9 +273,7 @@ def _(definition, mo):
 
     $\leadsto$ &nbsp; how can we describe events?
 
-    $$
-    A = \{\text{male}\}, \quad B = \{\text{female}\}, \quad C = \{\text{non-binary}\}, \quad D = \{\text{Korean}\}, \quad E = \{\text{plays football}\}, \ \dots
-    $$
+    <span class="chain">$\displaystyle A = \{\text{male}\},$ $\displaystyle \quad B = \{\text{female}\},$ $\displaystyle \quad C = \{\text{non-binary}\},$ $\displaystyle \quad D = \{\text{Korean}\},$ $\displaystyle \quad E = \{\text{plays football}\}, \ \dots$</span>
 
     $\leadsto$ &nbsp; we can come up with an enormous number of events
 
@@ -317,8 +284,9 @@ def _(definition, mo):
     $$
     \begin{aligned}
     X &= \text{year in DGIST} && \leadsto \qquad S_X = \{2011, 2012, \dots, 2026\} \\
-    Y &= \text{current GPA} && \leadsto \qquad S_Y \subseteq [0, 4] \\[2pt]
-    & && \phantom{\leadsto \qquad} (\text{finitely many values here; usually modeled by all of } [0, 4])
+    Y &= \text{current GPA} && \leadsto \qquad S_Y \subset [0, 4] \\[2pt]
+    & && \phantom{\leadsto \qquad} (\text{is actually discrete,} \\
+    & && \phantom{\leadsto \qquad} \phantom{(}\text{since the sample space is finite})
     \end{aligned}
     $$
 
@@ -331,7 +299,7 @@ def _(definition, mo):
     | **probability distribution** of $X : S \longrightarrow \mathbb{R}$ | $P_X : \mathcal{E}_X \longrightarrow \mathbb{R}$ | simplified version of $P : \mathcal{E} \longrightarrow \mathbb{R}$ |
 
     $$
-    P_X(A) = P\big( \underbrace{\{\, o \in S \mid X(o) \in A \,\}}_{\text{outcomes whose value of } X \text{ belongs to } A} \big) = P(X \in A)
+    P_X(A) = P\big( \underbrace{\{\, o \in S \mid X(o) \in A \,\}}_{\mathclap{\footnotesize \text{outcomes whose value of } X \text{ belongs to } A}\vphantom{\footnotesize \text{outcomes whose value of } X \text{ belongs to } A}} \big) = P(X \in A)
     $$
     """
             ),
@@ -341,8 +309,8 @@ def _(definition, mo):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, GREY, arrow, blank, definition, mo):
-    _fig, _ax = blank(FULL, 2.9, (-1.0, 18.4), (-2.3, 6.6))
+def _(BLUE, GREY, arrow, blank, definition, mo):
+    _fig, _ax = blank(5.6, 2.6, (-1.0, 18.4), (-2.3, 6.6))
     arrow(_ax, (-0.5, 0), (17.8, 0), "black", lw=0.9)
     arrow(_ax, (0, -0.4), (0, 6.4), "black", lw=0.9)
     _vals = [0, 0, 0, 0, 0, 0, 0, 0.3, 0.6, 1.5, 2.6, 3.6, 4.3, 4.9, 5.2, 5.6]
@@ -352,7 +320,7 @@ def _(BLUE, FULL, GREY, arrow, blank, definition, mo):
         _ax.text(_k + 1, -0.3, f"${11 + _k}$", fontsize=12, ha="center", va="top")
     _ax.text(17.9, -0.3, "$x$", fontsize=13, ha="center", va="top")
     _ax.text(0.35, 6.3, "$y$", fontsize=13, ha="left", va="top")
-    _ax.text(4.0, 3.6, r"$y = P_X(\{x\})$", color=BLUE, fontsize=13, ha="center", va="center")
+    _ax.text(11.5, 4.4, r"$y = P_X(\{x\})$", color=BLUE, fontsize=13, ha="right", va="center")
     _ax.plot([0.7, 0.7, 7.3, 7.3], [-1.15, -1.4, -1.4, -1.15], color=GREY, lw=1.0)
     _ax.text(4, -1.55, "graduated", fontsize=12, ha="center", va="top")
 
@@ -360,10 +328,10 @@ def _(BLUE, FULL, GREY, arrow, blank, definition, mo):
         [
             mo.md(
                 r"""
-    **Example.** &nbsp; $S = \{\text{all students}\}$, &nbsp; $X$ = year in DGIST &nbsp; $\leadsto$ &nbsp; $S_X = \{2011, \dots, 2025, 2026\}$
+    **Example.** &nbsp; $S = \{\text{all students}\}$, &nbsp; $X$ = year in DGIST &nbsp; <span class="nw">$\leadsto$ &nbsp; $S_X = \{2011, \dots, 2025, 2026\}$</span>
 
     $$
-    \underbrace{P_X(\{2026\})}_{\substack{\{2026\}:\ \text{subset of } \mathbb{R} \\ \text{easy to characterize with a census of DGIST}}} = \underbrace{P(\{\text{is freshman}\})}_{\substack{\text{subset of humans} \\ \text{impossible to model “completely”}}} = P(\{X = 2026\})
+    \underbrace{P_X(\{2026\})}_{\footnotesize \begin{matrix}\{2026\}\colon\ \text{subset of } \mathbb{R} \\ \text{easy to characterize} \\ \text{with a census of DGIST}\end{matrix}} = \underbrace{P(\{\text{is freshman}\})}_{\footnotesize \begin{matrix}\text{subset of humans} \\ \text{impossible to model} \\ \text{“completely”}\end{matrix}} = P(\{X = 2026\})
     $$
     """
             ),
@@ -386,10 +354,10 @@ def _(BLUE, FULL, GREY, arrow, blank, definition, mo):
             ),
             mo.md(
                 r"""
-    **Example** (Roll two fair 4-sided dice). &nbsp; $\leadsto$ &nbsp; $S = \{\, (i, j) \mid i, j \in \{1, 2, 3, 4\} \,\}$
+    **Example** (Roll two fair 4-sided dice). &nbsp; <span class="nw">$\leadsto$ &nbsp; $S = \{\, (i, j) \mid i, j \in \{1, 2, 3, 4\} \,\}$</span>
 
     $$
-    X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} \ = \text{largest face} \qquad \leadsto \qquad S_X = \{1, 2, 3, 4\}
+    X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} \ = \text{largest face} \quad \leadsto \quad S_X = \{1, 2, 3, 4\}
     $$
 
     $$
@@ -414,7 +382,7 @@ def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
     _ax.set_xlim(-0.5, 6.5)
     _ax.set_ylim(0, 0.5)
     _ax.set_xticks(range(7))
-    _ax.set_yticks([_k / 16 for _k in (1, 3, 5, 7)], [rf"$\frac{{{_k}}}{{16}}$" for _k in (1, 3, 5, 7)])
+    _ax.set_yticks([_k / 16 for _k in (1, 3, 5, 7)], [rf"${_k}/16$" for _k in (1, 3, 5, 7)])
     _ax.set_xlabel("$x$")
     _ax.set_ylabel("$f_X(x)$")
 
@@ -430,7 +398,7 @@ def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
                 _bx.plot([_edges[_k], _edges[_k]], [_levels[_k - 1], _lev], color=GREY, lw=0.9, ls=(0, (1, 2)))
             _bx.plot(_edges[_k], _levels[_k - 1], "o", color=BLUE, ms=4.5, mfc="white", zorder=4)
             _bx.plot(_edges[_k], _lev, "o", color=BLUE, ms=4.5, zorder=4)
-    for _x, _lo, _hi, _name in ((3, 1 / 4, 9 / 16, r"$f_X(3) = \frac{5}{16}$"), (4, 9 / 16, 1, r"$f_X(4) = \frac{7}{16}$")):
+    for _x, _lo, _hi, _name in ((3, 1 / 4, 9 / 16, r"$f_X(3) = \dfrac{5}{16}$"), (4, 9 / 16, 1, r"$f_X(4) = \dfrac{7}{16}$")):
         _mid = (_lo + _hi) / 2
         arrow(_bx, (_x, _mid), (_x, _hi), GREEN, shrinkB=3)
         arrow(_bx, (_x, _mid), (_x, _lo), GREEN, shrinkB=3)
@@ -438,7 +406,7 @@ def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
     _bx.set_xlim(-1, 6.4)
     _bx.set_ylim(-0.06, 1.12)
     _bx.set_xticks(range(7))
-    _bx.set_yticks([0.25, 0.5, 0.75, 1], [r"$\frac{1}{4}$", r"$\frac{1}{2}$", r"$\frac{3}{4}$", "$1$"])
+    _bx.set_yticks([0.25, 0.5, 0.75, 1], [r"$1/4$", r"$1/2$", r"$3/4$", "$1$"])
     _bx.set_xlabel("$x$")
     _bx.set_ylabel("$F_X(x)$")
     for _a in (_ax, _bx):
@@ -453,7 +421,7 @@ def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
     Given $X : S \longrightarrow \mathbb{R}$ discrete random variable, the **probability mass function** (pmf) of $X$ is
 
     $$
-    f_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto f_X(x) = \underbrace{P(X = x)}_{\text{probability of } X \text{ having value } x}
+    f_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto f_X(x) = \underbrace{P(X = x)}_{\mathclap{\footnotesize \begin{matrix}\text{probability of } X \\ \text{having value } x\end{matrix}}\vphantom{\footnotesize \begin{matrix}\text{probability of } X \\ \text{having value } x\end{matrix}}}
     $$
 
     $f_X$ satisfies
@@ -473,10 +441,10 @@ def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
 
     $$
     \begin{aligned}
-    f_X(1) &= P(X = 1) = P(\{(1, 1)\}) = \tfrac{1}{16} \\
-    f_X(2) &= P(X = 2) = P(\{(2, 1), (2, 2), (1, 2)\}) = \tfrac{3}{16} \\
-    f_X(3) &= P(\{(3, 1), (3, 2), (3, 3), (2, 3), (1, 3)\}) = \tfrac{5}{16} \\
-    f_X(4) &= \tfrac{7}{16}, \qquad f_X(5) = 0, \qquad f_X(6) = 0
+    f_X(1) &= P(X = 1) = P(\{(1, 1)\}) = \frac{1}{16} \\[14pt]
+    f_X(2) &= P(X = 2) = P(\{(2, 1), (2, 2), (1, 2)\}) = \frac{3}{16} \\[14pt]
+    f_X(3) &= P(\{(3, 1), (3, 2), (3, 3), (2, 3), (1, 3)\}) = \frac{5}{16} \\[14pt]
+    f_X(4) &= \frac{7}{16}, \qquad f_X(5) = 0, \qquad f_X(6) = 0
     \end{aligned}
     $$
     """
@@ -488,7 +456,7 @@ def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
     Given $X : S \longrightarrow \mathbb{R}$ discrete random variable, the **cumulative distribution function** (cdf) of $X$ is
 
     $$
-    F_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto F_X(x) = \underbrace{P(X \leq x)}_{\text{probability of } X \text{ having value at most } x}
+    F_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto F_X(x) = \underbrace{P(X \leq x)}_{\mathclap{\footnotesize \begin{matrix}\text{probability of } X \\ \text{having value at most } x\end{matrix}}\vphantom{\footnotesize \begin{matrix}\text{probability of } X \\ \text{having value at most } x\end{matrix}}}
     $$
     """,
                 "Cumulative distribution function",
@@ -501,10 +469,10 @@ def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
 
     $$
     \begin{aligned}
-    F_X(1) &= P(X \leq 1) = P(X = 1) = \tfrac{1}{16} \\
-    F_X(2) &= P(X \leq 2) = P(X \leq 1) + P(X = 2) = \tfrac{1}{16} + \tfrac{3}{16} = \tfrac{1}{4} \\
-    F_X(3) &= P(X \leq 3) = P(X \leq 2) + P(X = 3) = \tfrac{1}{4} + \tfrac{5}{16} = \tfrac{9}{16} \\
-    F_X(4) &= \tfrac{9}{16} + \tfrac{7}{16} = 1, \qquad F_X(5) = 1, \qquad F_X(6) = 1
+    F_X(1) &= P(X \leq 1) = P(X = 1) = \frac{1}{16} \\[14pt]
+    F_X(2) &= P(X \leq 2) = P(X \leq 1) + P(X = 2) = \frac{1}{16} + \frac{3}{16} = \frac{1}{4} \\[14pt]
+    F_X(3) &= P(X \leq 3) = P(X \leq 2) + P(X = 3) = \frac{1}{4} + \frac{5}{16} = \frac{9}{16} \\[14pt]
+    F_X(4) &= \frac{9}{16} + \frac{7}{16} = 1, \qquad F_X(5) = 1, \qquad F_X(6) = 1
     \end{aligned}
     $$
 
@@ -528,24 +496,23 @@ def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
 @app.cell(hide_code=True)
 def _(mo):
     rv_choice = mo.ui.dropdown(["X = largest face", "Y = sum of faces"], value="X = largest face", label="random variable")
-    sides = mo.ui.slider(2, 8, 1, value=4, label="sides of each die", show_value=True)
-    return rv_choice, sides
+    return (rv_choice,)
 
 
 @app.cell(hide_code=True)
-def _(mo, rv_choice, sides):
-    _n = sides.value
+def _(mo, rv_choice):
+    _n = 4
     _lo, _hi = (1, _n) if rv_choice.value.startswith("X") else (2, 2 * _n)
-    range_a = mo.ui.slider(_lo, _hi, 1, value=_lo, label="$a$", show_value=True)
-    range_b = mo.ui.slider(_lo, _hi, 1, value=_hi, label="$b$", show_value=True)
+    range_a = mo.ui.slider(_lo, _hi, 1, value=min(max(3, _lo), _hi), label="$a$", show_value=True)
+    range_b = mo.ui.slider(_lo, _hi, 1, value=min(max(3, _lo), _hi), label="$b$", show_value=True)
     return range_a, range_b
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, mo, range_a, range_b, rv_choice, sides, table):
+def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, mo, range_a, range_b, rv_choice, table):
     from fractions import Fraction as _Fr
 
-    _n = sides.value
+    _n = 4
     _is_max = rv_choice.value.startswith("X")
     _rv = "X" if _is_max else "Y"
     _counts = {}
@@ -562,7 +529,7 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, mo, range_a, range_b, rv_choice, s
         return sum(_counts[_v] for _v in _xs if _v <= x)
 
     def _tex(q):
-        return f"{q.numerator}" if q.denominator == 1 else rf"\tfrac{{{q.numerator}}}{{{q.denominator}}}"
+        return f"{q.numerator}" if q.denominator == 1 else rf"\dfrac{{{q.numerator}}}{{{q.denominator}}}"
 
     _lo, _hi = _xs[0] - 1, _xs[-1] + 1
     _ticks = _xs if len(_xs) <= 9 else _xs[::2]
@@ -597,36 +564,28 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, mo, range_a, range_b, rv_choice, s
         _right.plot([_b, _xg], [_y1, _y1], color=GREY, lw=1.0, ls=(0, (4, 3)))
         _cap = 0.02 * _span
         _right.plot([_xg - _cap, _xg + _cap, _xg, _xg, _xg - _cap, _xg + _cap], [_y0, _y0, _y0, _y1, _y1, _y1], color=GREEN, lw=1.6, zorder=3)
+        _right.text(_xg + _cap, 1.1, f"$F_{_rv}(b) - F_{_rv}(a - 1)$", color=GREEN, fontsize=12, ha="right", va="bottom")
     _right.set_xlim(_lo, _hi + 0.16 * _span)
     _right.set_ylim(-0.06, 1.12)
     _right.set_xticks(_ticks)
     _right.set_xlabel("$x$")
     _right.set_ylabel(f"$F_{_rv}(x)$")
+    from matplotlib.ticker import FuncFormatter as _FF
+
     for _ax in (_left, _right):
+        _ax.yaxis.set_major_formatter(_FF(lambda v, _pos: f"${v:g}$"))
         for _s in ("top", "right"):
             _ax.spines[_s].set_visible(False)
 
-    _values = (
-        "| $x$ | " + " | ".join(str(_x) for _x in _xs) + " |\n|:--|" + ":-:|" * len(_xs)
-        + f"\n| $f_{_rv}(x)$ | " + " | ".join(f"${_tex(_Fr(_counts[_x], _n**2))}$" for _x in _xs)
-        + f" |\n| $F_{_rv}(x)$ | " + " | ".join(f"${_tex(_Fr(_F(_x), _n**2))}$" for _x in _xs) + " |"
-    )
     if _a <= _b:
-        _p = _Fr(_F(_b) - _F(_a - 1), _n**2)
-        _sum = rf"$\displaystyle\sum_{{x = {_a}}}^{{{_b}}} f_{_rv}(x) = \textcolor{{{GREEN}}}{{{_tex(_p)}}}$"
-        _diff = rf"${_tex(_Fr(_F(_b), _n**2))} - {_tex(_Fr(_F(_a - 1), _n**2))} = \textcolor{{{GREEN}}}{{{_tex(_p)}}}$"
+        _p = f"${_tex(_Fr(_F(_b) - _F(_a - 1), _n**2))}$"
     else:
-        _sum = _diff = r"need $a \leq b$"
+        _p = r"need $a \leq b$"
     mo.vstack(
         [
-            mo.hstack([rv_choice, sides, range_a, range_b], justify="start", gap=2, wrap=True),
-            mo.md(_values),
-            table(
-                [
-                    (rf"$P(a \leq {_rv} \leq b)$", _sum),
-                    (rf"$F_{_rv}(b) - F_{_rv}(a - 1)$", _diff),
-                ]
-            ),
+            mo.hstack([rv_choice], justify="start", gap=2, wrap=True),
+            mo.hstack([range_a, range_b], justify="start", gap=2, wrap=True),
+            table([(rf"$P(a \leq {_rv} \leq b) = \displaystyle\sum_{{x = a}}^{{b}} f_{_rv}(x) = F_{_rv}(b) - F_{_rv}(a - 1)$", _p)]),
             _fig,
         ]
     )
@@ -634,19 +593,8 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, mo, range_a, range_b, rv_choice, s
 
 
 @app.cell(hide_code=True)
-def _(box):
-    answers = tuple(box() for _ in range(5))
-    pmf_answers = tuple(box() for _ in range(5))
-    return answers, pmf_answers
-
-
-@app.cell(hide_code=True)
-def _(answers, ask, mo, pmf_answers):
-    _a1, _b1, _q2, _c1, _c2 = answers
-    mo.vstack(
-        [
-            mo.md(
-                r"""
+def _(mo):
+    mo.md(r"""
     pmf and cdf are different ways to encode the probability distribution of a random variable $X$.
 
     We will spend the next several lectures studying properties and examples of such functions!
@@ -668,58 +616,23 @@ def _(answers, ask, mo, pmf_answers):
     $$
 
     (a) What is the probability that a kit is contaminated?
-    """
-            ),
-            ask("probability $=$", _a1, 0.021, 0.0005),
-            mo.md(r"(b) Given a contaminated kit, what is the probability it came from supplier 3?"),
-            ask("probability $=$", _b1, 10 / 21, 0.005),
-            mo.md(
-                r"""
+
+    (b) Given a contaminated kit, what is the probability it came from supplier 3?
+
     ### Question 2
 
     A box has 5 red, 4 blue and 3 green balls. Choose 3 without replacement. Find the probability that no ball is red.
-    """
-            ),
-            ask("probability $=$", _q2, 35 / 220, 0.005),
-            mo.md(
-                r"""
+
     ### Question 3
 
     Suppose $X$ has state space $S_X = \{0, 1, 2, 3, 4\}$ with cdf
 
     $$
-    F_X(0) = 0.1, \quad F_X(1) = 0.35, \quad F_X(2) = 0.65, \quad F_X(3) = 0.9, \quad F_X(4) = 1.
+    F_X(0) = 0.1, \ F_X(1) = 0.35, \ F_X(2) = 0.65, \ F_X(3) = 0.9, \ F_X(4) = 1.
     $$
 
     (a) Find $f_X$ (pmf).
-    """
-            ),
-            *[ask(rf"$f_X({_x}) =$", _f, _v, 0.0005) for _x, _f, _v in zip(range(5), pmf_answers, (0.1, 0.25, 0.3, 0.25, 0.1))],
-            mo.md(r"(b) Compute $P(X > 2)$ and $P(1 \leq X \leq 3)$."),
-            ask(r"$P(X > 2) =$", _c1, 0.35, 0.0005),
-            ask(r"$P(1 \leq X \leq 3) =$", _c2, 0.8, 0.0005),
-        ]
-    )
-    return
 
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - a random variable is a function $X : S \longrightarrow \mathbb{R}$ on the sample space; its state space $S_X = \mathrm{Im}(X) \subseteq \mathbb{R}$ serves as a simplified version of $S$
-    - probability distribution of $X$: &nbsp; $P_X(A) = P(\{\, o \in S \mid X(o) \in A \,\}) = P(X \in A)$ for $A \subseteq S_X$
-    - $X$ is discrete if $S_X$ consists of countably many points, continuous if $S_X$ is uncountable + extra conditions (later)
-    - pmf: $f_X(x) = P(X = x)$, with
-
-        $$
-        f_X \geq 0, \qquad \sum_{x \in S_X} f_X(x) = 1 \qquad \text{and} \qquad \sum_{x \in A} f_X(x) = P(X \in A)
-        $$
-    - cdf: $F_X(x) = P(X \leq x)$; for the largest face of two fair 4-sided dice, $F_X(k) - F_X(k - 1) = f_X(k)$
+    (b) Compute $P(X > 2)$ and $P(1 \leq X \leq 3)$.
     """)
     return
-
-
-if __name__ == "__main__":
-    app.run()

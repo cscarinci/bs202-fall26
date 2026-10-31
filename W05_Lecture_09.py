@@ -30,7 +30,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +75,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,24 +120,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 09", "Week 05", "Lecture 09 · Continuous random variables; gamma and exponential distributions")
+    header("Lecture 09", "Week 05", "Lecture 09 • Continuous random variables; gamma and exponential distributions")
     return
 
 
@@ -168,9 +160,7 @@ def _(mo):
 
         (constant average rate $\lambda$; independent for disjoint intervals)
 
-        $$
-        S_X = \{0, 1, 2, \dots\}, \qquad f_X(x) = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \qquad \leadsto \qquad \sum_{x=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = e^{-\lambda t} e^{\lambda t} = 1
-        $$
+        <span class="chain">$\displaystyle S_X = \{0, 1, 2, \dots\},$ $\displaystyle \quad f_X(x) = e^{-\lambda t}\, \frac{(\lambda t)^x}{x!}$ $\displaystyle \quad \leadsto \quad \sum_{x=0}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = e^{-\lambda t} e^{\lambda t} = 1$</span>
 
     - $Y$ = length of interval until $r$ occurrences
 
@@ -197,16 +187,9 @@ def _(corollary, definition, mo):
 
     **Recall:** $X : S \longrightarrow \mathbb{R}$ is a discrete random variable if $S_X = \mathrm{Im}(X)$ is countable
 
-    $$
-    \leadsto \qquad P_X(A) = P(X \in A) = \sum_{x \in A \cap S_X} \underbrace{f_X(x)}_{\text{pmf: } P(X = x)}
-    $$
+    <span class="chain">$\displaystyle \leadsto \quad P_X(A) = P(X \in A) = \sum_{x \in A \cap S_X} \underbrace{f_X(x)}_{\mathclap{\footnotesize \text{pmf: } P(X = x)}}$ $\displaystyle \quad \leadsto \quad \underbrace{F_X(x)}_{\footnotesize \text{cdf}} = P(X \leq x) = \sum_{y \in (-\infty, x] \cap S_X} f_X(y)$ $\displaystyle \quad \Longrightarrow \quad f_X(x) = F_X(x) - F_X(x^-)$</span>
 
-    $$
-    \leadsto \qquad \underbrace{F_X(x)}_{\text{cdf}} = P(X \leq x) = \sum_{y \in (-\infty, x] \cap S_X} f_X(y)
-    \qquad \Longrightarrow \qquad f_X(x) = F_X(x) - F_X(x^-)
-    $$
-
-    ($F_X(x^-) = P(X < x)$: value of $F_X$ just before $x$)
+    ($x^-$ = first element in $S_X$ smaller than $x$; $F_X(x^-) = P(X < x)$)
     """
             ),
             definition(
@@ -226,7 +209,7 @@ def _(corollary, definition, mo):
             ),
             corollary(
                 r"""
-    $X$ continuous random variable &nbsp; $\Longrightarrow$ &nbsp; $P(X = x) = 0 \quad \forall\, x \in \mathbb{R}$! &nbsp; (no notion of pmf)
+    $X$ continuous random variable &nbsp; <span class="nw">$\Longrightarrow$ &nbsp; $P(X = x) = 0 \quad \forall\, x \in \mathbb{R}$!</span> &nbsp; (no&nbsp;notion&nbsp;of&nbsp;pmf)
 
     $$
     \Longrightarrow \qquad P(a \leq X \leq b) = F_X(b) - F_X(a)
@@ -239,7 +222,7 @@ def _(corollary, definition, mo):
     A random variable $X : S \longrightarrow \mathbb{R}$ is **continuous** if
 
     - $S_X$ is uncountable
-    - there exists $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ integrable (pdf: probability density function) such that
+    - there exists $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ integrable (pdf:&nbsp;probability&nbsp;density&nbsp;function) such that
 
         $$
         P(a \leq X \leq b) = \int_a^b f_X(x)\, dx = F_X(b) - F_X(a)
@@ -260,7 +243,10 @@ def _(corollary, definition, mo):
     - $\displaystyle\int_{-\infty}^{+\infty} f_X(x)\, dx = 1$
 
     $$
-    \text{Given } F_X \ \Longrightarrow \ f_X(x) = \frac{d}{dx} F_X(x), \qquad \qquad \text{Given } f_X \ \Longrightarrow \ F_X(x) = \int_{-\infty}^{x} f_X(u)\, du
+    \begin{align*}
+    \text{Given } F_X \ & \Longrightarrow \ f_X(x) = \frac{d}{dx} F_X(x) \\[14pt]
+    \text{Given } f_X \ & \Longrightarrow \ F_X(x) = \int_{-\infty}^{x} f_X(u)\, du
+    \end{align*}
     $$
 
     ### The gamma distribution
@@ -269,24 +255,14 @@ def _(corollary, definition, mo):
 
     **Proof.** Note that
 
-    $$
-    \underbrace{P(X \geq r)}_{\text{at least } r \text{ occurrences before length } t} = \underbrace{P(Y \leq t)}_{\text{less than length } t \text{ until } r \text{ occurrences}}
-    \qquad \Longrightarrow \qquad \sum_{x=r}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = P(Y \leq t) = F_Y(t)
-    $$
+    <span class="chain">$\displaystyle \underbrace{P(X \geq r)}_{\footnotesize \begin{matrix} \text{at least } r \text{ occurrences} \\ \text{before length } t \end{matrix}} = \underbrace{P(Y \leq t)}_{\footnotesize \begin{matrix} \text{less than length } t \\ \text{until } r \text{ occurrences} \end{matrix}}$ $\displaystyle \quad \Longrightarrow \quad \sum_{x=r}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} = P(Y \leq t) = F_Y(t)$</span>
 
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad f_Y(t) &= \frac{d}{dt} \left( \sum_{x=r}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \right)
-    = \sum_{x=r}^{\infty} \lambda e^{-\lambda t} \left( -\frac{(\lambda t)^x}{x!} + \frac{(\lambda t)^{x-1}}{(x - 1)!} \right) \\[6pt]
-    &= \lambda e^{-\lambda t} \left[ \sum_{x=r}^{\infty} \frac{(\lambda t)^{x-1}}{(x - 1)!} - \sum_{x=r}^{\infty} \frac{(\lambda t)^x}{x!} \right]
-    = \lambda e^{-\lambda t}\, \frac{(\lambda t)^{r-1}}{(r - 1)!} = \underbrace{\frac{\lambda^r t^{r-1}}{(r - 1)!}\, e^{-\lambda t}}_{\mathrm{Gamma}(r, \lambda)(t)} \qquad \square
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \quad f_Y(t) = \frac{d}{dt} \left( \sum_{x=r}^{\infty} e^{-\lambda t}\, \frac{(\lambda t)^x}{x!} \right)$ $\displaystyle = \sum_{x=r}^{\infty} \lambda e^{-\lambda t} \left( -\frac{(\lambda t)^x}{x!} + \frac{(\lambda t)^{x-1}}{(x - 1)!} \right)$ $\displaystyle = \lambda e^{-\lambda t} \left[ \sum_{x=r}^{\infty} \frac{(\lambda t)^{x-1}}{(x - 1)!} - \sum_{x=r}^{\infty} \frac{(\lambda t)^x}{x!} \right]$ $\displaystyle = \lambda e^{-\lambda t}\, \frac{(\lambda t)^{r-1}}{(r - 1)!} = \underbrace{\frac{\lambda^r t^{r-1}}{(r - 1)!}\, e^{-\lambda t}}_{\footnotesize \mathrm{Gamma}(r, \lambda)(t)}$ <span class="qed">$\square$</span></span>
 
     **Remark.** Similar derivations of $NB(r, p)$ from $B(n, p)$ and $NHG(N, K, r)$ from $HG(N, K, n)$ are possible!
 
     $$
-    \underbrace{P(X_n \geq r)}_{\text{at least } r\ H\text{s in } n \text{ flips}} = \underbrace{P(Y_r \leq n)}_{\text{at most } n \text{ flips until } r\ H\text{s}}
+    \underbrace{P(X_n \geq r)}_{\footnotesize \text{at least } r\ H\text{s in } n \text{ flips}} = \underbrace{P(Y_r \leq n)}_{\footnotesize \text{at most } n \text{ flips until } r\ H\text{s}}
     $$
     """
             ),
@@ -300,30 +276,33 @@ def _(corollary, definition, mo):
     """,
                 "Gamma distribution",
             ),
-        ]
+        ],
+        gap=1.5,
     )
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
-    g_lam = mo.ui.slider(0.2, 4, 0.1, value=1, label=r"$\lambda$", show_value=True)
+    g_lam = mo.ui.slider(1, 4, 0.1, value=1, label=r"$\lambda$", show_value=True)
     g_a = mo.ui.slider(0, 10, 0.1, value=0, label="$a$", show_value=True)
-    g_b = mo.ui.slider(0, 10, 0.1, value=2, label="$b$", show_value=True)
-    g_r = mo.ui.slider(1, 6, 1, value=2, label="$r$", show_value=True)
-    g_t = mo.ui.slider(0.1, 10, 0.1, value=2, label="$t$", show_value=True)
-    return g_a, g_b, g_lam, g_r, g_t
+    g_b = mo.ui.slider(0, 10, 0.1, value=3, label="$b$", show_value=True)
+    g_r = mo.ui.slider(1, 3, 1, value=2, label="$r$", show_value=True)
+    return g_a, g_b, g_lam, g_r
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, g_a, g_b, g_lam, g_r, g_t, math, mo, np, table):
-    _lam, _r, _t, _a, _b = g_lam.value, g_r.value, g_t.value, g_a.value, g_b.value
+def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, g_a, g_b, g_lam, g_r, math, mo, np, table):
+    _lam, _r, _a, _b = g_lam.value, g_r.value, g_a.value, g_b.value
 
     def _pdf(y, r):
         return _lam**r * y ** (r - 1) / math.factorial(r - 1) * np.exp(-_lam * y)
 
+    def _tail(t, r):
+        return sum(np.exp(-_lam * t) * (_lam * t) ** k / math.factorial(k) for k in range(r))
+
     def _cdf(t, r):
-        return 1 - sum(np.exp(-_lam * t) * (_lam * t) ** k / math.factorial(k) for k in range(r))
+        return 1 - _tail(t, r)
 
     # the frame reaches at least 10 and at least the 99.5 % point of the chosen r
     _grid = np.linspace(0, 200, 4001)
@@ -331,7 +310,6 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, g_a, g_b, g_lam, g_r, g_t, math, m
     _y = np.linspace(0, _xmax, 500)
     _fig = Figure(figsize=(FULL, 3.0), layout="constrained")
     _ax, _cx = _fig.subplots(1, 2)
-    _white = {"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"}
 
     # pdf: the curves r = 1, 2, 3 of the board for reference, the chosen r in blue with P(a <= Y <= b) as an area
     if _a <= _b:
@@ -340,27 +318,34 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, g_a, g_b, g_lam, g_r, g_t, math, m
     for _x, _name, _ha in ((_a, "$a$", "right" if _a <= _b else "left"), (_b, "$b$", "left" if _a <= _b else "right")):
         _ax.axvline(_x, color=GREY, lw=1.0, ls=(0, (4, 3)))
         _ax.annotate(_name, (_x, 1.0), xycoords=("data", "axes fraction"), textcoords="offset points", xytext=(-2 if _ha == "right" else 2, 3), ha=_ha, va="bottom", fontsize=12, annotation_clip=False)
-    _lift = {1: 2, 2: 20, 3: 8}  # labels sit above the topmost curve, at separate heights
+    _spot = {1: (0.3, (5, 0), "center"), 2: (1.2, (3, 3), "bottom"), 3: (3.5, (3, 3), "bottom")}  # (lambda x, offset, va): a free spot beside each curve
     for _k in sorted({1, 2, 3, _r}):
         _col = BLUE if _k == _r else GREY
         _ax.plot(_y, _pdf(_y, _k), color=_col, lw=1.4 if _k == _r else 1.0, zorder=3 if _k == _r else 2)
-        _x = min((_k - 0.5) / _lam, _xmax)
-        _ax.annotate(f"$r = {_k}$", (_x, float(_pdf(_x, _k))), textcoords="offset points", xytext=(5, _lift.get(_k, 2) if _x < _xmax else 0), ha="left", va="bottom" if _x < _xmax else "center", color=_col, fontsize=12, bbox=_white, zorder=5, annotation_clip=False)
+        _x = _spot[_k][0] / _lam
+        _ax.annotate(f"$r = {_k}$", (_x, float(_pdf(_x, _k))), textcoords="offset points", xytext=_spot[_k][1], ha="left", va=_spot[_k][2], color=_col, fontsize=12, zorder=5, annotation_clip=False)
     _ax.set_xlim(0, _xmax)
     _ax.set_ylim(0, 1.05 * _lam)
     _ax.set_xlabel("$y$")
     _ax.set_ylabel("$f_Y(y)$")
 
     # cdf of the chosen r: the same probability as a difference of two values
-    _Fa, _Fb, _Ft = float(_cdf(_a, _r)), float(_cdf(_b, _r)), float(_cdf(_t, _r))
+    _Fa, _Fb = float(_cdf(_a, _r)), float(_cdf(_b, _r))
+    _P = float(_tail(_a, _r) - _tail(_b, _r))
+
+    def _fmt(v):
+        if v >= 0.01 or v == 0:
+            return f"{v:.2f}" if v else "0"
+        if v >= 1e-4:
+            return f"{v:.{1 - math.floor(math.log10(v))}f}"
+        _e = math.floor(math.log10(v))
+        return rf"{v / 10**_e:.1f} \times 10^{{{_e}}}"
+
     _cx.plot(_y, _cdf(_y, _r), color=BLUE, lw=1.4)
     for _x, _F in ((_a, _Fa), (_b, _Fb)):
         _cx.plot([_x, _x, 0], [0, _F, _F], color=GREY, lw=1.0, ls=(0, (4, 3)))
     if _a <= _b:
         _cx.plot([0, 0], [_Fa, _Fb], color=GREEN, lw=3.5, solid_capstyle="butt", clip_on=False, zorder=4)
-    _cx.plot(_t, _Ft, "o", color="black", ms=4, zorder=5)
-    _cx.plot([_t, _t], [_Ft, 1.05], color=GREY, lw=1.0, ls=(0, (1, 2)))
-    _cx.annotate("$t$", (_t, 1.0), xycoords=("data", "axes fraction"), textcoords="offset points", xytext=(0, 3), ha="center", va="bottom", fontsize=12, annotation_clip=False)
     _cx.set_xlim(0, _xmax)
     _cx.set_ylim(0, 1.05)
     _cx.set_xlabel("$y$")
@@ -368,20 +353,14 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, g_a, g_b, g_lam, g_r, g_t, math, m
     for _axx in (_ax, _cx):
         for _s in ("top", "right"):
             _axx.spines[_s].set_visible(False)
+        _axx.xaxis.set_major_formatter(lambda v, _p: f"{v:g}")
+        _axx.yaxis.set_major_formatter(lambda v, _p: f"{v:g}")
 
-    _pois_tail = 1 - sum(math.exp(-_lam * _t) * (_lam * _t) ** k / math.factorial(k) for k in range(_r))
     mo.vstack(
         [
-            mo.hstack([g_lam, g_r, g_a, g_b, g_t], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$P(a \leq Y \leq b) = F_Y(b) - F_Y(a)$", rf"$\textcolor{{{GREEN}}}{{{abs(_Fb - _Fa):.4f}}}$" if _a <= _b else r"need $a \leq b$"),
-                    (r"$P(X \geq r) = \sum_{x \geq r} \mathrm{Pois}(\lambda t)(x)$", rf"${abs(_pois_tail):.4f}$"),
-                    (r"$P(Y \leq t) = F_Y(t)$", rf"${abs(_Ft):.4f}$"),
-                ]
-            ),
-            _fig,
+            mo.hstack([g_lam, g_r, g_a, g_b], justify="start", gap=2, wrap=True),
         ]
+        + ([table([(r"$P(a \leq Y \leq b) = F_Y(b) - F_Y(a)$", rf"${_fmt(_P)}$")]), _fig] if _a <= _b else [mo.md(r"need $a \leq b$")])
     )
     return
 
@@ -397,30 +376,20 @@ def _(mo, theorem):
     **Example.** Hyeonpung has 2 car accidents per month
 
     $$
-    P(\text{1 car accident in less than } \underbrace{\text{10 days}}_{1/3 \text{ months}}) = \ ?
+    P(\text{1 car accident in less than } \underbrace{\text{10 days}}_{\mathclap{\footnotesize 1/3 \text{ months}}}) = \ ?
     $$
 
     $\leadsto$ &nbsp; $Y$ = time until 1 accident
 
-    $$
-    \Longrightarrow \qquad f_Y(y) = \lambda e^{-\lambda y} \qquad \leadsto \qquad \mathrm{Gamma}(1, \lambda) = \mathrm{Exp}(\lambda) \quad \text{(exponential distribution)}
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \quad f_Y(y) = \lambda e^{-\lambda y}$ $\displaystyle \quad \leadsto \quad \mathrm{Gamma}(1, \lambda) = \mathrm{Exp}(\lambda) \quad \text{(exponential distribution)}$</span>
+
+    <span class="chain">$\displaystyle \underbrace{P(Y \leq 1/3)}_{\footnotesize F_Y(1/3)} = \int_{0}^{1/3} \lambda e^{-\lambda y}\, dy$ $\displaystyle = -e^{-\lambda y}\, \Big|_{0}^{1/3} = 1 - e^{-\lambda/3} = 1 - e^{-2/3} \approx 48.7\%$</span>
 
     $$
-    \underbrace{P(Y \leq \tfrac{1}{3})}_{F_Y(1/3)} = \int_{0}^{1/3} \lambda e^{-\lambda y}\, dy = -e^{-\lambda y}\, \Big|_{0}^{1/3} = 1 - e^{-\lambda/3} = 1 - e^{-2/3} \approx 48.7\%
+    P(\text{1 car accident in the 10 days after 20 days without accidents}) = \ ?
     $$
 
-    $$
-    P\left(\substack{\text{1 car accident in the 10 days after} \\ \text{20 days without accidents}}\right) = \ ?
-    $$
-
-    $$
-    \begin{aligned}
-    P(Y \leq 1 \mid Y > \tfrac{2}{3}) &= \frac{P(\tfrac{2}{3} < Y \leq 1)}{P(\tfrac{2}{3} < Y)} = \frac{F_Y(1) - F_Y(\tfrac{2}{3})}{1 - F_Y(\tfrac{2}{3})}
-    = \frac{(1 - e^{-\lambda}) - (1 - e^{-2\lambda/3})}{1 - (1 - e^{-2\lambda/3})} \\[6pt]
-    &= \frac{e^{-2\lambda/3} - e^{-\lambda}}{e^{-2\lambda/3}} = 1 - e^{-\lambda/3} = 1 - e^{-2/3} \approx 48.7\%
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle P(Y \leq 1 \mid Y > 2/3) = \frac{P(2/3 < Y \leq 1)}{P(2/3 < Y)} = \frac{F_Y(1) - F_Y(2/3)}{1 - F_Y(2/3)}$ $\displaystyle = \frac{(1 - e^{-\lambda}) - (1 - e^{-2\lambda/3})}{1 - (1 - e^{-2\lambda/3})}$ $\displaystyle = \frac{e^{-2\lambda/3} - e^{-\lambda}}{e^{-2\lambda/3}} = 1 - e^{-\lambda/3} = 1 - e^{-2/3} \approx 48.7\%$</span>
     """
             ),
             theorem(
@@ -444,20 +413,18 @@ def _(mo, theorem):
 
 @app.cell(hide_code=True)
 def _(mo):
-    m_lam = mo.ui.slider(0.1, 4, 0.1, value=2, label=r"$\lambda$", show_value=True)
-    m_s = mo.ui.slider(0, 3, 0.05, value=0.65, label="$s$ (already waited)", show_value=True)
-    m_t = mo.ui.slider(0.05, 3, 0.05, value=0.35, label="$t$", show_value=True)
+    m_lam = mo.ui.slider(0.1, 2, 0.1, value=2, label=r"$\lambda$", show_value=True)
+    m_s = mo.ui.slider(steps=[round(k / 30, 4) for k in range(0, 31)], value=0.6667, label="$s$", show_value=True)
+    m_t = mo.ui.slider(steps=[round(k / 30, 4) for k in range(1, 31)], value=0.3333, label="$t$", show_value=True)
     return m_lam, m_s, m_t
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREY, LIGHT, m_lam, m_s, m_t, math, mo, np, table):
+def _(BLUE, Figure, GREY, LIGHT, m_lam, m_s, m_t, mo, np):
     _l, _s, _t = m_lam.value, m_s.value, m_t.value
-    _F = lambda y: 1 - math.exp(-_l * y)
     _f = lambda y: _l * np.exp(-_l * y)
-    _cond = (math.exp(-_l * _s) - math.exp(-_l * (_s + _t))) / math.exp(-_l * _s)  # with 1 - F_Y(s) = exp(-lambda s) computed directly
 
-    _fig = Figure(figsize=(FULL, 2.9), layout="constrained")
+    _fig = Figure(figsize=(5.6, 2.9), layout="constrained")
     _ax = _fig.subplots()
     _hi = max(1.4 * (_s + _t) + 0.3, min(6 / _l, 3 * (_s + _t)))  # the frame follows s + t
     _top = 1.5 * _l
@@ -477,36 +444,25 @@ def _(BLUE, FULL, Figure, GREY, LIGHT, m_lam, m_s, m_t, math, mo, np, table):
     _u = _top / 150
     _x1, _x2, _x3 = _t / 2, _s + _t / 2, _s + _t + 0.08 * _hi
     _y1, _y2, _y3 = (_f(_x) + 3 * _u for _x in (_x1, _x2, _x3))
-    if _x3 < _x2 + 0.24 * _hi:
-        _y2 = max(_y2, _y3 + 18 * _u)
-    if _x2 < _x1 + 0.16 * _hi:
-        _y1 = max(_y1, _y2 + 18 * _u)
-    if _x3 < _x1 + 0.16 * _hi:
-        _y1 = max(_y1, _y3 + 18 * _u)
-    _white = {"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"}
-    for _x, _yv, _name in ((_x1, _y1, r"$P(Y \leq t)$"), (_x2, _y2, r"$P(s < Y \leq s + t)$"), (_x3, _y3, r"$P(Y > s)$ (hatched)")):
-        _ax.annotate(_name, (_x, _yv), textcoords="offset points", xytext=(4, 0), ha="left", va="bottom", fontsize=12, bbox=_white)
+    _y2 = max(_y2, _y3 + 18 * _u)
+    _y1 = max(_y1, _y2 + 18 * _u)
+    for _x, _yv, _name, _c in ((_x1, _y1, r"$P(Y \leq t)$", "black"), (_x2, _y2, r"$P(s < Y \leq s + t)$", BLUE), (_x3, _y3, r"$P(Y > s)$", GREY)):
+        _ax.annotate(_name, (_x, _yv), textcoords="offset points", xytext=(4, 0), ha="left", va="bottom", fontsize=12, color=_c)
 
     # the marks 0, t and s, s + t on two rows, so that they stay apart for every s and t
-    _close = _t / _hi < 0.08
     for _x, _name, _row, _ha in ((0, "$0$", 0, "right"), (_t, "$t$", 0, "left"), (_s, "$s$", 1, "right"), (_s + _t, "$s + t$", 1, "left")):
-        _ax.annotate(_name, (_x, 0), xycoords=("data", "axes fraction"), textcoords="offset points", xytext=((-1 if _ha == "right" else 1) if _close else 0, -5 - 16 * _row), ha=_ha if _close else "center", va="top", fontsize=12, annotation_clip=False)
+        _ax.annotate(_name, (_x, 0), xycoords=("data", "axes fraction"), textcoords="offset points", xytext=(-1 if _ha == "right" else 1, -5 - 16 * _row), ha=_ha, va="top", fontsize=12, annotation_clip=False)
     _ax.set_xlim(0, _hi)
     _ax.set_ylim(0, _top)
     _ax.set_xticks([])
     _ax.set_ylabel("$f_Y(y)$")
+    _ax.yaxis.set_major_formatter(lambda v, _p: "" if v == 0 else f"{v:g}")
     for _sp in ("top", "right"):
         _ax.spines[_sp].set_visible(False)
 
     mo.vstack(
         [
             mo.hstack([m_lam, m_s, m_t], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$P(Y \leq s + t \mid Y > s) = \dfrac{F_Y(s + t) - F_Y(s)}{1 - F_Y(s)}$", rf"${_cond:.4f}$"),
-                    (r"$P(Y \leq t) = F_Y(t) = 1 - e^{-\lambda t}$", rf"${_F(_t):.4f}$"),
-                ]
-            ),
             _fig,
         ]
     )
@@ -521,73 +477,10 @@ def _(mo):
     $\Longrightarrow$ &nbsp; the probability of a failure in the next 3 months is independent of how long ago you bought the lightbulb!
 
     $$
-    P(Y \leq s + \tfrac{1}{4} \mid Y > s) = P(Y \leq \tfrac{1}{4}) = 1 - e^{-\lambda/4} \approx 0.05
+    P(Y \leq s + 1/4 \mid Y > s) = P(Y \leq 1/4) = 1 - e^{-\lambda/4} \approx 0.05
     $$
 
     **Remark.** The negative binomial distribution with target $r = 1$ is also memoryless! &nbsp; $NB(1, p) = \mathrm{Geom}(p)$ is called the geometric distribution.
     """)
     return
 
-
-@app.cell(hide_code=True)
-def _(mo):
-    q_p = mo.ui.slider(0.05, 0.95, 0.05, value=0.3, label="$p$", show_value=True)
-    q_s = mo.ui.slider(0, 20, 1, value=4, label="$s$ (flips already made)", show_value=True)
-    q_t = mo.ui.slider(1, 20, 1, value=3, label="$t$", show_value=True)
-    return q_p, q_s, q_t
-
-
-@app.cell(hide_code=True)
-def _(mo, q_p, q_s, q_t, table):
-    _p, _s, _t = q_p.value, q_s.value, q_t.value
-    _F = lambda y: 1 - (1 - _p) ** y  # P(Y <= y) for Y ~ Geom(p), y = 0, 1, 2, ...
-    _G = lambda y: (1 - _p) ** y  # P(Y > y) = 1 - F_Y(y), computed directly: 1 - F_Y(s) rounds to 0 for large s
-    _cond = (_G(_s) - _G(_s + _t)) / _G(_s)
-    mo.vstack(
-        [
-            mo.hstack([q_p, q_s, q_t], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$P(Y \leq s + t \mid Y > s) = \dfrac{F_Y(s + t) - F_Y(s)}{1 - F_Y(s)}$", rf"${_cond:.4f}$"),
-                    (r"$P(Y \leq t) = F_Y(t) = 1 - (1 - p)^t$", rf"${_F(_t):.4f}$"),
-                ]
-            ),
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - $X$ is a continuous random variable if $S_X$ is uncountable and there is a pdf $f_X$ with
-
-        $$
-        \begin{gathered}
-        P(a \leq X \leq b) = \int_a^b f_X(x)\, dx = F_X(b) - F_X(a) \\[4pt]
-        \Longrightarrow \qquad P(X = x) = 0 \ \text{ for all } x
-        \end{gathered}
-        $$
-
-        (no notion of pmf)
-    - $f_X(x) = \frac{d}{dx} F_X(x)$ and $F_X(x) = \int_{-\infty}^{x} f_X(u)\, du$, with $f_X \geq 0$ and $\int_{-\infty}^{+\infty} f_X(x)\, dx = 1$
-    - $P(X \geq r) = P(Y \leq t)$ for $X$ Poisson and $Y$ the length until $r$ occurrences
-
-        $$
-        \Longrightarrow \qquad \text{gamma distribution: } \ f_Y(y) = \frac{\lambda^r y^{r-1}}{(r - 1)!}\, e^{-\lambda y} \quad \text{for } y \in (0, +\infty)
-        $$
-    - $\mathrm{Gamma}(1, \lambda) = \mathrm{Exp}(\lambda)$, the exponential distribution, has no memory:
-
-        $$
-        P(Y \leq s + t \mid Y > s) = P(Y \leq t)
-        $$
-
-        so does $NB(1, p) = \mathrm{Geom}(p)$, the geometric distribution
-    """)
-    return
-
-
-if __name__ == "__main__":
-    app.run()

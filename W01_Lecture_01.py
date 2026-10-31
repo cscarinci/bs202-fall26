@@ -30,7 +30,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +75,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,24 +120,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 01", "Week 01", "Lecture 01 · Probability basics")
+    header("Lecture 01", "Week 01", "Lecture 01 • Probability basics")
     return
 
 
@@ -205,9 +197,9 @@ def _(definition, dice, mo):
             mo.md(r"$\leadsto$ &nbsp; this is the type of phenomena we will deal with"),
             definition(
                 r"""
-    The **sample space** of a random experiment is the set of all possible outcomes &nbsp; $\leadsto$ &nbsp; denoted by $S$
+    The **sample space** of a random experiment is the set of all possible outcomes &nbsp; <span class="nw">$\leadsto$ &nbsp; denoted</span> by $S$
 
-    An **event** of a random experiment is a subset of outcomes satisfying some interesting property &nbsp; $\leadsto$ &nbsp; $A \subseteq S$
+    An **event** of a random experiment is a subset of outcomes satisfying some interesting property &nbsp; <span class="nw">$\leadsto$ &nbsp; $A \subseteq S$</span>
     """,
                 "Sample space and events",
             ),
@@ -215,9 +207,9 @@ def _(definition, dice, mo):
                 r"""
     When we deal with probability (to be defined soon) we should not focus on individual outcomes… rather, we focus on *properties that we wish to see*
 
-    $\leadsto$ &nbsp; if the outcome of the experiment has a given property, we say “the property has occurred” &nbsp; $\leadsto$ &nbsp; hence the term “event”!
+    $\leadsto$ &nbsp; if the outcome of the experiment has a given property, we say “the property has occurred” &nbsp; <span class="nw">$\leadsto$ &nbsp; hence</span> the term “event”!
 
-    The **event space** is the collection of all relevant events &nbsp; $\leadsto$ &nbsp; denoted $\mathcal{E}$
+    The **event space** is the collection of all relevant events &nbsp; <span class="nw">$\leadsto$ &nbsp; denoted</span> $\mathcal{E}$
     """
             ),
             mo.md(
@@ -236,7 +228,7 @@ def _(definition, dice, mo):
 
     $B = \{{$ {dice((2,))} $\}}$ &nbsp;&nbsp; (event “face = two”: a simple event; a set with one element $\neq$ the element itself)
 
-    $\mathcal{{E}} = \big\{{\, \emptyset,\ \{{$ {dice((1,))} $\}},\ \{{$ {dice((2,))} $\}} = B,\ \dots,\ \{{$ {dice((2, 4, 6))} $\}} = A,\ \dots,\ \{{$ {dice((1,))}$, \dots,$ {dice((6,))} $\}} \,\big\}}$ &nbsp;&nbsp; (all subsets of outcomes)
+    <span style="white-space:nowrap">$\mathcal{{E}} = \big\{{\, \emptyset,\ \{{$ {dice((1,))} $\}},\ \{{$ {dice((2,))} $\}} = B,\ \dots,$</span> <span style="white-space:nowrap">$\{{$ {dice((2, 4, 6))} $\}} = A,\ \dots,$</span> <span style="white-space:nowrap">$\{{$ {dice((1,))}$, \dots,$ {dice((6,))} $\}} \,\big\}}$</span> &nbsp;&nbsp; (all&nbsp;subsets&nbsp;of&nbsp;outcomes)
     """
             ),
         ]
@@ -287,67 +279,41 @@ def _(definition, mo, theorem):
 
 @app.cell(hide_code=True)
 def _(mo):
-    venn_options = [
-        "A ∪ B",
-        "B ∪ A",
-        "A ∩ B",
-        "B ∩ A",
-        "Aᶜ",
-        "(A ∪ B) ∪ C",
-        "A ∪ (B ∪ C)",
-        "(A ∩ B) ∩ C",
-        "A ∩ (B ∩ C)",
-        "A ∩ (B ∪ C)",
-        "(A ∩ B) ∪ (A ∩ C)",
-        "A ∪ (B ∩ C)",
-        "(A ∪ B) ∩ (A ∪ C)",
-        "(A ∪ B)ᶜ",
-        "Aᶜ ∩ Bᶜ",
-        "(A ∩ B)ᶜ",
-        "Aᶜ ∪ Bᶜ",
-    ]
-    venn_laws = {
-        "commutativity (∪)": ("A ∪ B", "B ∪ A"),
-        "commutativity (∩)": ("A ∩ B", "B ∩ A"),
-        "associativity (∪)": ("(A ∪ B) ∪ C", "A ∪ (B ∪ C)"),
-        "associativity (∩)": ("(A ∩ B) ∩ C", "A ∩ (B ∩ C)"),
-        "distributivity (∩ over ∪)": ("A ∩ (B ∪ C)", "(A ∩ B) ∪ (A ∩ C)"),
-        "distributivity (∪ over ∩)": ("A ∪ (B ∩ C)", "(A ∪ B) ∩ (A ∪ C)"),
-        "De Morgan (∪)": ("(A ∪ B)ᶜ", "Aᶜ ∩ Bᶜ"),
-        "De Morgan (∩)": ("(A ∩ B)ᶜ", "Aᶜ ∪ Bᶜ"),
-    }
-    # The pair shown in the two panels; a law sets both sides, the left/right dropdowns set one each
-    get_venn, set_venn = mo.state(venn_laws["distributivity (∩ over ∪)"], allow_self_loops=True)
-    return get_venn, set_venn, venn_laws, venn_options
+    venn_set = mo.ui.dropdown(
+        [
+            "A ∪ B",
+            "A ∩ B",
+            "Aᶜ",
+            "A ∪ B ∪ C",
+            "A ∩ B ∩ C",
+            "A ∩ (B ∪ C)",
+            "(A ∩ B) ∪ (A ∩ C)",
+            "A ∪ (B ∩ C)",
+            "(A ∪ B) ∩ (A ∪ C)",
+            "(A ∪ B)ᶜ",
+            "Aᶜ ∩ Bᶜ",
+            "(A ∩ B)ᶜ",
+            "Aᶜ ∪ Bᶜ",
+        ],
+        value="A ∪ B",
+        label="set",
+        allow_select_none=False,
+    )
+    return (venn_set,)
 
 
 @app.cell(hide_code=True)
-def _(get_venn, mo, set_venn, venn_laws, venn_options):
-    _l, _r = get_venn()
-    # the law menu shows the law of the current pair (blank if the pair is not a law), so picking any law is always a change
-    _law = next((_k for _k, _pair in venn_laws.items() if _pair == (_l, _r)), None)
-    venn_law = mo.ui.dropdown(venn_laws, value=_law, label="law", on_change=lambda pair: pair and set_venn(pair))
-    venn_left = mo.ui.dropdown(venn_options, value=_l, label="left", allow_select_none=False, on_change=lambda v: set_venn((v, get_venn()[1])))
-    venn_right = mo.ui.dropdown(venn_options, value=_r, label="right", allow_select_none=False, on_change=lambda v: set_venn((get_venn()[0], v)))
-    return venn_law, venn_left, venn_right
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, LIGHT, ORANGE, RED, mo, np, table, venn_law, venn_left, venn_right):
+def _(BLUE, Figure, LIGHT, ORANGE, RED, mo, np, venn_set):
     _g = np.linspace(0, 1, 600)
     _X, _Y = np.meshgrid(_g * 3.2, _g * 2.1)
     _circles = {"A": (1.25, 1.2, 0.48), "B": (1.95, 1.2, 0.54), "C": (1.6, 0.78, 0.44)}
     _A, _B, _C = [(_X - _cx) ** 2 + (_Y - _cy) ** 2 < _r**2 for _cx, _cy, _r in _circles.values()]
     _sets = {
         "A ∪ B": _A | _B,
-        "B ∪ A": _B | _A,
         "A ∩ B": _A & _B,
-        "B ∩ A": _B & _A,
         "Aᶜ": ~_A,
-        "(A ∪ B) ∪ C": _A | _B | _C,
-        "A ∪ (B ∪ C)": _A | (_B | _C),
-        "(A ∩ B) ∩ C": _A & _B & _C,
-        "A ∩ (B ∩ C)": _A & (_B & _C),
+        "A ∪ B ∪ C": _A | _B | _C,
+        "A ∩ B ∩ C": _A & _B & _C,
         "A ∩ (B ∪ C)": _A & (_B | _C),
         "(A ∩ B) ∪ (A ∩ C)": (_A & _B) | (_A & _C),
         "A ∪ (B ∩ C)": _A | (_B & _C),
@@ -357,39 +323,23 @@ def _(BLUE, FULL, Figure, LIGHT, ORANGE, RED, mo, np, table, venn_law, venn_left
         "(A ∩ B)ᶜ": ~(_A & _B),
         "Aᶜ ∪ Bᶜ": ~_A | ~_B,
     }
-
-    def _tex(s):
-        return "$" + s.replace("∪", r"\cup").replace("∩", r"\cap").replace("ᶜ", "^c") + "$"
-
-    _fig = Figure(figsize=(FULL, 2.5), layout="constrained")
+    _choice = venn_set.value
+    _fig = Figure(figsize=(4.6, 3.3), layout="constrained")
+    _ax = _fig.subplots()
     _th = np.linspace(0, 2 * np.pi, 200)
-    for _ax, _choice in zip(_fig.subplots(1, 2), (venn_left.value, venn_right.value)):
-        _ax.contourf(_X, _Y, _sets[_choice].astype(float), levels=[0.5, 1.5], colors=[LIGHT])
-        for _name, _col, _lx, _ly in (("A", BLUE, 0.72, 1.72), ("B", RED, 2.45, 1.72), ("C", ORANGE, 2.08, 0.3)):
-            _cx, _cy, _r = _circles[_name]
-            _ax.plot(_cx + _r * np.cos(_th), _cy + _r * np.sin(_th), color=_col, lw=1.4)
-            _ax.text(_lx, _ly, f"${_name}$", color=_col, fontsize=13, ha="center", va="center")
-        _ax.plot([0, 3.2, 3.2, 0, 0], [0, 0, 2.1, 2.1, 0], color="black", lw=1.0)
-        _ax.text(0.2, 0.2, "$S$", fontsize=13, ha="center", va="center")
-        _ax.set_xlim(-0.05, 3.25)
-        _ax.set_ylim(-0.05, 2.15)
-        _ax.set_aspect("equal")
-        _ax.axis("off")
-
-    _same = np.array_equal(_sets[venn_left.value], _sets[venn_right.value])
-    mo.vstack(
-        [
-            mo.hstack([venn_law, venn_left, venn_right], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    ("left", _tex(venn_left.value)),
-                    ("right", _tex(venn_right.value)),
-                    ("left $=$ right", "yes" if _same else "no"),
-                ]
-            ),
-            _fig,
-        ]
-    )
+    _ax.set_title("$" + _choice.replace("∪", r"\cup").replace("∩", r"\cap").replace("ᶜ", "^c") + "$", fontsize=15)
+    _ax.contourf(_X, _Y, _sets[_choice].astype(float), levels=[0.5, 1.5], colors=[LIGHT])
+    for _name, _col, _lx, _ly in (("A", BLUE, 0.72, 1.72), ("B", RED, 2.45, 1.72), ("C", ORANGE, 2.08, 0.3)):
+        _cx, _cy, _r = _circles[_name]
+        _ax.plot(_cx + _r * np.cos(_th), _cy + _r * np.sin(_th), color=_col, lw=1.4)
+        _ax.text(_lx, _ly, f"${_name}$", color=_col, fontsize=15, ha="center", va="center")
+    _ax.plot([0, 3.2, 3.2, 0, 0], [0, 0, 2.1, 2.1, 0], color="black", lw=1.0)
+    _ax.text(0.2, 0.2, "$S$", fontsize=15, ha="center", va="center")
+    _ax.set_xlim(-0.05, 3.25)
+    _ax.set_ylim(-0.05, 2.15)
+    _ax.set_aspect("equal")
+    _ax.axis("off")
+    mo.vstack([venn_set, _fig])
     return
 
 
@@ -417,7 +367,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, HALF, LIGHT, RED, arrow, blank, die, face, math, mo, np, table, total):
+def _(BLUE, HALF, LIGHT, RED, arrow, blank, face, math, mo, np, total):
     _t, _k = total.value, face.value
 
     def _loop(ax, p, q, r, color):
@@ -446,7 +396,7 @@ def _(BLUE, HALF, LIGHT, RED, arrow, blank, die, face, math, mo, np, table, tota
     for _i in range(1, 7):
         for _j in range(1, 7):
             _ax.plot(_i, _j, "o", ms=2.5, color="black")
-    _loop(_ax, _inA[0], _inA[-1], 0.3, BLUE)
+    _loop(_ax, _inA[0], _inA[-1], 0.36, BLUE)
     _loop(_ax, (1, _k), (6, _k), 0.3, RED)
     _loop(_ax, (_k, 1), (_k, 6), 0.3, RED)
     # the label of A goes beyond the upper-left end of its loop: above the grid when that end is in the top row
@@ -455,18 +405,9 @@ def _(BLUE, HALF, LIGHT, RED, arrow, blank, die, face, math, mo, np, table, tota
     _ax.text(6.75, _k, "$B$", color=RED, fontsize=13, ha="center", va="center")
     _ax.text(7.1, 7.1, "$S$", fontsize=13, ha="center", va="center")
 
-    _pairs = ", ".join(f"$($ {die(_i)}$,$ {die(_j)} $)$" for _i, _j in _both)
     mo.vstack(
         [
             mo.hstack([total, face], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (rf"$\# A$ &nbsp; ($A$ = faces add to ${_t}$)", rf"$\textcolor{{{BLUE}}}{{{len(_inA)}}}$"),
-                    (rf"$\# B$ &nbsp; ($B$ = at least one face is ${_k}$)", rf"$\textcolor{{{RED}}}{{11}}$"),
-                    (r"$A \cap B$", rf"$\{{\,$ {_pairs} $\,\}}$" if _both else r"$\emptyset$"),
-                    (r"$\# (A \cap B)$", rf"${len(_both)}$"),
-                ]
-            ),
             _fig,
         ]
     )
@@ -494,7 +435,7 @@ def _(BLUE, HALF, ORANGE, RED, blank, definition, mo, np):
 
     - $P(S) = 1$
     - $P(A) \geq 0$ for every event $A \in \mathcal{E}$
-    - for every countable sequence of *pairwise disjoint* events $A_1, A_2, \dots$ &nbsp; ($A_i \cap A_j = \emptyset \ \ \forall\, i \neq j$)
+    - for every countable sequence of *pairwise disjoint* events $A_1, A_2, \dots$ &nbsp; $(A_i \cap A_j = \emptyset \ \ \forall\, i \neq j)$
 
         $$
         P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots
@@ -531,28 +472,33 @@ def _(BLUE, HALF, ORANGE, RED, blank, definition, mo, np):
     $$
 
     $$
-    \mathcal{E} = \big\{\, \underbrace{\{1\}}_{\text{“face is 1”}}, \dots, \{6\},\ \underbrace{\{1, 2\}}_{\substack{\text{“1 or 2”} \\ =\, \{1\} \cup \{2\}}}, \dots, \{5, 6\},\ \dots,\ \underbrace{\{1, 2, 3, 4, 5, 6\}}_{\text{“1 or 2 or … or 6”}},\ \underbrace{\emptyset}_{\text{“not (1 or … or 6)”}} \,\big\}
+    \begin{aligned}
+    \mathcal{E} = \big\{\, & \underbrace{\{1\}}_{\mathclap{\footnotesize \text{“face is 1”}}\vphantom{\footnotesize \text{“face is 1”}}}, \dots, \{6\},\ \underbrace{\{1, 2\}}_{\mathclap{\footnotesize \begin{matrix} \text{“1 or 2”} \\ =\, \{1\} \cup \{2\} \end{matrix}}\vphantom{\footnotesize \begin{matrix} \text{“1 or 2”} \\ =\, \{1\} \cup \{2\} \end{matrix}}}, \dots, \{5, 6\}, \\[3.5em]
+    & \dots,\ \underbrace{\{1, 2, 3, 4, 5, 6\}}_{\mathclap{\footnotesize \text{“1 or 2 or … or 6”}}\vphantom{\footnotesize \text{“1 or 2 or … or 6”}}},\ \underbrace{\emptyset}_{\mathrlap{\footnotesize \text{“not (1 or … or 6)”}}\vphantom{\footnotesize \text{“not (1 or … or 6)”}}} \,\big\}
+    \end{aligned}
     $$
 
     $P = \,?$
 
-    Fair die: &nbsp; $P(\{i\}) = \tfrac{1}{6} \quad \forall\, i = 1, \dots, 6$
+    Fair die: &nbsp; $P(\{i\}) = \dfrac{1}{6} \quad \forall\, i = 1, \dots, 6$
 
     $$
     \begin{aligned}
-    \Longrightarrow \qquad & P(\{i, j\}) = P(\{i\}) + P(\{j\}) = \tfrac{2}{6} && \forall\, i \neq j \\
-    \Longrightarrow \qquad & P(\{i, j, k\}) = \tfrac{3}{6} && \forall\, i \neq j \neq k \\
+    \Longrightarrow \qquad & P(\{i, j\}) = P(\{i\}) + P(\{j\}) = \frac{2}{6} && \forall\, i \neq j \\
+    \Longrightarrow \qquad & P(\{i, j, k\}) = \frac{3}{6} && \forall\, i \neq j \neq k \\
     & \ \vdots
     \end{aligned}
     $$
 
-    In particular: &nbsp; $P(\{\text{even faces}\}) = \tfrac{3}{6}$
+    In particular: &nbsp; $P(\{\text{even faces}\}) = \dfrac{3}{6}$
 
     Not fair die (one example): &nbsp; $P(\{6\}) = 1$, &nbsp; $P(\{i\}) = 0$ for $i \neq 6$
 
     $$
-    \Longrightarrow \qquad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases}
-    \qquad \Longrightarrow \qquad P(\{\text{even faces}\}) = 1
+    \begin{aligned}
+    \Longrightarrow \qquad & P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases} \\[6pt]
+    \Longrightarrow \qquad & P(\{\text{even faces}\}) = 1
+    \end{aligned}
     $$
 
     $\leadsto$ &nbsp; there can be many distinct probability measures on the same sample space / event space
@@ -575,7 +521,7 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(die_preset, mo):
-    weights = mo.ui.array([mo.ui.slider(0, 10, 1, value=w, label=f"face {i + 1}", show_value=True) for i, w in enumerate(die_preset.value)])
+    weights = mo.ui.array([mo.ui.slider(0, 10, 1, value=w, label=f"weight of face {i + 1}", show_value=True) for i, w in enumerate(die_preset.value)])
     weight_controls = mo.hstack([die_preset] + list(weights), justify="start", gap=2, wrap=True)
     return weight_controls, weights
 
@@ -595,31 +541,36 @@ def _(BLUE, Figure, HALF, mo, np, table, weight_controls, weights):
     _ax.set_xticks(range(1, 7))
     _ax.set_xlim(0.4, 6.6)
     _ax.set_ylim(0, 1.05)
-    _ax.set_yticks([0, 0.5, 1])
+    _ax.set_yticks([0, 0.5, 1], ["$0$", "$0.5$", "$1$"])
     _ax.set_xlabel("face $i$")
     _ax.set_ylabel(r"$P(\{i\})$")
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
 
-    _need = "need a positive weight"
+    def _value(k):
+        """P of an event of total weight k: 0 or 1; k/6 when the total is 6, as the page writes it (a stacked fraction crowds the rows); 1/2; otherwise two decimals."""
+        if k in (0, _total):
+            return f"${k // _total}$"
+        if _total == 6:
+            return f"${k}/6$"
+        if 2 * k == _total:
+            return "$1/2$"
+        return f"${k / _total:.2f}$"
+
     if pmf is not None:
-        _even, _two = int(_w[1::2].sum()), int(_w[0] + _w[1])
-        _all = rf"$\textcolor{{{BLUE}}}{{" + r",\ ".join(rf"\tfrac{{{int(_v)}}}{{{_total}}}" for _v in _w) + "}$"
-        _pe = rf"$\tfrac{{{_even}}}{{{_total}}} = {_even / _total:.3f}$"
-        _p2 = rf"$\tfrac{{{_two}}}{{{_total}}} = {_two / _total:.3f}$"
-    else:
-        _all = _pe = _p2 = _need
+        _pe, _p2 = _value(int(_w[1::2].sum())), _value(int(_w[0] + _w[1]))
 
     mo.vstack(
         [
             weight_controls,
             table(
                 [
-                    (r"$P(\{1\}), \dots, P(\{6\})$", _all),
                     (r"$P(\{\text{even faces}\})$", _pe),
                     (r"$P(\{1, 2\})$", _p2),
                 ]
-            ),
+            )
+            if pmf is not None
+            else mo.md("at least one weight must be positive"),
             _fig,
         ]
     )
@@ -634,7 +585,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, RED, mo, n_rolls, np, pmf, reroll, table):
+def _(BLUE, FULL, Figure, RED, mo, n_rolls, np, pmf, reroll):
     _rng = np.random.default_rng(202 + reroll.value)
     _n = n_rolls.value
 
@@ -644,52 +595,21 @@ def _(BLUE, FULL, Figure, RED, mo, n_rolls, np, pmf, reroll, table):
         _p = float(pmf[1::2].sum())
         _even = _rng.choice(np.arange(1, 7), size=_n, p=pmf) % 2 == 0
         _freq = np.cumsum(_even) / np.arange(1, _n + 1)
-        _ax.plot(np.arange(1, _n + 1), _freq, color=BLUE, lw=1.4)
+        _ax.plot(np.arange(1, _n + 1), _freq, color=BLUE, lw=1.4, zorder=4)
         _ax.axhline(_p, color=RED, lw=1.0, zorder=3)
-        _exact, _observed = rf"$\textcolor{{{RED}}}{{{_p:.3f}}}$", rf"$\textcolor{{{BLUE}}}{{{_freq[-1]:.3f}}}$"
-    else:
-        _exact = _observed = "need a positive weight"
+        _ax.text(1.01, _p, r"$P(\{\mathrm{even\ faces}\})$", transform=_ax.get_yaxis_transform(), color=RED, fontsize=13, ha="left", va="center")
     _ax.set_ylim(-0.05, 1.05)
     _ax.set_xlim(1, _n)
-    _ax.set_yticks([0, 0.5, 1])
+    _ax.set_yticks([0, 0.5, 1], ["$0$", "$0.5$", "$1$"])
     _ax.set_xlabel("number of rolls")
-    _ax.set_ylabel("relative frequency")
+    _ax.set_title("relative frequency of even faces", loc="left", color=BLUE, fontsize=13)
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
 
     mo.vstack(
         [
             mo.hstack([n_rolls, reroll], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$P(\{\text{even faces}\})$", _exact),
-                    (r"relative frequency of even faces in all the rolls", _observed),
-                ]
-            ),
             _fig,
         ]
     )
     return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - a **random experiment** is a repeatable process with uncertain outcomes but a pre-determined set of possible outcomes: the **sample space** $S$; **events** are subsets $A \subseteq S$, and the **event space** $\mathcal{E}$ is the collection of all relevant events
-    - events are combined with $\cup$, $\cap$ and ${}^c$, which satisfy commutativity, associativity, distributivity and De Morgan's Law; $A, B$ are **disjoint** when $A \cap B = \emptyset$ and **exhaustive** when $A \cup B = S$
-    - a **probability measure** is $P : \mathcal{E} \longrightarrow \mathbb{R}$ with
-
-        $$
-        P(S) = 1, \qquad P(A) \geq 0 \qquad \text{and} \qquad P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots
-        $$
-
-        for pairwise disjoint events
-    - a **probability space** is a triple $(S, \mathcal{E}, P)$; there can be many distinct probability measures on the same sample space / event space (fair and not fair die)
-    """)
-    return
-
-
-if __name__ == "__main__":
-    app.run()

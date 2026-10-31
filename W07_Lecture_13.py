@@ -30,7 +30,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +75,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,24 +120,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 13", "Week 07", "Lecture 13 · The standard normal distribution; functions of random variables; quantiles")
+    header("Lecture 13", "Week 07", "Lecture 13 • The standard normal distribution; functions of random variables; quantiles")
     return
 
 
@@ -165,19 +157,13 @@ def _(mo):
 
     Families of continuous random variables
 
-    - $\mathrm{Unif}(a, b)$, pdf $\dfrac{1}{b - a}$ &nbsp; $\leadsto$ &nbsp; measures position of occurrence in $(a, b)$, assuming probability $P((c, d)) = \dfrac{d - c}{b - a}$ for $(c, d) \subset (a, b)$
-    - $\mathrm{Beta}(\alpha, \beta)$, pdf $\dfrac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, x^{\alpha-1} (1 - x)^{\beta-1}$ &nbsp; $\leadsto$ &nbsp; measures position of the $\alpha$th occurrence in $(0, 1)$, out of $\alpha + \beta - 1$ uniform and independent total occurrences
-    - $\mathcal{N}(\mu, \sigma^2)$, pdf $\dfrac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\dfrac{(x - \mu)^2}{2\sigma^2} \right)$ &nbsp; $\leadsto$ &nbsp; measures position of middle occurrence in $(\mu - \ell, \mu + \ell)$, out of $n$ uniform and independent total occurrences, where $\ell \to +\infty$, $n = 2m - 1 \to +\infty$ with $\ell^2 / n = \sigma^2$ fixed
+    - $\mathrm{Unif}(a, b)$, pdf $\dfrac{1}{b - a}$ &nbsp; <span class="nw">$\leadsto$ &nbsp; measures</span> position of occurrence in $(a, b)$, assuming probability $P((c, d)) = \dfrac{d - c}{b - a}$ for $(c, d) \subset (a, b)$
+    - $\mathrm{Beta}(\alpha, \beta)$, pdf $\dfrac{(\alpha + \beta - 1)!}{(\alpha - 1)!\,(\beta - 1)!}\, x^{\alpha-1} (1 - x)^{\beta-1}$ &nbsp; <span class="nw">$\leadsto$ &nbsp; measures</span> position of the $\alpha$th occurrence in $(0, 1)$, out of $\alpha + \beta - 1$ uniform and independent total occurrences
+    - $\mathcal{N}(\mu, \sigma^2)$, pdf $\dfrac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\dfrac{(x - \mu)^2}{2\sigma^2} \right)$ &nbsp; <span class="nw">$\leadsto$ &nbsp; measures</span> position of middle occurrence in $(\mu - \ell, \mu + \ell)$, out of $n$ uniform and independent total occurrences, where $\ell \to +\infty$, $n = 2m - 1 \to +\infty$ with $\ell^2 / n = \sigma^2$ fixed
 
-    For $n = 2m - 1$, the middle is $\tfrac{n + 1}{2} = m$; &nbsp; $X$ = position of the $m$th occurrence on $(\mu - \ell, \mu + \ell)$
+    For $n = 2m - 1$, the middle is $\dfrac{n + 1}{2} = m$; &nbsp; $X$ = position of the $m$th occurrence on <span class="nw">$(\mu - \ell, \mu + \ell)$ &nbsp; $\Longrightarrow$</span>
 
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad f_X(x) &= \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\Big( \underbrace{\frac{x - \mu + \ell}{2\ell}}_{\in\, (0, 1) \text{ if } x \,\in\, (\mu - \ell,\, \mu + \ell)} \Big) \\[6pt]
-    &= \frac{1}{2\ell}\, \frac{(2m - 1)!}{(m - 1)!\,(m - 1)!} \left( \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1} \left( 1 - \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1} \\[6pt]
-    &= \underbrace{\frac{1}{2\ell}\, m \binom{2m - 1}{m - 1} \frac{1}{4^{m-1}}}_{\textstyle \longrightarrow\ \frac{1}{\sqrt{2\pi\sigma^2}}}\ \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{\!m-1}}_{\textstyle \longrightarrow\ \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)}
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle f_X(x) = \frac{1}{2\ell}\, \mathrm{Beta}(m, m)\Big( \underbrace{\frac{x - \mu + \ell}{2\ell}}_{\mathclap{\footnotesize \in (0, 1) \text{ if } x \in (\mu - \ell,\, \mu + \ell)}} \Big)$ $\displaystyle = \frac{1}{2\ell}\, \frac{(2m - 1)!}{(m - 1)!\,(m - 1)!} \left( \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1} \left( 1 - \frac{x - \mu + \ell}{2\ell} \right)^{\!m-1}$ $\displaystyle = \underbrace{\frac{1}{2\ell}\, m \binom{2m - 1}{m - 1} \frac{1}{4^{m-1}}}_{\footnotesize \longrightarrow\ \dfrac{1}{\sqrt{2\pi\sigma^2}}}\ \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{\!m-1}}_{\footnotesize \longrightarrow\ \exp\left( -\dfrac{(x - \mu)^2}{2\sigma^2} \right)}$</span>
 
     **In this lecture:** the standard normal distribution; functions of random variables; quantiles
 
@@ -218,89 +204,70 @@ def _(definition, mo, theorem):
     $$
 
     $$
-    \Longrightarrow \qquad \underbrace{F_Z(z)}_{P(Z \leq z)} = \int_{-\infty}^{z} \frac{1}{\sqrt{2\pi}} \exp\!\left( -\frac{w^2}{2} \right) dw = \Phi(z) \qquad \text{standard normal cdf}
+    \Longrightarrow \qquad \underbrace{F_Z(z)}_{\mathclap{\footnotesize \begin{matrix} P(Z \leq z) \\ \text{standard normal cdf} \end{matrix}}} = \int_{-\infty}^{z} \frac{1}{\sqrt{2\pi}} \exp\!\left( -\frac{w^2}{2} \right) dw = \Phi(z)
     $$
 
     (no simple formula, but its values are well-known)
     """,
                 "The standard normal distribution",
             ),
-        ]
+        ],
+        gap=1.5,
     )
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
-    z_val = mo.ui.slider(-3.5, 3.5, 0.05, value=1, label="$z$", show_value=True)
+    z_val = mo.ui.slider(-3, 3, 0.05, value=1, label="$z$", show_value=True)
     return (z_val,)
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    z_a = mo.ui.slider(-3.5, 3.5, 0.05, value=-1, label="$a$", show_value=True)
-    return (z_a,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    z_b = mo.ui.slider(-3.5, 3.5, 0.05, value=1, label="$b$", show_value=True)
-    return (z_b,)
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, math, mo, np, table, z_a, z_b, z_val):
+def _(BLUE, Figure, GREEN, GREY, LIGHT, math, mo, np, table, z_val):
     def _Phi(v):
         return 0.5 * (1 + math.erf(v / math.sqrt(2)))
 
     def _pdf(v):
         return np.exp(-(np.asarray(v, dtype=float) ** 2) / 2) / math.sqrt(2 * math.pi)
 
-    _z, _a, _b = z_val.value, z_a.value, z_b.value
-    _fz = float(_pdf(_z))
-    _w = np.linspace(-6.5, 6.5, 500)
+    _z = z_val.value
 
-    _fig = Figure(figsize=(FULL, 2.5), layout="constrained")
-    _left, _right = _fig.subplots(1, 2)
-    for _ax in (_left, _right):
-        _ax.set_xlim(-6.5, 6.5)
-        _ax.set_ylim(0, 0.52)
-        _ax.set_yticks([])
-        _ax.set_xticks(range(-4, 5, 2))
-        _ax.tick_params(labelsize=12)
-        for _s in ("top", "right", "left"):
-            _ax.spines[_s].set_visible(False)
+    def _fmt(v):
+        if abs(v - 0.5) < 1e-9:
+            return "$0.5$"
+        if v < 0.01:
+            return f"${v:.2g}$"
+        if v > 0.99:
+            return f"${v:.{1 - math.floor(math.log10(1 - v))}f}$"
+        return f"${v:.3f}$"
+    _fz = float(_pdf(_z))
+    _w = np.linspace(-4, 4, 500)
+
+    _fig = Figure(figsize=(5.6, 2.5), layout="constrained")
+    _left = _fig.subplots()
+    _left.set_xlim(-4, 4)
+    _left.set_ylim(0, 0.52)
+    _left.set_yticks([])
+    _left.set_xticks(range(-3, 4))
+    _left.tick_params(labelsize=12)
+    for _s in ("top", "right", "left"):
+        _left.spines[_s].set_visible(False)
 
     # left: Phi(z) as the area below z
-    _wz = np.linspace(-6.5, _z, 300)
+    _wz = np.linspace(-4, _z, 300)
     _left.fill_between(_wz, _pdf(_wz), color=LIGHT, lw=0)
     _left.plot([_z, _z], [0, _fz], color=GREY, lw=1.0)
     _left.plot(_w, _pdf(_w), color=BLUE, lw=1.4)
     _left.plot(_z, _fz, "o", color=GREEN, ms=4, zorder=4)
-    _left.annotate(r"$(z, f_Z(z))$", (_z, _fz), textcoords="offset points", xytext=(7, 7) if _z >= 0 else (-7, 7), ha="left" if _z >= 0 else "right", va="bottom", color=GREEN, fontsize=12)
-
-    # right: P(a <= Z <= b) as the area between a and b
-    if _a <= _b:
-        _wab = np.linspace(_a, _b, 300)
-        _right.fill_between(_wab, _pdf(_wab), color=LIGHT, lw=0)
-        _between = rf"${_Phi(_b) - _Phi(_a):.4f}$"
-    else:
-        _between = r"need $a \leq b$"
-    _right.plot(_w, _pdf(_w), color=BLUE, lw=1.4)
-    for _v, _name, _first in ((_a, "$a$", _a <= _b), (_b, "$b$", _a > _b)):
-        _right.plot([_v, _v], [0, 0.44], color=GREY, lw=1.0, ls=(0, (4, 3)))
-        _right.annotate(_name, (_v, 0.44), textcoords="offset points", xytext=(-2, 3) if _first else (2, 3), ha="right" if _first else "left", va="bottom", fontsize=12)
+    _left.annotate(r"$f_Z(z)$", (_z, _fz), textcoords="offset points", xytext=(26 * max(-1.0, min(1.0, _z / 0.6)), 7), ha="center", va="bottom", color=GREEN, fontsize=12)
 
     mo.vstack(
         [
-            mo.hstack([z_val, z_a, z_b], justify="start", gap=2, wrap=True),
+            mo.hstack([z_val], justify="start", gap=2, wrap=True),
             table(
                 [
-                    (r"$f_Z(z)$", rf"$\textcolor{{{GREEN}}}{{{_fz:.4f}}}$"),
-                    (r"$\Phi(z)$ &nbsp; (area, left)", rf"${_Phi(_z):.4f}$"),
-                    (r"$1 - \Phi(z)$", rf"${1 - _Phi(_z):.4f}$"),
-                    (r"$\Phi(-z)$", rf"${_Phi(-_z):.4f}$"),
-                    (r"$P(a \leq Z \leq b) = \Phi(b) - \Phi(a)$ &nbsp; (area, right)", _between),
+                    (r"$\Phi(z) = P(Z \leq z)$ &nbsp; (shaded area)", _fmt(_Phi(_z))),
                 ]
             ),
             _fig,
@@ -312,21 +279,13 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, math, mo, np, table, z_a, z_b, z_v
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    $$
-    \begin{aligned}
-    \leadsto \qquad m_Z(t) = E[e^{tZ}] &= \int_{-\infty}^{\infty} e^{tz} f_Z(z)\, dz = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} e^{tz} e^{-z^2/2}\, dz
-    = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} e^{\frac{t^2}{2} - \frac{(z - t)^2}{2}}\, dz \\[6pt]
-    &= e^{t^2/2} \int_{-\infty}^{\infty} f_Z(z - t)\, dz = e^{t^2/2}
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle \leadsto \qquad m_Z(t) = E[e^{tZ}] = \int_{-\infty}^{\infty} e^{tz} f_Z(z)\, dz$ $\displaystyle = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} e^{tz} e^{-z^2/2}\, dz$ $\displaystyle = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} e^{t^2/2 - (z - t)^2/2}\, dz$ $\displaystyle = e^{t^2/2} \int_{-\infty}^{\infty} f_Z(z - t)\, dz = e^{t^2/2}$</span>
 
     $$
     \leadsto \qquad K_Z(t) = \ln(m_Z(t)) = \frac{t^2}{2}
     $$
 
-    $$
-    \Longrightarrow \qquad E[Z] = K_Z'(0) = 0, \qquad \mathrm{Var}(Z) = K_Z''(0) = 1, \qquad \mathrm{Skew}(Z) = \frac{K_Z'''(0)}{\big( K_Z''(0) \big)^{3/2}} = 0
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \qquad E[Z] = K_Z'(0) = 0,$ $\displaystyle \quad \mathrm{Var}(Z) = K_Z''(0) = 1,$ $\displaystyle \quad \mathrm{Skew}(Z) = \frac{K_Z'''(0)}{\big( K_Z''(0) \big)^{3/2}} = 0$</span>
     """)
     return
 
@@ -347,22 +306,9 @@ def _(corollary, mo, theorem):
 
     If $u$ is **strictly increasing function** (in particular invertible!)
 
-    $$
-    \Longrightarrow \qquad F_Y(y) = P(Y \leq y) = P(u(X) \leq y) = P(X \leq u^{-1}(y)) = F_X(u^{-1}(y))
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \qquad F_Y(y) = P(Y \leq y) = P(u(X) \leq y)$ $\displaystyle = P(X \leq u^{-1}(y)) = F_X(u^{-1}(y))$</span>
 
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad f_Y(y) &= \begin{cases}
-    F_Y(y) - F_Y(y^-) = F_X(u^{-1}(y)) - F_X(u^{-1}(y^-)) & \text{discrete} \\[8pt]
-    \dfrac{d}{dy} F_Y(y) = \dfrac{d}{dy} F_X(u^{-1}(y)) & \text{continuous}
-    \end{cases} \\[10pt]
-    &= \begin{cases}
-    f_X(u^{-1}(y)) \\[8pt]
-    \dfrac{d}{dy} u^{-1}(y)\ f_X(u^{-1}(y))
-    \end{cases}
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \qquad f_Y(y) = \begin{cases} F_Y(y) - F_Y(y^-) = F_X(u^{-1}(y)) - F_X(u^{-1}(y^-)) \\[8pt] \dfrac{d}{dy} F_Y(y) = \dfrac{d}{dy} F_X(u^{-1}(y)) \end{cases}$ $\displaystyle = \begin{cases} f_X(u^{-1}(y)) & \text{discrete} \\[8pt] \dfrac{d}{dy} u^{-1}(y)\ f_X(u^{-1}(y)) & \text{continuous} \end{cases}$</span>
 
     **Example.** &nbsp; $Y = aX + b$, &nbsp; $a > 0$
 
@@ -382,9 +328,7 @@ def _(corollary, mo, theorem):
     \Longrightarrow \qquad m_Y(t) = E[e^{tY}] = E[e^{t(aX + b)}] = E[e^{taX} e^{tb}] = e^{tb}\, m_X(ta)
     $$
 
-    $$
-    \Longrightarrow \qquad E[Y] = a\, E[X] + b, \qquad \mathrm{Var}(Y) = a^2\, \mathrm{Var}(X), \qquad \mathrm{Skew}(Y) = \pm\, \mathrm{Skew}(X)
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \qquad E[Y] = a\, E[X] + b,$ $\displaystyle \quad \mathrm{Var}(Y) = a^2\, \mathrm{Var}(X),$ $\displaystyle \quad \mathrm{Skew}(Y) = \pm\, \mathrm{Skew}(X)$</span>
     """,
                 "Linear transformation of a random variable",
             ),
@@ -400,14 +344,12 @@ def _(corollary, mo, theorem):
                 r"""
     **Proof.** &nbsp; $f_X(x) = \dfrac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\dfrac{(x - \mu)^2}{2\sigma^2} \right)$
 
-    $$
-    \Longrightarrow \quad f_Z(z) = \frac{\partial}{\partial z} (\mu + \sigma z)\ f_X(\mu + \sigma z) = \sigma\, \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(\mu + \sigma z - \mu)^2}{2\sigma^2} \right) = \frac{1}{\sqrt{2\pi}} \exp\!\left( -\frac{z^2}{2} \right)
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \quad f_Z(z) = \frac{\partial}{\partial z} (\mu + \sigma z)\ f_X(\mu + \sigma z)$ $\displaystyle = \sigma\, \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(\mu + \sigma z - \mu)^2}{2\sigma^2} \right) = \frac{1}{\sqrt{2\pi}} \exp\!\left( -\frac{z^2}{2} \right)$</span>
 
     Converse is the same…
 
     $$
-    f_X(x) = \frac{\partial}{\partial x} \left( \frac{x - \mu}{\sigma} \right) f_Z\!\left( \frac{x - \mu}{\sigma} \right) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right) \qquad \square
+    f_X(x) = \frac{\partial}{\partial x} \left( \frac{x - \mu}{\sigma} \right) f_Z\!\left( \frac{x - \mu}{\sigma} \right) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right) \tag*{$\square$}
     $$
     """
             ),
@@ -423,14 +365,14 @@ def _(corollary, mo, theorem):
             ),
             corollary(
                 r"""
-    $Z \sim \mathcal{N}(0, 1)$ &nbsp; $\leadsto$ &nbsp; $X = \mu + \sigma Z \sim \mathcal{N}(\mu, \sigma^2)$
+    $Z \sim \mathcal{N}(0, 1)$ &nbsp; <span class="nw">$\leadsto$ &nbsp; $X = \mu + \sigma Z \sim \mathcal{N}(\mu, \sigma^2)$</span>
 
     $$
-    \Longrightarrow \qquad m_X(t) = e^{t\mu}\, m_Z(t\sigma) = e^{t\mu + \frac{t^2}{2} \sigma^2}
-    $$
-
-    $$
-    Y = aX + b \quad \Longrightarrow \quad m_Y(t) = e^{tb}\, m_X(ta) = e^{t(a\mu + b) + \frac{t^2}{2} a^2 \sigma^2} \quad \Longrightarrow \quad Y \sim \mathcal{N}(a\mu + b,\ a^2\sigma^2)
+    \begin{aligned}
+    &\Longrightarrow \quad m_X(t) = e^{t\mu}\, m_Z(t\sigma) = e^{t\mu + t^2 \sigma^2/2} \\[6pt]
+    Y = aX + b \quad &\Longrightarrow \quad m_Y(t) = e^{tb}\, m_X(ta) = e^{t(a\mu + b) + t^2 a^2 \sigma^2/2} \\[6pt]
+    &\Longrightarrow \quad Y \sim \mathcal{N}(a\mu + b,\ a^2\sigma^2)
+    \end{aligned}
     $$
 
     (if $m_{Y_1}(t) = m_{Y_2}(t)$ around $t = 0$, then $Y_1$ and $Y_2$ have the same distribution!)
@@ -451,9 +393,7 @@ def _(corollary, mo, theorem):
 
     How can the instructor give fairer grades?
 
-    $$
-    Y = aX + b \sim \mathcal{N}(75, 15^2) \qquad \Longleftrightarrow \qquad \begin{cases} 75 = a\, 50 + b \\ 15^2 = a^2\, 20^2 \end{cases} \qquad \Longleftrightarrow \qquad \begin{cases} a = 3/4 \\ b = 37.5 \end{cases}
-    $$
+    <span class="chain">$\displaystyle Y = aX + b \sim \mathcal{N}(75, 15^2) \quad \Longleftrightarrow \quad \begin{cases} 75 = a\, 50 + b \\ 15^2 = a^2\, 20^2 \end{cases}$ $\displaystyle \quad \Longleftrightarrow \quad \begin{cases} a = 3/4 \\ b = 37.5 \end{cases}$</span>
 
     $\mathcal{N}(50, 20^2)$ &nbsp; (to get same % of As, Bs, Cs, Ds, Fs):
 
@@ -461,22 +401,71 @@ def _(corollary, mo, theorem):
     |:--|:-:|:-:|:-:|:-:|:-:|
     | $X$ | $\geq 70$ | $\geq 50$ | $\geq 30$ | $\geq 16.7$ | |
 
-    $$
-    P(X \geq 90) = 1 - P(X \leq 90) = 1 - \Phi\!\left( \frac{90 - 50}{20} \right) = 1 - \underbrace{\Phi(2)}_{\text{tabled}} \approx 1 - 0.977 = 2.3\% \ \text{ get A}
-    $$
+    <span class="chain">$\displaystyle P(X \geq 90) = 1 - P(X \leq 90) = 1 - \Phi\!\left( \frac{90 - 50}{20} \right)$ $\displaystyle = 1 - \underbrace{\Phi(2)}_{\footnotesize \text{tabled}} \approx 1 - 0.977 = 2.3\% \ \text{ get A}$</span>
 
-    $$
-    \begin{aligned}
-    P(X \geq 70) &= P\!\left( \frac{Y - b}{a} \geq 70 \right) = P(Y \geq 90) = 1 - P(Y \leq 90) = 1 - \Phi\!\left( \frac{90 - 75}{15} \right) \\
-    &= 1 - \underbrace{\Phi(1)}_{\text{tabled}} \approx 1 - 0.841 = 15.9\% \ \text{ get A}
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle P(X \geq 70) = P\!\left( \frac{Y - b}{a} \geq 70 \right) = P(Y \geq 90)$ $\displaystyle = 1 - P(Y \leq 90) = 1 - \Phi\!\left( \frac{90 - 75}{15} \right)$ $\displaystyle = 1 - \underbrace{\Phi(1)}_{\footnotesize \text{tabled}} \approx 1 - 0.841 = 15.9\% \ \text{ get A}$</span>
 
     | $z$ | 0 | 0.5 | 1 | 1.5 | 2 | 2.5 | 3 |
     |:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
     | $\Phi(z)$ | 0.5 | 0.691 | 0.841 | 0.933 | 0.977 | 0.994 | 0.999 |
     """
             ),
+        ],
+        gap=1.5,
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    cut = mo.ui.slider(0, 100, 1, value=70, label="cutoff $x$", show_value=True)
+    return (cut,)
+
+
+@app.cell(hide_code=True)
+def _(BLUE, Figure, GREY, LIGHT, RED, cut, math, mo, np, table):
+    def _Phi(v):
+        return 0.5 * (1 + math.erf(v / math.sqrt(2)))
+
+    def _pdf(x, mu, s):
+        return np.exp(-((np.asarray(x, dtype=float) - mu) ** 2) / (2 * s**2)) / math.sqrt(2 * math.pi * s**2)
+
+    _c = cut.value
+    _y = 0.75 * _c + 37.5
+    _x = np.linspace(-10, 120, 500)
+
+    _fig = Figure(figsize=(5.6, 2.8), layout="constrained")
+    _ax = _fig.subplots()
+    _xc = np.linspace(_c, 120, 300)
+    _ax.fill_between(_xc, _pdf(_xc, 50, 20), color=LIGHT, lw=0)
+    _ax.plot([_c, _c], [0, 0.031], color=BLUE, lw=1.0, ls=(0, (4, 3)))
+    # the matching cutoff y on Y: its tail (hatched) has the same area as the shaded tail of X
+    _yc = np.linspace(min(_y, 120), 120, 300)
+    _ax.fill_between(_yc, _pdf(_yc, 75, 15), facecolor="none", edgecolor=RED, hatch="////", lw=0)
+    _ax.plot([_y, _y], [0, 0.031], color=RED, lw=1.0, ls=(0, (4, 3)))
+    _ax.text(_y, 0.0318, "$y$", color=RED, fontsize=12, ha="center", va="bottom")
+    _ax.plot(_x, _pdf(_x, 50, 20), color=BLUE, lw=1.4)
+    _ax.plot(_x, _pdf(_x, 75, 15), color=RED, lw=1.4)
+    _ax.text(_c, 0.0318, "$x$", color=BLUE, fontsize=12, ha="center", va="bottom")
+    _ax.text(36, 0.0375, r"$X \sim \mathcal{N}(50, 20^2)$", color=BLUE, fontsize=12, ha="center", va="center")
+    _ax.text(88, 0.0375, r"$Y \sim \mathcal{N}(75, 15^2)$", color=RED, fontsize=12, ha="center", va="center")
+    _ax.set_xlim(-10, 120)
+    _ax.set_ylim(0, 0.041)
+    _ax.set_yticks([])
+    _ax.tick_params(labelsize=12)
+    for _s in ("top", "right", "left"):
+        _ax.spines[_s].set_visible(False)
+
+    mo.vstack(
+        [
+            mo.hstack([cut], justify="start", gap=2, wrap=True),
+            table(
+                [
+                    (r"$y = (3/4)\, x + 37.5$", "$" + f"{_y:.2f}".rstrip("0").rstrip(".") + "$"),
+                    (r"$P(X \geq x) = P(Y \geq y)$", rf"${100 * (1 - _Phi((_c - 50) / 20)):.1f}\%$"),
+                ]
+            ),
+            _fig,
         ]
     )
     return
@@ -521,79 +510,6 @@ def _(BLUE, Figure, GREY, HALF, LIGHT, mo, np):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    cut = mo.ui.slider(0, 100, 1, value=70, label="cutoff $x$ (on the scores $X$)", show_value=True)
-    return (cut,)
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREY, LIGHT, RED, cut, math, mo, np, table):
-    def _Phi(v):
-        return 0.5 * (1 + math.erf(v / math.sqrt(2)))
-
-    def _pdf(x, mu, s):
-        return np.exp(-((np.asarray(x, dtype=float) - mu) ** 2) / (2 * s**2)) / math.sqrt(2 * math.pi * s**2)
-
-    def _share(cuts, mu, sd):
-        _F = [_Phi((v - mu) / sd) for v in cuts]
-        return [1 - _F[0]] + [_F[i - 1] - _F[i] for i in range(1, 4)] + [_F[3]]
-
-    _c = cut.value
-    _y = 0.75 * _c + 37.5
-    _x = np.linspace(-10, 120, 500)
-
-    _fig = Figure(figsize=(FULL, 2.8), layout="constrained")
-    _ax = _fig.subplots()
-    _xc = np.linspace(_c, 120, 300)
-    _ax.fill_between(_xc, _pdf(_xc, 50, 20), color=LIGHT, lw=0)
-    _ax.plot([_c, _c], [0, 0.031], color=GREY, lw=1.0, ls=(0, (4, 3)))
-    # the matching cutoff y on Y: its tail (hatched) has the same area as the shaded tail of X
-    _yc = np.linspace(min(_y, 120), 120, 300)
-    _ax.fill_between(_yc, _pdf(_yc, 75, 15), facecolor="none", edgecolor=RED, hatch="////", lw=0)
-    _ax.plot([_y, _y], [0, 0.031], color=RED, lw=1.0, ls=(0, (4, 3)))
-    _ax.text(_y, 0.0318, "$y$", color=RED, fontsize=12, ha="center", va="bottom")
-    _ax.plot(_x, _pdf(_x, 50, 20), color=BLUE, lw=1.4)
-    _ax.plot(_x, _pdf(_x, 75, 15), color=RED, lw=1.4)
-    _ax.text(_c, 0.0318, "$x$", fontsize=12, ha="center", va="bottom")
-    _ax.text(36, 0.0375, r"$X \sim \mathcal{N}(50, 20^2)$", color=BLUE, fontsize=12, ha="center", va="center")
-    _ax.text(88, 0.0375, r"$Y \sim \mathcal{N}(75, 15^2)$", color=RED, fontsize=12, ha="center", va="center")
-    _ax.set_xlim(-10, 120)
-    _ax.set_ylim(0, 0.041)
-    _ax.set_yticks([])
-    _ax.tick_params(labelsize=12)
-    for _s in ("top", "right", "left"):
-        _ax.spines[_s].set_visible(False)
-
-    _cuts_y = [90, 75, 60, 50]
-    _cuts_x = [(v - 37.5) / 0.75 for v in _cuts_y]
-    _grades = "\n".join(
-        [
-            "| grade | A | B | C | D | F |",
-            "|:--|--:|--:|--:|--:|--:|",
-            r"| cutoff on $Y \sim \mathcal{N}(75, 15^2)$ | " + " | ".join(rf"$\geq {v}$" for v in _cuts_y) + " | |",
-            "| share | " + " | ".join(rf"${100 * v:.1f}\%$" for v in _share(_cuts_y, 75, 15)) + " |",
-            r"| cutoff on $X \sim \mathcal{N}(50, 20^2)$ | " + " | ".join(rf"$\geq {v:.3g}$" for v in _cuts_x) + " | |",
-            "| share | " + " | ".join(rf"${100 * v:.1f}\%$" for v in _share(_cuts_x, 50, 20)) + " |",
-        ]
-    )
-    mo.vstack(
-        [
-            mo.hstack([cut], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$y = \tfrac{3}{4} x + 37.5$", rf"${_y:.2f}$"),
-                    (r"$P(X \geq x) = 1 - \Phi\big( (x - 50)/20 \big)$ &nbsp; (area)", rf"$\textcolor{{{BLUE}}}{{{100 * (1 - _Phi((_c - 50) / 20)):.1f}\%}}$"),
-                    (r"$P(Y \geq y) = 1 - \Phi\big( (y - 75)/15 \big)$", rf"$\textcolor{{{RED}}}{{{100 * (1 - _Phi((_y - 75) / 15)):.1f}\%}}$"),
-                ]
-            ),
-            _fig,
-            mo.md(_grades),
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
 def _(definition, mo, theorem):
     mo.vstack(
         [
@@ -606,7 +522,7 @@ def _(definition, mo, theorem):
     F_X(q_p) = \int_{-\infty}^{q_p} f_X(x)\, dx = P(X \leq q_p) = p
     $$
 
-    $\leadsto$ &nbsp; a fraction $p$ of the probability is below the $p$-quantile &nbsp; (median $= q_{1/2}$, &nbsp; $k$th percentile $q_{k/100}$)
+    $\leadsto$ &nbsp; a fraction $p$ of the probability is below the $p$-quantile &nbsp; (<span style="white-space: nowrap">median $= q_{1/2}$,</span> &nbsp; <span style="white-space: nowrap">$k$th percentile $q_{k/100}$)</span>
     """,
                 "Quantile",
             ),
@@ -638,34 +554,23 @@ def _(definition, mo, theorem):
 
 @app.cell(hide_code=True)
 def _(mo):
-    q_p = mo.ui.slider(0.01, 0.99, 0.005, value=0.95, label="$p$", show_value=True)
+    q_p = mo.ui.slider(0.01, 0.995, 0.005, value=0.95, label="$p$", show_value=True)
     return (q_p,)
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    q_mu = mo.ui.slider(-50, 150, 1, value=50, label=r"$\mu$", show_value=True)
-    return (q_mu,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    q_sd = mo.ui.slider(1, 40, 0.5, value=20, label=r"$\sigma$", show_value=True)
-    return (q_sd,)
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, LIGHT, math, mo, np, q_mu, q_p, q_sd, table):
+def _(BLUE, Figure, GREEN, LIGHT, math, mo, np, q_p, table):
     def _Phi(v):
         return 0.5 * (1 + math.erf(v / math.sqrt(2)))
 
-    _p, _mu, _sd = q_p.value, q_mu.value, q_sd.value
+    _p, _mu, _sd = q_p.value, 50, 20
     # z_p by bisection on Phi
     _lo, _hi = -6.0, 6.0
     for _k in range(60):
         _mid = (_lo + _hi) / 2
         _lo, _hi = (_mid, _hi) if _Phi(_mid) < _p else (_lo, _mid)
     _zp = (_lo + _hi) / 2
+    _zp = 0.0 if abs(_p - 0.5) < 1e-9 else _zp
     _qp = _mu + _sd * _zp
 
     def _pdf(x):
@@ -673,7 +578,7 @@ def _(BLUE, FULL, Figure, GREEN, LIGHT, math, mo, np, q_mu, q_p, q_sd, table):
 
     _x = np.linspace(_mu - 4 * _sd, _mu + 4 * _sd, 500)
     _top = float(_pdf(_mu))
-    _fig = Figure(figsize=(FULL, 2.8), layout="constrained")
+    _fig = Figure(figsize=(5.6, 2.8), layout="constrained")
     _ax = _fig.subplots()
     _xq = np.linspace(_x[0], _qp, 300)
     _ax.fill_between(_xq, _pdf(_xq), color=LIGHT, lw=0)
@@ -690,60 +595,14 @@ def _(BLUE, FULL, Figure, GREEN, LIGHT, math, mo, np, q_mu, q_p, q_sd, table):
 
     mo.vstack(
         [
-            mo.hstack([q_p, q_mu, q_sd], justify="start", gap=2, wrap=True),
+            mo.hstack([q_p, mo.md(r"$X \sim \mathcal{N}(50, 20^2)$")], justify="start", align="center", gap=2, wrap=True),
             table(
                 [
-                    (r"$z_p$ &nbsp; ($\Phi(z_p) = p$)", rf"${_zp + 0.0:.4f}$"),
-                    (r"$q_p(X) = \mu + \sigma z_p$", rf"$\textcolor{{{GREEN}}}{{{_qp + 0.0:.3f}}}$"),
-                    (r"$P(X \leq q_p)$ &nbsp; (area)", rf"${_Phi((_qp - _mu) / _sd):.4f}$"),
+                    (r"$z_p$ &nbsp; ($\Phi(z_p) = p$)", rf"${_zp:.3f}$" if _zp else "$0$"),
+                    (r"$q_p(X) = 50 + 20\, z_p$", rf"${_qp:.2f}$" if _zp else "$50$"),
                 ]
             ),
             _fig,
         ]
     )
     return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - standard normal $Z \sim \mathcal{N}(0, 1)$: &nbsp; cdf $\Phi(z) = P(Z \leq z)$ (no simple formula, tabled)
-
-        $$
-        \begin{gathered}
-        \Phi(-z) = 1 - \Phi(z), \qquad m_Z(t) = e^{t^2/2} \\[4pt]
-        \Longrightarrow \qquad E[Z] = 0, \quad \mathrm{Var}(Z) = 1, \quad \mathrm{Skew}(Z) = 0
-        \end{gathered}
-        $$
-    - $Y = u(X)$ with $u$ strictly increasing:
-
-        $$
-        F_Y(y) = F_X(u^{-1}(y))
-        $$
-
-        and, for $X$ continuous,
-
-        $$
-        f_Y(y) = \frac{d}{dy} u^{-1}(y)\ f_X(u^{-1}(y))
-        $$
-    - $Y = aX + b$:
-
-        $$
-        m_Y(t) = e^{tb}\, m_X(ta) \qquad \Longrightarrow \qquad E[Y] = a\, E[X] + b, \quad \mathrm{Var}(Y) = a^2\, \mathrm{Var}(X)
-        $$
-    - $X \sim \mathcal{N}(\mu, \sigma^2)$ if and only if
-
-        $$
-        Z = \frac{X - \mu}{\sigma} \sim \mathcal{N}(0, 1) \qquad \Longrightarrow \qquad F_X(x) = \Phi\!\left( \frac{x - \mu}{\sigma} \right)
-        $$
-
-        linear transformations of normal random variables are still normal: $aX + b \sim \mathcal{N}(a\mu + b,\ a^2\sigma^2)$
-    - $p$-quantile: $F_X(q_p) = p$; &nbsp; for the normal distribution $q_p(X) = \mu + \sigma z_p$ with $\Phi(z_p) = p$
-    """)
-    return
-
-
-if __name__ == "__main__":
-    app.run()

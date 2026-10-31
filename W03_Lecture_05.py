@@ -30,7 +30,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +75,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,43 +120,16 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 05", "Week 03", "Lecture 05 · Discrete random variables: pmf, cdf, expectation")
+    header("Lecture 05", "Week 03", "Lecture 05 • Discrete random variables: pmf, cdf, expectation")
     return
-
-
-@app.cell(hide_code=True)
-def _(arrow, math):
-    def vector(ax, tail, tip, color, label=None, turn=0, r=15, **kw):
-        """Arrow from `tail` to `tip` (a dot when it has zero length), labelled beyond its tip on a white box;
-        `turn` (degrees) rotates the label about the tip so that coinciding vectors keep separate labels."""
-        dx, dy = tip[0] - tail[0], tip[1] - tail[1]
-        if dx == 0 and dy == 0:
-            ax.plot(*tip, "o", color=color, ms=4, zorder=4)
-            d = math.radians(45 + turn)
-        else:
-            arrow(ax, tail, tip, color, **kw)
-            d = math.atan2(dy, dx) + math.radians(turn)
-        if label:
-            ax.annotate(label, tip, textcoords="offset points", xytext=(r * math.cos(d), r * math.sin(d)), ha="center", va="center", color=color, fontsize=13, zorder=5, bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
-
-    return (vector,)
 
 
 @app.cell(hide_code=True)
@@ -223,12 +197,12 @@ def _(BLUE, FULL, Figure, GREEN, HALF, arrow, definition, mo, stems, steps):
     _fig = Figure(figsize=(FULL, 2.9), layout="constrained")
     _l, _r = _fig.subplots(1, 2)
     stems(_l, [1, 2, 3, 4], [1 / 16, 3 / 16, 5 / 16, 7 / 16])
-    _l.set_yticks([1 / 16, 3 / 16, 5 / 16, 7 / 16], [r"$\frac{1}{16}$", r"$\frac{3}{16}$", r"$\frac{5}{16}$", r"$\frac{7}{16}$"])
+    _l.set_yticks([1 / 16, 3 / 16, 5 / 16, 7 / 16], [r"$1/16$", r"$3/16$", r"$5/16$", r"$7/16$"])
     _l.set_xlabel("$x$")
     _l.set_ylabel("$f_X(x)$")
     steps(_r, [1, 2, 3, 4], [0, 1 / 16, 4 / 16, 9 / 16, 1])
     _r.set_xticks([1, 2, 3, 4])
-    _r.set_yticks([1 / 16, 1 / 4, 9 / 16, 1], [r"$\frac{1}{16}$", r"$\frac{1}{4}$", r"$\frac{9}{16}$", "$1$"])
+    _r.set_yticks([1 / 16, 1 / 4, 9 / 16, 1], [r"$1/16$", r"$1/4$", r"$9/16$", "$1$"])
     _r.set_xlabel("$x$")
     _r.set_ylabel("$F_X(x)$")
 
@@ -267,7 +241,7 @@ def _(BLUE, FULL, Figure, GREEN, HALF, arrow, definition, mo, stems, steps):
 
     - $f_X(x) \geq 0$
     - $f_X(x) = 0$ for $x \notin S_X$
-    - $\displaystyle\sum_{x \in A} f_X(x) = P_X(A)$ for $A \subseteq \mathbb{R}$ &nbsp; $\leadsto$ &nbsp; $f_X$ completely determines $P_X$
+    - $\displaystyle\sum_{x \in A} f_X(x) = P_X(A)$ for $A \subseteq \mathbb{R}$ &nbsp; <span class="nw">$\leadsto$ &nbsp; $f_X$</span> completely determines $P_X$
     """
             ),
             definition(
@@ -289,7 +263,7 @@ def _(BLUE, FULL, Figure, GREEN, HALF, arrow, definition, mo, stems, steps):
     - $F_X(x) \geq 0$
     - $F_X(x_1) \leq F_X(x_2)$ for $x_1 \leq x_2 \in \mathbb{R}$
     - $\displaystyle\lim_{x \to -\infty} F_X(x) = 0$, &nbsp; $\displaystyle\lim_{x \to +\infty} F_X(x) = 1$
-    - $F_X(x) - F_X(x^-) = f_X(x)$ &nbsp; ($F_X(x^-) = P(X < x)$: value of $F_X$ just before $x$) &nbsp; $\leadsto$ &nbsp; $F_X(x) = \displaystyle\sum_{t \leq x} f_X(t)$
+    - $F_X(x) - F_X(x^-) = f_X(x)$ &nbsp; ($x^-$ = 1st element of $S_X$ smaller than $x$; $F_X(x^-) = P(X < x)$) &nbsp; <span class="nw">$\leadsto$ &nbsp; $F_X(x) = \displaystyle\sum_{t \leq x} f_X(t)$</span>
     """
             ),
             _sketch,
@@ -297,38 +271,29 @@ def _(BLUE, FULL, Figure, GREEN, HALF, arrow, definition, mo, stems, steps):
                 r"""
     **Example** (roll two fair 4-sided dice).
 
-    $$
-    S = \{\, (i, j) \mid i, j = 1, 2, 3, 4 \,\}, \qquad X(i, j) = \max(i, j) \qquad \leadsto \qquad S_X = \{1, 2, 3, 4\}
-    $$
-
-    $$
-    \begin{aligned}
-    f_X(1) &= P(X = 1) = \tfrac{1}{16} && X = 1 \iff (i, j) = (1, 1) \\
-    f_X(2) &= P(X = 2) = \tfrac{3}{16} && X = 2 \iff (i, j) = (1, 2), (2, 2), (2, 1) \\
-    f_X(3) &= P(X = 3) = \tfrac{5}{16} && X = 3 \iff (i, j) = (1, 3), (2, 3), (3, 3), (3, 2), (3, 1) \\
-    f_X(4) &= P(X = 4) = \tfrac{7}{16} && X = 4 \iff (i, j) = (1, 4), (2, 4), (3, 4), \\
-    & && \phantom{X = 4 \iff (i, j) = {}} (4, 4), (4, 3), (4, 2), (4, 1)
-    \end{aligned}
-    $$
-
-    $$
-    f_X(5) = f_X(\tfrac{3}{2}) = f_X(-\pi) = 0 \qquad (X \text{ never takes those values})
-    $$
-
-    $$
-    \begin{aligned}
-    F_X(1) &= P(X \leq 1) = \tfrac{1}{16} && X \leq 1 \iff (i, j) = (1, 1) \\
-    F_X(2) &= P(X \leq 2) = \tfrac{4}{16} && X \leq 2 \iff (i, j) = (1, 1), (1, 2), (2, 2), (2, 1) \\
-    F_X(3) &= P(X \leq 3) = \tfrac{9}{16} && X \leq 3 \iff (i, j) = (1, 1), \dots, (3, 1) \\
-    F_X(4) &= P(X \leq 4) = \tfrac{16}{16} && X \leq 4 \iff (i, j) = \underbrace{(1, 1), \dots, (4, 1)}_{\text{all outcomes!}}
-    \end{aligned}
-    $$
-
-    $$
-    \underbrace{F_X(5) = 1}_{X \leq 5 \text{ for every outcome}}, \qquad \underbrace{F_X(\tfrac{3}{2}) = \tfrac{1}{16}}_{X \leq \frac{3}{2} \text{ for } (1, 1) \text{ only}}, \qquad \underbrace{F_X(-\pi) = 0}_{X \leq -\pi \text{ for no outcome}}
-    $$
+    <span class="chain">$\displaystyle S = \{\, (i, j) \mid i, j = 1, 2, 3, 4 \,\},$ $\displaystyle \quad X(i, j) = \max(i, j)$ $\displaystyle \qquad \leadsto \qquad S_X = \{1, 2, 3, 4\}$</span>
     """
             ),
+            mo.Html('<div class="readout cases">' + mo.md(r"""
+    | | |
+    |:--|:--|
+    | $f_X(1) = P(X = 1) = 1/16$ | $X = 1 \iff (i, j) = (1, 1)$ |
+    | $f_X(2) = P(X = 2) = 3/16$ | $X = 2 \iff (i, j) = (1, 2),$ $(2, 2),$ $(2, 1)$ |
+    | $f_X(3) = P(X = 3) = 5/16$ | $X = 3 \iff (i, j) = (1, 3),$ $(2, 3),$ $(3, 3),$ $(3, 2),$ $(3, 1)$ |
+    | $f_X(4) = P(X = 4) = 7/16$ | $X = 4 \iff (i, j) = (1, 4),$ $(2, 4),$ $(3, 4),$ $(4, 4),$ $(4, 3),$ $(4, 2),$ $(4, 1)$ |
+    | $f_X(5) = f_X(3/2) = f_X(-\pi) = 0$ | $X$ never takes those values |
+    """).text + "</div>"),
+            mo.Html('<div class="readout cases">' + mo.md(r"""
+    | | |
+    |:--|:--|
+    | $F_X(1) = P(X \leq 1) = 1/16$ | $X \leq 1 \iff (i, j) = (1, 1)$ |
+    | $F_X(2) = P(X \leq 2) = 4/16$ | $X \leq 2 \iff (i, j) = (1, 1),$ $(1, 2),$ $(2, 2),$ $(2, 1)$ |
+    | $F_X(3) = P(X \leq 3) = 9/16$ | $X \leq 3 \iff (i, j) = (1, 1), \dots, (3, 1)$ |
+    | $F_X(4) = P(X \leq 4) = 16/16$ | $X \leq 4 \iff (i, j) = \underbrace{(1, 1), \dots, (4, 1)}_{\footnotesize\text{all outcomes!}}$ |
+    | $F_X(5) = 1$ | $X \leq 5$ for every outcome |
+    | $F_X(3/2) = 1/16$ | $X \leq 3/2$ for $(1, 1)$ only |
+    | $F_X(-\pi) = 0$ | $X \leq -\pi$ for no outcome |
+    """).text + "</div>"),
             _fig,
         ]
     )
@@ -345,7 +310,7 @@ def _(definition, mo):
 
     $\leadsto$ &nbsp; pmf of a discrete random variable $X : S \longrightarrow \mathbb{R}$ gives the relative frequency of a result $x$ over infinitely many independent measurements
 
-    $\leadsto$ &nbsp; to study their properties, it is useful to summarize the main characteristics of pmfs into certain numbers (mean, variance, …) &nbsp; $\leadsto$ &nbsp; expectations of $X$
+    $\leadsto$ &nbsp; to study their properties, it is useful to summarize the main characteristics of pmfs into certain numbers (mean, variance, …) &nbsp; <span class="nw">$\leadsto$ &nbsp; expectations</span> of $X$
     """
             ),
             definition(
@@ -362,74 +327,18 @@ def _(definition, mo):
                 r"""
     **Example.** &nbsp; $X(i, j) = \max(i, j)$
 
-    $$
-    \leadsto \qquad E[X] = \sum_{x=1}^{4} x\, f_X(x) = 1 \cdot \tfrac{1}{16} + 2 \cdot \tfrac{3}{16} + 3 \cdot \tfrac{5}{16} + 4 \cdot \tfrac{7}{16} = \tfrac{50}{16} \approx 3.1
-    $$
+    <span class="chain">$\displaystyle \leadsto \qquad E[X] = \sum_{x=1}^{4} x\, f_X(x) = 1 \cdot \frac{1}{16} + 2 \cdot \frac{3}{16} + 3 \cdot \frac{5}{16} + 4 \cdot \frac{7}{16}$ $\displaystyle = \frac{50}{16} \approx 3.1$</span>
 
     **Example.** Game: pay 3000 won to roll a 6-sided die, get 1000 won times the face value $X$. How much do you expect to win?
 
     $$
-    \text{fair die} \qquad \leadsto \qquad E[1000 X - 3000] = \sum_{x=1}^{6} (1000 x - 3000) \times \tfrac{1}{6} = 500
+    \text{fair die} \quad \leadsto \quad E[1000 X - 3000] = \sum_{x=1}^{6} (1000 x - 3000) \times \frac{1}{6} = 500
     $$
 
-    not fair &nbsp; (say $f_X(1) = f_X(2) = f_X(3) = \tfrac{1}{3}$, &nbsp; $f_X(4) = f_X(5) = f_X(6) = 0$)
+    not fair &nbsp; (say $f_X(1) = f_X(2) = f_X(3) = \dfrac{1}{3}$, &nbsp; $f_X(4) = f_X(5) = f_X(6) = 0$)
 
-    $$
-    \leadsto \qquad E[1000 X - 3000] = \sum_{x=1}^{3} (1000 x - 3000) \times \tfrac{1}{3} + \sum_{x=4}^{6} (1000 x - 3000) \times 0 = -1000
-    $$
+    <span class="chain">$\displaystyle \leadsto \qquad E[1000 X - 3000] = \sum_{x=1}^{3} (1000 x - 3000) \times \frac{1}{3}$ $\displaystyle {} + \sum_{x=4}^{6} (1000 x - 3000) \times 0 = -1000$</span>
     """
-            ),
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    game_preset = mo.ui.dropdown({"fair": (1, 1, 1, 1, 1, 1), "not fair (faces 1–3 only)": (1, 1, 1, 0, 0, 0)}, value="fair", label="die", allow_select_none=False)
-    game_price = mo.ui.slider(0, 10000, 500, value=3000, label="price to play (won)", show_value=True)
-    game_payout = mo.ui.slider(0, 3000, 100, value=1000, label="won per face value", show_value=True)
-    return game_payout, game_preset, game_price
-
-
-@app.cell(hide_code=True)
-def _(game_preset, mo):
-    game_weights = mo.ui.array([mo.ui.slider(0, 10, 1, value=w, label=f"face {i + 1}", show_value=True) for i, w in enumerate(game_preset.value)])
-    game_weight_row = mo.hstack([game_weights[i] for i in range(6)], justify="start", gap=1.5, wrap=True)
-    return game_weight_row, game_weights
-
-
-@app.cell(hide_code=True)
-def _(game_payout, game_preset, game_price, game_weight_row, game_weights, mo, table):
-    from fractions import Fraction as _Fr
-
-    def _tex(q):
-        return str(q.numerator) if q.denominator == 1 else rf"{'-' if q < 0 else ''}\tfrac{{{abs(q.numerator)}}}{{{q.denominator}}}"
-
-    _w = list(game_weights.value)
-    _total = sum(_w)
-    _a, _c = game_payout.value, game_price.value
-    if _total == 0:
-        _pmf_row = _sum_row = "need a non-zero weight"
-    else:
-        _pmf = [_Fr(_wi, _total) for _wi in _w]
-        _E = sum((_a * (_x + 1) - _c) * _f for _x, _f in enumerate(_pmf))
-        _terms = [rf"({_a} \cdot {_x + 1} - {_c}) \cdot {_tex(_f)}" for _x, _f in enumerate(_pmf)]
-        _value = _tex(_E) if _E.denominator == 1 else rf"{_tex(_E)} \approx {float(_E):.2f}"
-        _pmf_row = "$" + r",\ ".join(_tex(_f) for _f in _pmf) + "$"
-        _sum_row = (
-            r"$\begin{aligned} &" + " + ".join(_terms[:3]) + r" \\ &{} + " + " + ".join(_terms[3:]) + r" \\ &= " + _value + r" \text{ won} \end{aligned}$"
-        )
-    mo.vstack(
-        [
-            mo.hstack([game_preset, game_price, game_payout], justify="start", gap=2, wrap=True),
-            game_weight_row,
-            table(
-                [
-                    (r"winnings $u(X)$", rf"${_a}\, X - {_c}$"),
-                    (r"$f_X(1), \dots, f_X(6)$", _pmf_row),
-                    (r"$E[u(X)] = \displaystyle\sum_{x} u(x)\, f_X(x)$", _sum_row),
-                ]
             ),
         ]
     )
@@ -441,10 +350,10 @@ def _(FULL, Figure, mo, stems):
     _fig = Figure(figsize=(FULL, 2.8), layout="constrained")
     _l, _r = _fig.subplots(1, 2)
     stems(_l, [0, 1, 2, 3, 4], [1 / 16, 4 / 16, 6 / 16, 4 / 16, 1 / 16])
-    _l.set_yticks([1 / 16, 4 / 16, 6 / 16], [r"$\frac{1}{16}$", r"$\frac{4}{16}$", r"$\frac{6}{16}$"])
+    _l.set_yticks([1 / 16, 4 / 16, 6 / 16], [r"$1/16$", r"$4/16$", r"$6/16$"])
     _l.text(0.98, 0.98, "fair coin", transform=_l.transAxes, fontsize=13, ha="right", va="top")
     stems(_r, [0, 1, 2, 3, 4], [16 / 81, 32 / 81, 24 / 81, 8 / 81, 1 / 81])
-    _r.set_yticks([1 / 81, 8 / 81, 16 / 81, 24 / 81, 32 / 81], [r"$\frac{1}{81}$", r"$\frac{8}{81}$", r"$\frac{16}{81}$", r"$\frac{24}{81}$", r"$\frac{32}{81}$"])
+    _r.set_yticks([1 / 81, 8 / 81, 16 / 81, 24 / 81, 32 / 81], [r"$1/81$", r"$8/81$", r"$16/81$", r"$24/81$", r"$32/81$"])
     _r.text(0.98, 0.98, "biased coin", transform=_r.transAxes, fontsize=13, ha="right", va="top")
     for _a in (_l, _r):
         _a.set_xlabel("$x$")
@@ -463,7 +372,7 @@ def _(FULL, Figure, mo, stems):
     $\leadsto$ &nbsp; **variance** = expectation of $(X - \mu_X)^2$ &nbsp; (measures the “width” of the distribution)
 
     $$
-    \underbrace{\sigma_X^2}_{(\text{standard deviation})^2} = E[(X - \mu_X)^2] = \sum_{x} (x - \mu_X)^2\, f_X(x)
+    \underbrace{\sigma_X^2}_{\mathclap{\footnotesize (\text{standard deviation})^2}} = E[(X - \mu_X)^2] = \sum_{x} (x - \mu_X)^2\, f_X(x)
     $$
 
     $\leadsto$ &nbsp; **skewness** = expectation of $\left( \dfrac{X - \mu_X}{\sigma_X} \right)^3$ &nbsp; (measures “symmetry” around the center)
@@ -476,16 +385,15 @@ def _(FULL, Figure, mo, stems):
     """
             ),
             _fig,
-            mo.md(
-                r"""
-    | | fair coin | biased coin |
+            mo.Html('<div class="readout cases">' + mo.md(r"""
+    | | | |
     |:--|:--|:--|
-    | | $P(\{H\}) = P(\{T\}) = \tfrac{1}{2}$ | $P(\{H\}) = \tfrac{1}{3}$, $P(\{T\}) = \tfrac{2}{3}$ |
-    | $\mu_X$ | $E[X] = 2$ | $E[X] = \tfrac{4}{3}$ |
-    | $\sigma_X^2$ | $E[(X - 2)^2] = 1$ | $E[(X - \tfrac{4}{3})^2] = \tfrac{8}{9}$ |
-    | $\gamma_X$ | $E\!\left[ \left( \tfrac{X - 2}{1} \right)^3 \right] = 0$ | $E\!\left[ \left( \tfrac{X - 4/3}{\sqrt{8/9}} \right)^3 \right] = \tfrac{1}{\sqrt{8}}$ |
-    """
-            ),
+    | | fair coin | biased coin |
+    | | $P(\{H\}) = P(\{T\}) = 1/2$ | $P(\{H\}) = 1/3,$ $P(\{T\}) = 2/3$ |
+    | $\mu_X$ | $E[X] = 2$ | $E[X] = 4/3$ |
+    | $\sigma_X^2$ | $E[(X - 2)^2] = 1$ | $E[(X - 4/3)^2] = 8/9$ |
+    | $\gamma_X$ | $E\!\left[ \left( \dfrac{X - 2}{1} \right)^3 \right] = 0$ | $E\!\left[ \left( \dfrac{X - 4/3}{\sqrt{8/9}} \right)^3 \right] = \dfrac{1}{\sqrt{8}}$ |
+    """).text + "</div>"),
         ]
     )
     return
@@ -493,52 +401,40 @@ def _(FULL, Figure, mo, stems):
 
 @app.cell(hide_code=True)
 def _(mo):
-    tosses = mo.ui.slider(1, 12, 1, value=4, label="number of tosses", show_value=True)
-    coin = mo.ui.dropdown({"fair (1/2)": 0.5, "biased (1/3)": 1 / 3, "custom (slider)": None}, value="fair (1/2)", label="coin", allow_select_none=False)
-    p_head = mo.ui.slider(0.05, 0.95, 0.01, value=0.5, label=r"custom $P(\{H\})$", show_value=True)
-    return coin, p_head, tosses
+    coin_p = mo.ui.slider(0.05, 0.95, 0.05, value=0.5, label=r"$P(\{H\})$", show_value=True)
+    return (coin_p,)
 
 
 @app.cell(hide_code=True)
-def _(FULL, Figure, GREEN, coin, math, mo, p_head, stems, table, tosses):
-    _n = tosses.value
-    _p = p_head.value if coin.value is None else coin.value
+def _(Figure, GREEN, GREY, coin_p, math, mo, stems):
+    _p, _n = coin_p.value, 4
     _xs = list(range(_n + 1))
-    _pmf = [math.comb(_n, _k) * _p**_k * (1 - _p) ** (_n - _k) for _k in _xs]
-    _mu = sum(_x * _f for _x, _f in zip(_xs, _pmf))
-    _m2 = sum(_x**2 * _f for _x, _f in zip(_xs, _pmf))
-    _var = sum((_x - _mu) ** 2 * _f for _x, _f in zip(_xs, _pmf))
-    _skew = sum(((_x - _mu) / math.sqrt(_var)) ** 3 * _f for _x, _f in zip(_xs, _pmf))
-
-    def _num(v):
-        return f"{0.0 if abs(v) < 5e-5 else v:.4f}"
-
-    _fig = Figure(figsize=(FULL, 2.7), layout="constrained")
+    _f = [math.comb(_n, _k) * _p**_k * (1 - _p) ** (_n - _k) for _k in _xs]
+    _mu = _n * _p
+    _var = _n * _p * (1 - _p)
+    _sd = math.sqrt(_var)
+    _g = (1 - 2 * _p) / _sd
+    _fig = Figure(figsize=(5.6, 3.4), layout="constrained")
     _ax = _fig.subplots()
-    stems(_ax, _xs, _pmf)
-    _top = max(_pmf)
-    _ax.plot(_mu, 1.13 * _top, "v", color=GREEN, ms=6, clip_on=False)  # the mean, marked above the stems
-    _ax.text(_mu, 1.2 * _top, r"$\mu_X$", color=GREEN, fontsize=13, ha="center", va="bottom")
-    _ax.set_ylim(0, 1.45 * _top)
+    stems(_ax, _xs, _f)
+    _ax.set_ylim(-0.2, 0.85)
+    _ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8], ["0", "0.2", "0.4", "0.6", "0.8"])
+    _ax.spines["bottom"].set_visible(False)
+    _ax.spines["left"].set_bounds(0, 0.8)
+    _ax.tick_params(axis="x", length=0)
+    _ax.axhline(0, color="black", lw=0.8)
+    _y = -0.08
+    _ax.plot([_mu - _sd, _mu + _sd], [_y, _y], color=GREY, lw=1.4)
+    for _e in (_mu - _sd, _mu + _sd):
+        _ax.plot([_e, _e], [_y - 0.015, _y + 0.015], color=GREY, lw=1.4)
+    _ax.plot(_mu, _y, "o", color=GREEN, ms=6, zorder=3)
+    _ax.text(_mu, _y - 0.02, r"$\mu_X$", color=GREEN, ha="center", va="top", fontsize=13)
+    for _c in (_mu - _sd / 2, _mu + _sd / 2):
+        _ax.text(_c, _y - 0.02, r"$\sigma_X$", color=GREY, ha="center", va="top", fontsize=13)
     _ax.set_xlabel("$x$")
     _ax.set_ylabel("$f_X(x)$")
-
-    mo.vstack(
-        [
-            mo.hstack([tosses, coin, p_head], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$P(\{H\})$", rf"${_p:.4f}$"),
-                    (r"$\mu_X = E[X]$", rf"$\textcolor{{{GREEN}}}{{{_num(_mu)}}}$"),
-                    (r"$\sigma_X^2 = E[(X - \mu_X)^2]$", rf"${_num(_var)}$"),
-                    (r"$\gamma_X$", rf"${_num(_skew)}$"),
-                    (r"$E[X^2]$", rf"${_num(_m2)}$"),
-                    (r"$E[X^2] - E[X]^2$", rf"${_num(_m2 - _mu**2)}$"),
-                ]
-            ),
-            _fig,
-        ]
-    )
+    _ax.set_title(rf"$\mu_X = {_mu:.2g}, \quad \sigma_X^2 = {_var:.2g}, \quad \gamma_X = {_g:.2f}$", fontsize=14)
+    mo.vstack([coin_p, _fig])
     return
 
 
@@ -569,18 +465,17 @@ def _(corollary, mo, theorem):
     **Proof.**
 
     $$
-    E[(X - \mu_X)^2] = E[X^2 - 2 \mu_X X + \mu_X^2] = E[X^2] - 2 \mu_X E[X] + \mu_X^2 = E[X^2] - E[X]^2 \qquad \square
+    \begin{align*}
+    E[(X - \mu_X)^2] &= E[X^2 - 2 \mu_X X + \mu_X^2] = E[X^2] - 2 \mu_X E[X] + \mu_X^2 \\[6pt]
+    &= E[X^2] - E[X]^2 \tag*{$\square$}
+    \end{align*}
     $$
 
     **Example.** Flip a fair coin 4 times, $X$ = number of heads
 
-    $$
-    \leadsto \qquad E[X] = 0 \times \tfrac{1}{16} + 1 \times \tfrac{4}{16} + 2 \times \tfrac{6}{16} + 3 \times \tfrac{4}{16} + 4 \times \tfrac{1}{16} = \tfrac{32}{16} = 2
-    $$
+    <span class="chain">$\displaystyle \leadsto \qquad E[X] = 0 \times \frac{1}{16} + 1 \times \frac{4}{16} + 2 \times \frac{6}{16} + 3 \times \frac{4}{16} + 4 \times \frac{1}{16}$ $\displaystyle = \frac{32}{16} = 2$</span>
 
-    $$
-    \leadsto \qquad E[X^2] = 0^2 \times \tfrac{1}{16} + 1^2 \times \tfrac{4}{16} + 2^2 \times \tfrac{6}{16} + 3^2 \times \tfrac{4}{16} + 4^2 \times \tfrac{1}{16} = \tfrac{80}{16} = 5
-    $$
+    <span class="chain">$\displaystyle \leadsto \qquad E[X^2] = 0^2 \times \frac{1}{16} + 1^2 \times \frac{4}{16} + 2^2 \times \frac{6}{16} + 3^2 \times \frac{4}{16} + 4^2 \times \frac{1}{16}$ $\displaystyle = \frac{80}{16} = 5$</span>
 
     $$
     \Longrightarrow \qquad \sigma_X^2 = E[X^2] - E[X]^2 = 5 - 2^2 = 1
@@ -590,44 +485,3 @@ def _(corollary, mo, theorem):
         ]
     )
     return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - pmf of a discrete random variable: $f_X(x) = P(X = x)$, with
-
-        $$
-        f_X \geq 0, \qquad f_X(x) = 0 \ \text{ for } x \notin S_X \qquad \text{and} \qquad \sum_{x \in A} f_X(x) = P_X(A)
-        $$
-
-        $\leadsto$ &nbsp; $f_X$ completely determines $P_X$
-    - cdf:
-
-        $$
-        F_X(x) = P(X \leq x) = \sum_{t \leq x} f_X(t)
-        $$
-
-        non-decreasing from $0$ to $1$, with jumps $F_X(x) - F_X(x^-) = f_X(x)$
-    - expectation of a function of $X$: $E[u(X)] = \sum_{x} u(x)\, f_X(x)$
-    - mean $\mu_X = E[X]$ (“center”), variance $\sigma_X^2 = E[(X - \mu_X)^2]$ (“width”), skewness
-
-        $$
-        \gamma_X = E\Big[\Big(\frac{X - \mu_X}{\sigma_X}\Big)^3\Big] \qquad (\text{“symmetry”})
-        $$
-    - expectation is linear:
-
-        $$
-        \begin{gathered}
-        E[a\, u(X) + b\, v(X)] = a\, E[u(X)] + b\, E[v(X)], \qquad E[c] = c \\[4pt]
-        \Longrightarrow \qquad \sigma_X^2 = E[X^2] - E[X]^2
-        \end{gathered}
-        $$
-    """)
-    return
-
-
-if __name__ == "__main__":
-    app.run()

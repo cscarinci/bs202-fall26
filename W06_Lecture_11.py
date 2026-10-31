@@ -13,11 +13,12 @@ def _():
     import numpy as np
     from matplotlib.figure import Figure
     from matplotlib.patches import Arc
+    from matplotlib.ticker import FuncFormatter
 
     # Figures use the same Computer Modern typeface as the text
     matplotlib.rcParams.update({"font.size": 14, "font.family": "serif", "font.serif": ["cmr10", "DejaVu Serif"], "mathtext.fontset": "cm", "axes.formatter.use_mathtext": True, "axes.unicode_minus": False})
 
-    return Arc, Figure, math, mo, np
+    return Arc, Figure, FuncFormatter, math, mo, np
 
 
 @app.cell(hide_code=True)
@@ -30,7 +31,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +76,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,24 +121,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 11", "Week 06", "Lecture 11 · Expectations for continuous random variables; moment generating functions")
+    header("Lecture 11", "Week 06", "Lecture 11 • Expectations for continuous random variables; moment generating functions")
     return
 
 
@@ -166,7 +159,7 @@ def _(mo):
     - continuous random variables: &nbsp; $X : S \longrightarrow \mathbb{R}$, &nbsp; $S_X = \mathrm{Im}(X)$ uncountable
     - $\leadsto$ &nbsp; $F_X(x) = P(X \leq x)$ continuous &nbsp; (cdf)
     - $\leadsto$ &nbsp; $f_X(x) = \dfrac{d}{dx} F_X(x)$ &nbsp; (pdf; where the derivative is well-defined; usually, piecewise continuous)
-    - **Remark.** For continuous random variables &nbsp; $f_X(x) \neq \underbrace{P(X = x)}_{=\, 0 \ \forall x}$
+    - **Remark.** For continuous random variables &nbsp; $f_X(x) \neq \underbrace{P(X = x)}_{\footnotesize =\, 0 \ \forall\, x}$
 
     **In this lecture:** expectations for continuous random variables; moment generating functions
 
@@ -190,9 +183,7 @@ def _(definition, mo, theorem):
                 r"""
     Given $X : S \longrightarrow \mathbb{R}$ continuous random variable and $u : \mathbb{R} \longrightarrow \mathbb{R}$ a single variable function
 
-    $$
-    \underbrace{E[u(X)]}_{\text{expectation value of } u(X)} = \int_{-\infty}^{+\infty} u(x)\, f_X(x)\, dx = \int_{S_X} u(x)\, f_X(x)\, dx \qquad (f_X(x) = 0 \ \ \forall\, x \notin S_X)
-    $$
+    <span class="chain">$\displaystyle \underbrace{E[u(X)]}_{\footnotesize \text{expectation value of } u(X)} = \int_{-\infty}^{+\infty} u(x)\, f_X(x)\, dx$ $\displaystyle = \underbrace{\int_{S_X} u(x)\, f_X(x)\, dx}_{\footnotesize f_X(x) \,=\, 0 \ \forall\, x \notin S_X}$</span>
     """,
                 "Expectation value",
             ),
@@ -207,18 +198,15 @@ def _(definition, mo, theorem):
     """,
                 "Linearity of expectation",
             ),
-            mo.md(r"""### Mean, variance, skewness and moments"""),
             definition(
                 r"""
     For $X : S \longrightarrow \mathbb{R}$ continuous random variable
 
-    $$
-    \begin{aligned}
-    E[X] = \mu_X &= \int_{-\infty}^{\infty} x\, f_X(x)\, dx && \text{is the \textbf{mean} of } X \\[4pt]
-    E[(X - \mu_X)^2] = \mathrm{Var}(X) = \sigma_X^2 &= \int_{-\infty}^{\infty} (x - \mu_X)^2 f_X(x)\, dx && \text{is the \textbf{variance} of } X \\[4pt]
-    E\!\left[ \left( \frac{X - \mu_X}{\sigma_X} \right)^{\!3} \right] = \mathrm{Skew}(X) = \gamma_X &= \int_{-\infty}^{\infty} \left( \frac{x - \mu_X}{\sigma_X} \right)^{\!3} f_X(x)\, dx && \text{is the \textbf{skewness} of } X
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle E[X] = \mu_X$ $\displaystyle = \int_{-\infty}^{\infty} x\, f_X(x)\, dx \quad \text{is the \textbf{mean} of } X$</span>
+
+    <span class="chain">$\displaystyle E[(X - \mu_X)^2] = \mathrm{Var}(X) = \sigma_X^2$ $\displaystyle = \int_{-\infty}^{\infty} (x - \mu_X)^2 f_X(x)\, dx \quad \text{is the \textbf{variance} of } X$</span>
+
+    <span class="chain">$\displaystyle E\!\left[ \left( \frac{X - \mu_X}{\sigma_X} \right)^{\!3} \right] = \mathrm{Skew}(X) = \gamma_X$ $\displaystyle = \int_{-\infty}^{\infty} \left( \frac{x - \mu_X}{\sigma_X} \right)^{\!3} f_X(x)\, dx \quad \text{is the \textbf{skewness} of } X$</span>
 
     More generally,
 
@@ -238,14 +226,14 @@ def _(definition, mo, theorem):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, math, mo, np, theorem):
-    _fig = Figure(figsize=(FULL, 2.7), layout="constrained")
+def _(BLUE, Figure, math, mo, np, theorem):
+    _fig = Figure(figsize=(5.6, 2.7), layout="constrained")
     _ax = _fig.subplots()
     _r = np.linspace(0.04, 5.05, 500)
     _ax.plot(_r, [math.gamma(_v) for _v in _r], color=BLUE, lw=1.4)
     _ax.plot(range(1, 6), [math.factorial(_n - 1) for _n in range(1, 6)], "o", color="black", ms=4, zorder=4)
     _ax.text(2.4, 15.5, r"$\Gamma(r) = \int_0^\infty x^{r-1} e^{-x}\, dx$", color=BLUE, fontsize=13, ha="center", va="center")
-    _ax.text(4.12, 3.6, r"$\Gamma(n) = (n - 1)!$", fontsize=12, ha="left", va="center")
+    _ax.text(3.88, 7.6, r"$\Gamma(n) = (n - 1)!$", fontsize=12, ha="right", va="center")
     _ax.set_xlim(0, 5.3)
     _ax.set_ylim(0, 26)
     _ax.set_xticks(range(0, 6))
@@ -256,7 +244,6 @@ def _(BLUE, FULL, Figure, math, mo, np, theorem):
 
     mo.vstack(
         [
-            mo.md(r"""### Mean, variance and skewness of the Gamma distribution"""),
             theorem(
                 r"""
     Let $X \sim \mathrm{Gamma}(r, \lambda)$ (be a random variable with pdf $\mathrm{Gamma}(r, \lambda)$), then
@@ -280,17 +267,10 @@ def _(BLUE, FULL, Figure, math, mo, np, theorem):
     Integration by parts with $u = (\lambda x)^{r-1}$, $dv = e^{-\lambda x}\, d(\lambda x)$:
 
     $$
-    \int_{0}^{\infty} (\lambda x)^{r-1} e^{-\lambda x}\, d(\lambda x) = \underbrace{-e^{-\lambda x} (\lambda x)^{r-1}\, \Big|_{0}^{\infty}}_{=\, 0} + (r - 1) \int_{0}^{\infty} (\lambda x)^{r-2} e^{-\lambda x}\, d(\lambda x)
+    \int_{0}^{\infty} (\lambda x)^{r-1} e^{-\lambda x}\, d(\lambda x) = \underbrace{-e^{-\lambda x} (\lambda x)^{r-1}\, \Big|_{0}^{\infty}}_{\footnotesize =\, 0} + (r - 1) \int_{0}^{\infty} (\lambda x)^{r-2} e^{-\lambda x}\, d(\lambda x)
     $$
 
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad \int_{0}^{\infty} \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-\lambda x}\, dx
-    &= \frac{1}{(r - 1)!} \int_{0}^{\infty} (\lambda x)^{r-1} e^{-\lambda x}\, d(\lambda x) = \frac{1}{(r - 2)!} \int_{0}^{\infty} (\lambda x)^{r-2} e^{-\lambda x}\, d(\lambda x) \\[6pt]
-    &= \frac{1}{(r - 3)!} \int_{0}^{\infty} (\lambda x)^{r-3} e^{-\lambda x}\, d(\lambda x) = \cdots = \frac{1}{0!} \int_{0}^{\infty} e^{-\lambda x}\, d(\lambda x) \\[6pt]
-    &= -e^{-\lambda x}\, \Big|_{0}^{\infty} = 0 - (-1) = 1
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \quad \int_{0}^{\infty} \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-\lambda x}\, dx$ $\displaystyle = \frac{1}{(r - 1)!} \int_{0}^{\infty} (\lambda x)^{r-1} e^{-\lambda x}\, d(\lambda x)$ $\displaystyle = \frac{1}{(r - 2)!} \int_{0}^{\infty} (\lambda x)^{r-2} e^{-\lambda x}\, d(\lambda x)$ $\displaystyle = \frac{1}{(r - 3)!} \int_{0}^{\infty} (\lambda x)^{r-3} e^{-\lambda x}\, d(\lambda x) = \cdots$ $\displaystyle = \frac{1}{0!} \int_{0}^{\infty} e^{-\lambda x}\, d(\lambda x)$ $\displaystyle = -e^{-\lambda x}\, \Big|_{0}^{\infty} = 0 - (-1) = 1$</span>
 
     $$
     \leadsto \qquad \boxed{\int_{0}^{\infty} x^{r-1} e^{-x}\, dx = (r - 1)!}
@@ -304,17 +284,15 @@ def _(BLUE, FULL, Figure, math, mo, np, theorem):
                 r"""
     **2.**
 
-    $$
-    \begin{aligned}
-    E[X] &= \int_{0}^{\infty} x\, \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-\lambda x}\, dx = \frac{1}{(r - 1)!}\, \frac{1}{\lambda} \int_{0}^{\infty} (\lambda x)^r e^{-\lambda x}\, d(\lambda x) \\[6pt]
-    &= \frac{1}{(r - 1)!}\, \frac{1}{\lambda}\, \Gamma(r + 1) = \frac{r!}{(r - 1)!}\, \frac{1}{\lambda} = \frac{r}{\lambda}
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle E[X] = \int_{0}^{\infty} x\, \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-\lambda x}\, dx$ $\displaystyle = \frac{1}{(r - 1)!}\, \frac{1}{\lambda} \int_{0}^{\infty} (\lambda x)^r e^{-\lambda x}\, d(\lambda x)$ $\displaystyle = \frac{1}{(r - 1)!}\, \frac{1}{\lambda}\, \Gamma(r + 1)$ $\displaystyle = \frac{r!}{(r - 1)!}\, \frac{1}{\lambda} = \frac{r}{\lambda}$</span>
 
     **3.**
 
     $$
-    \mathrm{Var}(X) = \underbrace{E[X^2]}_{=\, \Gamma(r + 2) / ((r - 1)!\, \lambda^2)} - \ E[X]^2 = \frac{r (r + 1)}{\lambda^2} - \frac{r^2}{\lambda^2} = \frac{r}{\lambda^2} \qquad \square
+    \begin{align*}
+    E[X^2] &= \frac{1}{(r - 1)!}\, \frac{1}{\lambda^2}\, \Gamma(r + 2) \\[14pt]
+    \mathrm{Var}(X) &= E[X^2] - E[X]^2 = \frac{r (r + 1)}{\lambda^2} - \frac{r^2}{\lambda^2} = \frac{r}{\lambda^2} \tag*{$\square$}
+    \end{align*}
     $$
     """
             ),
@@ -330,16 +308,11 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    gp_lam = mo.ui.slider(0.2, 4, 0.1, value=1, label=r"$\lambda$", show_value=True)
-    return (gp_lam,)
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, gp_lam, gp_r, math, mo, np, table):
-    _r, _lam = gp_r.value, gp_lam.value
+def _(BLUE, Figure, FuncFormatter, GREEN, GREY, LIGHT, gp_r, math, mo, np, table):
+    _r, _lam = gp_r.value, 1
     _mu, _sd = _r / _lam, math.sqrt(_r) / _lam
-    _lo, _hi, _end = max(0.0, _mu - _sd), _mu + _sd, _mu + 4 * _sd
+    # one frame for every r (r at most 10: mu + 4 sigma < 23), so that the mean and the spread move
+    _lo, _hi, _end = max(0.0, _mu - _sd), _mu + _sd, 24
 
     def _f(x):
         return _lam**_r * x ** (_r - 1) / math.factorial(_r - 1) * np.exp(-_lam * x)
@@ -348,34 +321,35 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, gp_lam, gp_r, math, mo, np, table)
     _top = float(_f(_x).max())
     _in = np.linspace(_lo, _hi, 200)
 
-    _box = {"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"}
-    _fig = Figure(figsize=(FULL, 3.0), layout="constrained")
-    _ax = _fig.subplots()
+    _fig = Figure(figsize=(5.6, 3.0))
+    _ax = _fig.add_axes((0.14, 0.2, 0.83, 0.77))
     _ax.fill_between(_in, 0, _f(_in), color=LIGHT, lw=0)
     for _b in (_lo, _hi):
         _ax.plot([_b, _b], [0, 1.12 * _top], color=GREY, lw=1.0, ls=(0, (4, 3)))
     _ax.plot([_mu, _mu], [0, 1.12 * _top], color=GREEN, lw=1.4, ls=(0, (4, 3)))
     _ax.plot(_x, _f(_x), color=BLUE, lw=1.4)
-    _near = _lo < 0.12 * _end  # the left label goes to the right of its line when there is no room on its left
-    _ax.annotate(r"$\mu_X - \sigma_X$", (_lo, 1.2 * _top), textcoords="offset points", xytext=(4 if _near else -2, 0), color=GREY, fontsize=12, ha="left" if _near else "right", va="center")
-    _ax.annotate(r"$\mu_X + \sigma_X$", (_hi, 1.2 * _top), textcoords="offset points", xytext=(2, 0), color=GREY, fontsize=12, ha="left", va="center")
-    _ax.text(_mu, 1.2 * _top, r"$\mu_X$", color=GREEN, fontsize=12, ha="center", va="center", bbox=_box)
+    # mu_X above its own line; the band named once, just right of its right edge and a row lower: the names never meet for any r
+    _ax.annotate(r"$\mu_X$", (_mu, 1.2 * _top), color=GREEN, fontsize=12, ha="center", va="center")
+    _ax.annotate(r"$\mu_X \pm \sigma_X$", (_hi, 1.05 * _top), textcoords="offset points", xytext=(4, 0), color=GREY, fontsize=12, ha="left", va="center")
     _ax.set_xlim(0, _end)
+    _ax.set_xticks([0, 5, 10, 15, 20])
     _ax.set_ylim(0, 1.3 * _top)
     _ax.set_xlabel("$x$")
     _ax.set_ylabel("$f_X(x)$")
+    _ax.yaxis.set_major_formatter(FuncFormatter(lambda _v, _p: f"${_v:g}$"))
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
 
+    def _v(x):
+        """Exact when a multiple of 1/2, otherwise two decimals."""
+        return f"{round(2 * x) / 2 + 0.0:g}" if abs(2 * x - round(2 * x)) < 1e-9 else f"{x:.2f}"
+
     mo.vstack(
         [
-            mo.hstack([gp_r, gp_lam], justify="start", gap=2, wrap=True),
+            mo.hstack([gp_r, mo.md(r"$X \sim \mathrm{Gamma}(r, 1)$")], justify="start", align="center", gap=2, wrap=True),
             table(
                 [
-                    (r"$E[X] = r/\lambda$", rf"$\textcolor{{{GREEN}}}{{{_mu:.3f}}}$"),
-                    (r"$\mathrm{Var}(X) = r/\lambda^2$", rf"${_r / _lam**2:.3f}$"),
-                    (r"$\sigma_X = \sqrt{r}/\lambda$", rf"${_sd:.3f}$"),
-                    (r"$\mathrm{Skew}(X) = 2/\sqrt{r}$", rf"${2 / math.sqrt(_r):.3f}$"),
+                    (r"$\mathrm{Skew}(X) = 2/\sqrt{r}$", f"${_v(2 / math.sqrt(_r))}$"),
                 ]
             ),
             _fig,
@@ -417,9 +391,7 @@ def _(definition, mo, theorem):
 
     $X \sim \mathrm{Gamma}(r, \lambda)$
 
-    $$
-    m_X(t) = \int_{0}^{\infty} e^{tx}\, \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-\lambda x}\, dx = \int_{0}^{\infty} \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-(\lambda - t) x}\, dx = \frac{\lambda^r}{(\lambda - t)^r} \qquad \text{for } t < \lambda
-    $$
+    <span class="chain">$\displaystyle m_X(t) = \int_{0}^{\infty} e^{tx}\, \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-\lambda x}\, dx$ $\displaystyle = \int_{0}^{\infty} \frac{\lambda^r x^{r-1}}{(r - 1)!}\, e^{-(\lambda - t) x}\, dx = \frac{\lambda^r}{(\lambda - t)^r} \qquad \text{for } t < \lambda$</span>
     """
             ),
             theorem(
@@ -432,13 +404,7 @@ def _(definition, mo, theorem):
 
     Also, writing $K_X(t) = \ln(m_X(t))$, we have
 
-    $$
-    K_X(0) = 0, \qquad K_X'(0) = E[X], \qquad K_X''(0) = \mathrm{Var}(X)
-    $$
-
-    $$
-    \text{and} \quad K_X'''(0) = E[(X - \mu_X)^3] \qquad \Longrightarrow \qquad \mathrm{Skew}(X) = \frac{K_X'''(0)}{\big( K_X''(0) \big)^{3/2}}
-    $$
+    <span class="chain">$\displaystyle K_X(0) = 0,$ $\displaystyle \quad K_X'(0) = E[X],$ $\displaystyle \quad K_X''(0) = \mathrm{Var}(X)$ $\displaystyle \quad \text{and} \quad K_X'''(0) = E[(X - \mu_X)^3]$ $\displaystyle \quad \Longrightarrow \quad \mathrm{Skew}(X) = \frac{K_X'''(0)}{\big( K_X''(0) \big)^{3/2}}$</span>
     """,
                 "Moments from the mgf",
             ),
@@ -446,64 +412,43 @@ def _(definition, mo, theorem):
                 r"""
     **Proof.** &nbsp; $m_X(t) = E[e^{tX}]$
 
-    $$
-    \frac{d}{dt} m_X(t) = \frac{d}{dt} E[e^{tX}] = E\!\left[ \frac{d}{dt} e^{tX} \right] = E[e^{tX} X]
-    $$
+    <span class="chain">$\displaystyle \frac{d}{dt} m_X(t) = \frac{d}{dt} E[e^{tX}]$ $\displaystyle = E\!\left[ \frac{d}{dt} e^{tX} \right]$ $\displaystyle = E[e^{tX} X]$</span>
 
-    $$
-    \frac{d^2}{dt^2} m_X(t) = E[e^{tX} X^2] \qquad \cdots \qquad \frac{d^k}{dt^k} m_X(t) = E[e^{tX} X^k]
-    \qquad \Longrightarrow \qquad m_X^{(k)}(0) = E[X^k]
-    $$
+    <span class="chain">$\displaystyle \frac{d^2}{dt^2} m_X(t) = E[e^{tX} X^2]$ $\displaystyle \qquad \cdots \qquad \frac{d^k}{dt^k} m_X(t) = E[e^{tX} X^k]$ $\displaystyle \quad \Longrightarrow \quad m_X^{(k)}(0) = E[X^k]$</span>
 
     Similarly,
 
-    $$
-    \frac{d}{dt} K_X(t) = \frac{1}{m_X(t)}\, m_X'(t) \qquad \Longrightarrow \qquad K_X'(0) = \frac{E[X]}{E[1]}
-    $$
+    <span class="chain">$\displaystyle \frac{d}{dt} K_X(t) = \frac{1}{m_X(t)}\, m_X'(t)$ $\displaystyle \quad \Longrightarrow \quad K_X'(0) = \frac{E[X]}{E[1]} = E[X] \qquad (E[1] = m_X(0) = 1)$</span>
 
-    $$
-    \frac{d^2}{dt^2} K_X(t) = \frac{1}{(m_X(t))^2} \Big[ m_X(t)\, m_X''(t) - \big( m_X'(t) \big)^2 \Big] \qquad \Longrightarrow \qquad K_X''(0) = E[X^2] - (E[X])^2
-    $$
+    <span class="chain">$\displaystyle \frac{d^2}{dt^2} K_X(t) = \frac{1}{(m_X(t))^2} \Big[ m_X(t)\, m_X''(t) - \big( m_X'(t) \big)^2 \Big]$ $\displaystyle \quad \Longrightarrow \quad K_X''(0) = E[X^2] - (E[X])^2$</span>
 
-    $$
-    \frac{d^3}{dt^3} K_X(t) = \cdots \qquad \square
-    $$
+    <span class="chain">$\displaystyle \frac{d^3}{dt^3} K_X(t) = \cdots$ <span class="qed">$\square$</span></span>
 
     **Remark.** &nbsp; $K_X^{(4)}(0) = E[(X - \mu_X)^4] - 3\, E[(X - \mu_X)^2]^2$ &nbsp; (4th cumulant; not the 4th central moment)
 
-    **Example.** &nbsp; $X \sim \mathrm{Binom}(n, p)$ &nbsp; $\leadsto$ &nbsp; $m_X(t) = (q + p e^t)^n$, &nbsp; $K_X(t) = \ln(m_X(t)) = n \ln(q + p e^t)$
+    **Example.** &nbsp; $X \sim \mathrm{Binom}(n, p)$ &nbsp; <span class="nw">$\leadsto$ &nbsp; $m_X(t) = (q + p e^t)^n$,</span> &nbsp; $K_X(t) = \ln(m_X(t)) = n \ln(q + p e^t)$
 
-    $$
-    K_X'(t) = \frac{n}{q + p e^t}\, p e^t \qquad \leadsto \qquad \mu_X = K_X'(0) = \frac{n}{q + p}\, p = np
-    $$
+    <span class="chain">$\displaystyle K_X'(t) = \frac{n}{q + p e^t}\, p e^t$ $\displaystyle \quad \leadsto \quad \mu_X = K_X'(0) = \frac{n}{q + p}\, p = np$</span>
 
-    $$
-    K_X''(t) = \frac{n}{(q + p e^t)^2} \Big( p e^t (q + p e^t) - (p e^t)^2 \Big) = \frac{n p q\, e^t}{(q + p e^t)^2} \qquad \leadsto \qquad \sigma_X^2 = K_X''(0) = npq
-    $$
+    <span class="chain">$\displaystyle K_X''(t) = \frac{n}{(q + p e^t)^2} \Big( p e^t (q + p e^t) - (p e^t)^2 \Big)$ $\displaystyle = \frac{n p q\, e^t}{(q + p e^t)^2}$ $\displaystyle \quad \leadsto \quad \sigma_X^2 = K_X''(0) = npq$</span>
 
-    $$
-    K_X'''(t) = \frac{n}{(q + p e^t)^3} \Big( pq\, e^t (q + p e^t) - 2 pq\, e^t \cdot p e^t \Big) = \frac{n}{(q + p e^t)^3} \Big( pq\, e^t (q - p e^t) \Big)
-    $$
+    <span class="chain">$\displaystyle K_X'''(t) = \frac{n}{(q + p e^t)^3} \Big( pq\, e^t (q + p e^t) - 2 pq\, e^t \cdot p e^t \Big)$ $\displaystyle = \frac{n}{(q + p e^t)^3} \Big( pq\, e^t (q - p e^t) \Big)$ $\displaystyle \quad \leadsto \quad \gamma_X = \frac{K_X'''(0)}{\sigma_X^3} = \frac{npq (q - p)}{(npq)^{3/2}} = \frac{q - p}{\sqrt{npq}}$</span>
 
-    $$
-    \leadsto \qquad \gamma_X = \frac{K_X'''(0)}{\sigma_X^3} = \frac{npq (q - p)}{(npq)^{3/2}} = \frac{q - p}{\sqrt{npq}}
-    $$
-
-    $X \sim \mathrm{Pois}(\lambda)$ &nbsp; $\leadsto$ &nbsp; $m_X(t) = e^{\lambda (e^t - 1)}$, &nbsp; $K_X(t) = \lambda (e^t - 1)$
+    $X \sim \mathrm{Pois}(\lambda)$ &nbsp; <span class="nw">$\leadsto$ &nbsp; $m_X(t) = e^{\lambda (e^t - 1)}$,</span> &nbsp; $K_X(t) = \lambda (e^t - 1)$
 
     $$
     \begin{aligned}
-    K_X'(t) &= \lambda e^t, & K_X''(t) &= \lambda e^t, & K_X'''(t) &= \lambda e^t \\
-    \mu_X &= \lambda, & \sigma_X^2 &= \lambda, & \gamma_X &= \frac{\lambda}{(\lambda)^{3/2}} = \frac{1}{\sqrt{\lambda}}
+    K_X'(t) &= \lambda e^t, & \qquad K_X''(t) &= \lambda e^t, & \qquad K_X'''(t) &= \lambda e^t \\[10pt]
+    \mu_X &= \lambda, & \qquad \sigma_X^2 &= \lambda, & \qquad \gamma_X &= \frac{\lambda}{(\lambda)^{3/2}} = \frac{1}{\sqrt{\lambda}}
     \end{aligned}
     $$
 
-    $X \sim \mathrm{Gamma}(r, \lambda)$ &nbsp; $\leadsto$ &nbsp; $m_X(t) = \left( \dfrac{\lambda}{\lambda - t} \right)^{\!r}$, &nbsp; $K_X(t) = r \big( \ln \lambda - \ln(\lambda - t) \big)$
+    $X \sim \mathrm{Gamma}(r, \lambda)$ &nbsp; <span class="nw">$\leadsto$ &nbsp; $m_X(t) = \left( \dfrac{\lambda}{\lambda - t} \right)^{\!r}$,</span> &nbsp; $K_X(t) = r \big( \ln \lambda - \ln(\lambda - t) \big)$
 
     $$
     \begin{aligned}
-    K_X'(t) &= \frac{r}{\lambda - t}, & K_X''(t) &= \frac{r}{(\lambda - t)^2}, & K_X'''(t) &= \frac{2r}{(\lambda - t)^3} \\[4pt]
-    \mu_X &= \frac{r}{\lambda}, & \sigma_X^2 &= \frac{r}{\lambda^2}, & \gamma_X &= \frac{2r / \lambda^3}{(r / \lambda^2)^{3/2}} = \frac{2}{\sqrt{r}}
+    K_X'(t) &= \frac{r}{\lambda - t}, & \quad K_X''(t) &= \frac{r}{(\lambda - t)^2}, & \quad K_X'''(t) &= \frac{2r}{(\lambda - t)^3} \\[14pt]
+    \mu_X &= \frac{r}{\lambda}, & \quad \sigma_X^2 &= \frac{r}{\lambda^2}, & \quad \gamma_X &= \frac{2r / \lambda^3}{(r / \lambda^2)^{3/2}} = \frac{2}{\sqrt{r}}
     \end{aligned}
     $$
     """
@@ -521,53 +466,51 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    mg_a = mo.ui.slider(1, 30, 1, value=10, label="$n$ / $r$", show_value=True)
-    return (mg_a,)
+    # one set of sliders per distribution, each with its own range; every mean is at most 10, so m_X(t) stays visible on -1 <= t <= 1
+    mg_bn = mo.ui.slider(1, 10, 1, value=10, label="$n$", show_value=True)
+    mg_bp = mo.ui.slider(0.05, 0.95, 0.05, value=0.3, label="$p$", show_value=True)
+    mg_pl = mo.ui.slider(0.1, 10, 0.1, value=0.3, label=r"$\lambda$", show_value=True)
+    mg_gr = mo.ui.slider(1, 10, 1, value=10, label="$r$", show_value=True)
+    mg_gl = mo.ui.slider(1, 5, 0.1, value=2, label=r"$\lambda$", show_value=True)
+    return mg_bn, mg_bp, mg_gl, mg_gr, mg_pl
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mg_b = mo.ui.slider(0.1, 5, 0.1, value=0.3, label=r"$p$ / $\lambda$", show_value=True)
-    return (mg_b,)
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, LIGHT, math, mg_a, mg_b, mg_dist, mo, np, table):
-    _d, _a, _b = mg_dist.value, mg_a.value, mg_b.value
-    _need, _scale, _tmax = None, 1.0, 1.0
+def _(BLUE, FULL, Figure, FuncFormatter, GREEN, LIGHT, mg_bn, mg_bp, mg_dist, mg_gl, mg_gr, mg_pl, mo, np, table):
+    _d = mg_dist.value
+    _tmax = 1.0
     if _d.startswith("Binom"):
-        _formula = rf"$(q + p e^t)^n, \quad n = {_a}, \ p = {_b:g}$"
-        _closed = (r"np", r"npq", r"npq\,(q - p)")
-        if _b > 1:
-            _need = r"need $p \leq 1$"
-        else:
+        _sliders = [mg_bn, mg_bp]
+        _a, _b = mg_bn.value, mg_bp.value
+        _closed = (r"np", r"npq", r"(q - p)/\sqrt{npq}")
 
-            def _K(t):
-                return _a * np.log1p(_b * np.expm1(t))
+        def _K(t):
+            return _a * np.log1p(_b * np.expm1(t))
 
-            _mu, _var, _k3 = _a * _b, _a * _b * (1 - _b), _a * _b * (1 - _b) * (1 - 2 * _b)
+        _mu, _var, _k3 = _a * _b, _a * _b * (1 - _b), _a * _b * (1 - _b) * (1 - 2 * _b)
     elif _d.startswith("Pois"):
-        _formula = rf"$e^{{\lambda (e^t - 1)}}, \quad \lambda = {_b:g}$"
-        _closed = (r"\lambda", r"\lambda", r"\lambda")
+        _sliders = [mg_pl]
+        _b = mg_pl.value
+        _closed = (r"\lambda", r"\lambda", r"1/\sqrt{\lambda}")
 
         def _K(t):
             return _b * np.expm1(t)
 
         _mu, _var, _k3 = _b, _b, _b
     else:
-        _formula = rf"$\left( \dfrac{{\lambda}}{{\lambda - t}} \right)^{{\!r}}, \quad r = {_a}, \ \lambda = {_b:g}$"
-        _closed = (r"r/\lambda", r"r/\lambda^2", r"2r/\lambda^3")
+        _sliders = [mg_gr, mg_gl]
+        _a, _b = mg_gr.value, mg_gl.value
+        _closed = (r"r/\lambda", r"r/\lambda^2", r"2/\sqrt{r}")
 
         def _K(t):
             return -_a * np.log1p(-t / _b)
 
         _mu, _var, _k3 = _a / _b, _a / _b**2, 2 * _a / _b**3
-        _scale, _tmax = min(1.0, _b), min(1.0, 0.8 * _b)  # m_X(t) exists for t < lambda only
+        _tmax = min(1.0, 0.8 * _b)  # m_X(t) exists for t < lambda only
 
-    def _n(x):
-        """Four decimals, rounding half up after eight significant digits (ties and near-ties go up, so that both columns round alike)."""
-        x = float(f"{x:.8g}")
-        return f"{math.copysign(math.floor(abs(x) * 1e4 + 0.5 + 1e-3) / 1e4, x) + 0.0:.4f}"
+    def _v(x):
+        """Exact when a multiple of 1/2, otherwise two decimals."""
+        return f"{round(2 * x) / 2 + 0.0:g}" if abs(2 * x - round(2 * x)) < 1e-9 else f"{x + 0.0:.2f}"
 
     _fig = Figure(figsize=(FULL, 3.0), layout="constrained")
     _left, _right = _fig.subplots(1, 2)
@@ -578,84 +521,32 @@ def _(BLUE, FULL, Figure, GREEN, LIGHT, math, mg_a, mg_b, mg_dist, mo, np, table
         _ax.set_xlim(-1, _tmax)
         _ax.set_xlabel("$t$")
         _ax.set_ylabel(_name)
+        _ax.xaxis.set_major_formatter(FuncFormatter(lambda _v, _p: f"${_v:g}$"))
+        _ax.yaxis.set_major_formatter(FuncFormatter(lambda _v, _p: f"${_v:g}$"))
         for _s in ("top", "right"):
             _ax.spines[_s].set_visible(False)
 
-    if _need:
-        _rows = [(rf"$K_X'(0) = \mu_X = {_closed[0]}$", _need), (rf"$K_X''(0) = \sigma_X^2 = {_closed[1]}$", _need), (rf"$K_X'''(0) = E[(X - \mu_X)^3] = {_closed[2]}$", _need), (r"$\gamma_X = K_X'''(0) / K_X''(0)^{3/2}$", _need)]
-        for _ax in (_left, _right):
-            _ax.set_ylim(0, 1)
-            _ax.set_yticks([])
-    else:
-        # central differences of K_X at 0, exact to the digits shown
-        _h = 3e-3 * _scale
-        _k = {_i: float(_K(_i * _h)) for _i in (-3, -2, -1, 0, 1, 2, 3)}
-        _K1 = (_k[-2] - 8 * _k[-1] + 8 * _k[1] - _k[2]) / (12 * _h)
-        _K2 = (-_k[-2] + 16 * _k[-1] - 30 * _k[0] + 16 * _k[1] - _k[2]) / (12 * _h**2)
-        _K3 = (_k[-3] - 8 * _k[-2] + 13 * _k[-1] - 13 * _k[1] + 8 * _k[2] - _k[3]) / (8 * _h**3)
-        _skew = (rf"${_n(_K3 / _K2**1.5)}$ &nbsp; (closed form: ${_n(_k3 / _var**1.5)}$)") if _var > 0 else r"need $\sigma_X^2 > 0$"
-        _rows = [
-            (rf"$K_X'(0) = \mu_X$", rf"$\textcolor{{{GREEN}}}{{{_n(_K1)}}}$ &nbsp; (closed form: ${_closed[0]} = {_n(_mu)}$)"),
-            (rf"$K_X''(0) = \sigma_X^2$", rf"${_n(_K2)}$ &nbsp; (closed form: ${_closed[1]} = {_n(_var)}$)"),
-            (rf"$K_X'''(0) = E[(X - \mu_X)^3]$", rf"${_n(_K3)}$ &nbsp; (closed form: ${_closed[2]} = {_n(_k3)}$)"),
-            (r"$\gamma_X = K_X'''(0) / K_X''(0)^{3/2}$", _skew),
-        ]
-        _t = np.linspace(-1, _tmax, 300)
-        _left.plot(_t, np.exp(_K(_t)), color=BLUE, lw=1.4)
-        _left.plot(0, 1, "o", color="black", ms=4, zorder=4)
-        # m_X grows very fast for t > 0: the frame stops at 5, so that m_X(0) = 1 and the slope at 0 stay visible
-        _left.set_ylim(0, min(1.05 * float(np.exp(_K(_t)).max()), 5))
-        _right.plot(_t, _mu * _t, color=GREEN, lw=1.4)
-        _right.plot(_t, _K(_t), color=BLUE, lw=1.4)
-        _right.plot(0, 0, "o", color="black", ms=4, zorder=4)
-        # K_X is convex, so the tangent lies below the curve: the label goes just below the tangent, at t = -1/2
-        _right.annotate(r"$t\, K_X'(0)$", (-0.5, -0.5 * _mu), textcoords="offset points", xytext=(4, -6), color=GREEN, fontsize=12, ha="left", va="top", bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
+    _rows = [
+        (rf"$\mu_X = K_X'(0) = {_closed[0]}$", f"${_v(_mu)}$"),
+        (rf"$\sigma_X^2 = K_X''(0) = {_closed[1]}$", f"${_v(_var)}$"),
+        (rf"$\gamma_X = K_X'''(0) / \sigma_X^3 = {_closed[2]}$", f"${_v(_k3 / _var**1.5)}$"),
+    ]
+    _t = np.linspace(-1, _tmax, 300)
+    _left.plot(_t, np.exp(_K(_t)), color=BLUE, lw=1.4)
+    _left.plot(0, 1, "o", color="black", ms=4, zorder=4)
+    # m_X grows very fast for t > 0: the frame stops at 5, so that m_X(0) = 1 and the slope at 0 stay visible
+    _left.set_ylim(0, min(1.05 * float(np.exp(_K(_t)).max()), 5))
+    _right.plot(_t, _mu * _t, color=GREEN, lw=1.4)
+    _right.plot(_t, _K(_t), color=BLUE, lw=1.4)
+    _right.plot(0, 0, "o", color="black", ms=4, zorder=4)
+    # K_X is convex, so the tangent lies below the curve: the label goes just below the tangent, at t = -1/2
+    _right.annotate(r"$t\, K_X'(0)$", (-0.5, -0.5 * _mu), textcoords="offset points", xytext=(4, -6), color=GREEN, fontsize=14, ha="left", va="top")
 
     mo.vstack(
         [
-            mo.hstack([mg_dist, mg_a, mg_b], justify="start", gap=2, wrap=True),
-            table([(r"$m_X(t)$", _formula)] + _rows),
+            mo.hstack([mg_dist, *_sliders], justify="start", gap=2, wrap=True),
+            table(_rows),
             _fig,
         ]
     )
     return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - for a continuous random variable,
-
-        $$
-        E[u(X)] = \int_{-\infty}^{\infty} u(x)\, f_X(x)\, dx
-        $$
-
-        it is linear, and $E[c] = c$
-    - mean $\mu_X = E[X]$, variance $\sigma_X^2 = E[(X - \mu_X)^2]$, skewness
-
-        $$
-        \gamma_X = E\Big[\Big(\frac{X - \mu_X}{\sigma_X}\Big)^3\Big]
-        $$
-
-        $k$th moment $E[X^k]$ and $k$th central moment $E[(X - \mu_X)^k]$
-    - $X \sim \mathrm{Gamma}(r, \lambda)$:
-
-        $$
-        E[X] = \frac{r}{\lambda}, \qquad \mathrm{Var}(X) = \frac{r}{\lambda^2}, \qquad \mathrm{Skew}(X) = \frac{2}{\sqrt{r}}
-        $$
-
-        (using $\Gamma(r) = (r - 1)!$)
-    - moment generating function $m_X(t) = E[e^{tX}]$: &nbsp; $E[X^k] = m_X^{(k)}(0)$
-    - $K_X(t) = \ln(m_X(t))$:
-
-        $$
-        K_X'(0) = \mu_X, \qquad K_X''(0) = \sigma_X^2, \qquad K_X'''(0) = E[(X - \mu_X)^3]
-        $$
-    """)
-    return
-
-
-if __name__ == "__main__":
-    app.run()

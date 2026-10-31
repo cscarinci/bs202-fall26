@@ -31,7 +31,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -76,12 +76,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -120,24 +121,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 14", "Week 09", "Lecture 14 · Joint and conditional distributions")
+    header("Lecture 14", "Week 09", "Lecture 14 • Joint and conditional distributions")
     return
 
 
@@ -171,11 +163,11 @@ def _(BLUE, LinearSegmentedColormap, PowerNorm):
 
     def over(k, n):
         """k/n in TeX, left unreduced like the lecture's sixteenths."""
-        return "0" if k == 0 else rf"\dfrac{{{k}}}{{{n}}}"
+        return "0" if k == 0 else "1" if k == n else f"{k}/{n}"
 
     def tex(q):
         """A Fraction in TeX."""
-        return f"{q.numerator}" if q.denominator == 1 else rf"\dfrac{{{q.numerator}}}{{{q.denominator}}}"
+        return f"{q.numerator}" if q.denominator == 1 else f"{q.numerator}/{q.denominator}"
 
     def density(ax, f, extent, top):
         """Draw the joint pdf values `f` (NaN outside the state space) as a density: white where it is 0,
@@ -191,7 +183,7 @@ def _(mo):
     mo.md(r"""
     ## So far
 
-    Probabilistic models &nbsp; $\leadsto$ &nbsp; one measurement on a random experiment &nbsp; $\leadsto$ &nbsp; single random variable $X : S \longrightarrow \mathbb{R}$
+    Probabilistic models &nbsp; <span class="nw">$\leadsto$ &nbsp; one</span> measurement on a random experiment &nbsp; <span class="nw">$\leadsto$ &nbsp; single</span> random variable $X : S \longrightarrow \mathbb{R}$
 
     $$
     P(X \in A) = \sum_{x \in S_X \cap A} f_X(x) \quad \text{or} \quad \int_{S_X \cap A} f_X(x)\, dx \qquad (A \subseteq \mathbb{R})
@@ -201,7 +193,7 @@ def _(mo):
     E[u(X)] = \sum_{x \in S_X} u(x)\, f_X(x) \quad \text{or} \quad \int_{S_X} u(x)\, f_X(x)\, dx
     $$
 
-    **In this lecture:** multiple measurements on the same experiment &nbsp; $\leadsto$ &nbsp; joint behavior, mutual dependence, conditional expectations
+    **In this lecture:** multiple measurements on the same experiment &nbsp; <span class="nw">$\leadsto$ &nbsp; joint</span> behavior, mutual dependence, conditional expectations
 
     **References:** WMS 5.2–5.4, 5.11
     """)
@@ -224,7 +216,7 @@ def _(definition, mo):
     Let $X, Y : S \longrightarrow \mathbb{R}$ be random variables on the same $(S, \mathcal{E}, P)$. The **joint distribution** of the pair
 
     $$
-    \underbrace{(X, Y) : S \longrightarrow \mathbb{R}^2}_{\text{a vector valued random variable}}
+    \underbrace{(X, Y) : S \longrightarrow \mathbb{R}^2}_{\footnotesize \text{a vector valued random variable}}
     $$
 
     is the assignment of probabilities
@@ -238,44 +230,42 @@ def _(definition, mo):
     - $\leadsto$ &nbsp; we call $(X, Y)$ **discrete** if $S_{X,Y}$ is countable
 
         $$
-        \Longrightarrow \qquad P_{X,Y}(A) = \sum_{(x, y) \in S_{X,Y} \cap A} \underbrace{f_{X,Y}(x, y)}_{\text{joint pmf of } (X, Y)}
+        \Longrightarrow \qquad P_{X,Y}(A) = \sum_{(x, y) \in S_{X,Y} \cap A} \underbrace{f_{X,Y}(x, y)}_{\mathclap{\footnotesize \text{joint pmf of } (X, Y)}}
         $$
 
     - $\leadsto$ &nbsp; we call $(X, Y)$ **continuous** if $S_{X,Y}$ is uncountable **and** there exists $f_{X,Y} : \mathbb{R}^2 \longrightarrow \mathbb{R}$ with
 
         $$
-        P_{X,Y}(A) = \iint_{S_{X,Y} \cap A} \underbrace{f_{X,Y}(x, y)}_{\substack{\text{joint pdf of } (X, Y) \\ \text{(integrable function)}}}\, dx\, dy
+        P_{X,Y}(A) = \iint_{S_{X,Y} \cap A} \underbrace{f_{X,Y}(x, y)}_{\mathclap{\footnotesize \begin{matrix} \text{joint pdf of } (X, Y) \\ \text{(integrable function)} \end{matrix}}}\, dx\, dy
         $$
 
     - $\leadsto$ &nbsp; in both cases
 
         $$
-        f_{X,Y}(x, y) \geq 0, \qquad f_{X,Y}(x, y) = 0 \ \text{ for } (x, y) \notin S_{X,Y}, \qquad P_{X,Y}(S_{X,Y}) = 1
+        f_{X,Y}(x, y) \geq 0, \qquad f_{X,Y}(x, y) = 0 \ \text{ for } (x, y) \notin S_{X,Y}
+        $$
+
+        $$
+        P_{X,Y}(S_{X,Y}) = 1
         $$
     """,
                 "Joint distribution",
             ),
             mo.md(
                 r"""
-    **Example** (Roll two fair 4-sided dice). &nbsp; $\leadsto$ &nbsp; $S = \{\, (i, j) \mid i, j = 1, 2, 3, 4 \,\}$
+    **Example** (Roll two fair 4-sided dice). &nbsp; <span class="nw">$\leadsto$ &nbsp; $S = \{\, (i, j) \mid i, j = 1, 2, 3, 4 \,\}$</span>
 
     $X$ = largest face, &nbsp; $Y$ = sum of faces
 
     | $f_{X,Y}(x, y)$ | $y = 2$ | $3$ | $4$ | $5$ | $6$ | $7$ | $8$ | $f_X(x)$ |
     |:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-    | $x = 1$ | $\dfrac{1}{16}$ | $0$ | $0$ | $0$ | $0$ | $0$ | $0$ | $\dfrac{1}{16}$ |
-    | $2$ | $0$ | $\dfrac{2}{16}$ | $\dfrac{1}{16}$ | $0$ | $0$ | $0$ | $0$ | $\dfrac{3}{16}$ |
-    | $3$ | $0$ | $0$ | $\dfrac{2}{16}$ | $\dfrac{2}{16}$ | $\dfrac{1}{16}$ | $0$ | $0$ | $\dfrac{5}{16}$ |
-    | $4$ | $0$ | $0$ | $0$ | $\dfrac{2}{16}$ | $\dfrac{2}{16}$ | $\dfrac{2}{16}$ | $\dfrac{1}{16}$ | $\dfrac{7}{16}$ |
-    | $f_Y(y)$ | $\dfrac{1}{16}$ | $\dfrac{2}{16}$ | $\dfrac{3}{16}$ | $\dfrac{4}{16}$ | $\dfrac{3}{16}$ | $\dfrac{2}{16}$ | $\dfrac{1}{16}$ | |
+    | $x = 1$ | $1/16$ | $0$ | $0$ | $0$ | $0$ | $0$ | $0$ | $1/16$ |
+    | $2$ | $0$ | $2/16$ | $1/16$ | $0$ | $0$ | $0$ | $0$ | $3/16$ |
+    | $3$ | $0$ | $0$ | $2/16$ | $2/16$ | $1/16$ | $0$ | $0$ | $5/16$ |
+    | $4$ | $0$ | $0$ | $0$ | $2/16$ | $2/16$ | $2/16$ | $1/16$ | $7/16$ |
+    | $f_Y(y)$ | $1/16$ | $2/16$ | $3/16$ | $4/16$ | $3/16$ | $2/16$ | $1/16$ | |
 
-    $$
-    \leadsto \qquad P(X = 1,\ Y \leq 4) = \frac{1}{16} + 0 + 0 = \frac{1}{16}, \qquad P(X > 2,\ Y \leq 5) = \frac{6}{16}
-    $$
-
-    $$
-    P(Y = 5) = \frac{4}{16}, \qquad P(X = 2) = \frac{3}{16}
-    $$
+    <span class="chain">$\displaystyle \leadsto \quad P(X = 1,\ Y \leq 4) = \frac{1}{16} + 0 + 0 = \frac{1}{16},$ $\displaystyle \quad P(X > 2,\ Y \leq 5) = \frac{6}{16},$ $\displaystyle \quad P(Y = 5) = \frac{4}{16},$ $\displaystyle \quad P(X = 2) = \frac{3}{16}$</span>
     """
             ),
         ]
@@ -285,21 +275,14 @@ def _(definition, mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    j_sides = mo.ui.slider(2, 6, 1, value=4, label="sides of each die", show_value=True)
-    return (j_sides,)
-
-
-@app.cell(hide_code=True)
-def _(j_sides, mo):
-    _n = j_sides.value
-    j_x = mo.ui.range_slider(1, _n, 1, value=[min(3, _n), _n], label="$X$ from / to", show_value=True)
-    j_y = mo.ui.range_slider(2, 2 * _n, 1, value=[2, min(5, 2 * _n)], label="$Y$ from / to", show_value=True)
+    j_x = mo.ui.range_slider(1, 4, 1, value=[3, 4], label="$X$", show_value=True)
+    j_y = mo.ui.range_slider(2, 8, 1, value=[2, 5], label="$Y$", show_value=True)
     return j_x, j_y
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREY, LIGHT, dice_counts, j_sides, j_x, j_y, mo, over, table):
-    _n = j_sides.value
+def _(BLUE, Figure, GREY, LIGHT, dice_counts, j_x, j_y, mo, over, table):
+    _n = 4
     _N = _n**2
     _counts = dice_counts(_n)
     (_a, _b), (_c, _d) = j_x.value, j_y.value
@@ -307,10 +290,8 @@ def _(BLUE, FULL, Figure, GREY, LIGHT, dice_counts, j_sides, j_x, j_y, mo, over,
     _fx = [sum(k for (x, y), k in _counts.items() if x == v) for v in _xs]
     _fy = [sum(k for (x, y), k in _counts.items() if y == v) for v in _ys]
     _both = sum(k for (x, y), k in _counts.items() if _a <= x <= _b and _c <= y <= _d)
-    _onx = sum(k for x, k in zip(_xs, _fx) if _a <= x <= _b)
-    _ony = sum(k for y, k in zip(_ys, _fy) if _c <= y <= _d)
 
-    _fig = Figure(figsize=(FULL, 4.6), layout="constrained")
+    _fig = Figure(figsize=(5.8, 4.4), layout="constrained")
     _grid = _fig.add_gridspec(2, 2, width_ratios=[4, 1], height_ratios=[1, 3])
     _main = _fig.add_subplot(_grid[1, 0])
     _top = _fig.add_subplot(_grid[0, 0], sharex=_main)
@@ -322,7 +303,7 @@ def _(BLUE, FULL, Figure, GREY, LIGHT, dice_counts, j_sides, j_x, j_y, mo, over,
     for (_x, _y), _k in _counts.items():
         _color = BLUE if _a <= _x <= _b and _c <= _y <= _d else GREY
         _main.scatter(_x, _y, s=2400 * _k / _N, color=_color, lw=0, zorder=3)
-        _main.annotate(f"{_k}/{_N}", (_x, _y), textcoords="offset points", xytext=(9, 0), va="center", fontsize=10, color=_color)
+        _main.annotate(f"{_k}/{_N}", (_x, _y), textcoords="offset points", xytext=((2400 * _k / _N) ** 0.5 / 2 + 3, 0), va="center", fontsize=10, color=_color)
     _main.set_xlim(0.4, _n + 0.9)
     _main.set_ylim(1.3, 2 * _n + 0.7)
     _main.set_xticks(_xs)
@@ -356,14 +337,8 @@ def _(BLUE, FULL, Figure, GREY, LIGHT, dice_counts, j_sides, j_x, j_y, mo, over,
 
     mo.vstack(
         [
-            mo.hstack([j_sides, j_x, j_y], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (rf"$P({_a} \leq X \leq {_b},\ {_c} \leq Y \leq {_d})$ &nbsp; (blue points)", rf"$\textcolor{{{BLUE}}}{{{over(_both, _N)}}}$"),
-                    (rf"$P({_a} \leq X \leq {_b})$ &nbsp; (top margin)", rf"${over(_onx, _N)}$"),
-                    (rf"$P({_c} \leq Y \leq {_d})$ &nbsp; (right margin)", rf"${over(_ony, _N)}$"),
-                ]
-            ),
+            mo.hstack([j_x, j_y], justify="start", gap=2, wrap=True),
+            table([(rf"$P({_a} \leq X \leq {_b},\ {_c} \leq Y \leq {_d})$ &nbsp; (blue points)", rf"${over(_both, _N)}$")]),
             _fig,
         ]
     )
@@ -381,7 +356,7 @@ def _(mo, theorem):
 
     $$
     \begin{aligned}
-    f_X(x) &= \sum_y f_{X,Y}(x, y) \qquad \text{or} \qquad \int_{-\infty}^{\infty} f_{X,Y}(x, y)\, dy \\[6pt]
+    f_X(x) &= \sum_y f_{X,Y}(x, y) \qquad \text{or} \qquad \int_{-\infty}^{\infty} f_{X,Y}(x, y)\, dy \\[14pt]
     f_Y(y) &= \sum_x f_{X,Y}(x, y) \qquad \text{or} \qquad \int_{-\infty}^{\infty} f_{X,Y}(x, y)\, dx
     \end{aligned}
     $$
@@ -392,7 +367,7 @@ def _(mo, theorem):
             ),
             mo.md(
                 r"""
-    **Remark.** The joint distribution determines the marginals, but the marginals **do not** determine the joint! &nbsp; $\leadsto$ &nbsp; distinct joint distributions can define the same marginals!
+    **Remark.** The joint distribution determines the marginals, but the marginals **do not** determine the joint! &nbsp; <span class="nw">$\leadsto$ &nbsp; distinct</span> joint distributions can define the same marginals!
     """
             ),
         ]
@@ -407,7 +382,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREY, RED, dice_counts, m_prod, mo):
+def _(BLUE, Figure, GREY, RED, dice_counts, m_prod, mo):
     _counts = dice_counts(4)
     _xs, _ys = list(range(1, 5)), list(range(2, 9))
     _fx = [sum(k for (x, y), k in _counts.items() if x == v) for v in _xs]
@@ -419,7 +394,7 @@ def _(BLUE, FULL, Figure, GREY, RED, dice_counts, m_prod, mo):
         _cells = {xy: (k, 16) for xy, k in _counts.items()}
         _color, _name = BLUE, r"$f_{X,Y}(x, y)$"
 
-    _fig = Figure(figsize=(FULL, 4.6), layout="constrained")
+    _fig = Figure(figsize=(5.8, 4.4), layout="constrained")
     _grid = _fig.add_gridspec(2, 2, width_ratios=[4, 1], height_ratios=[1, 3])
     _main = _fig.add_subplot(_grid[1, 0])
     _top = _fig.add_subplot(_grid[0, 0], sharex=_main)
@@ -430,7 +405,6 @@ def _(BLUE, FULL, Figure, GREY, RED, dice_counts, m_prod, mo):
 
     for (_x, _y), (_k, _N) in _cells.items():
         _main.scatter(_x, _y, s=2400 * _k / _N, color=_color, lw=0, zorder=3)
-        _main.annotate(f"{_k}/{_N}", (_x, _y), textcoords="offset points", xytext=(9, 0), va="center", fontsize=10, color=_color)
     _main.set_xlim(0.4, 4.9)
     _main.set_ylim(1.3, 8.7)
     _main.set_xticks(_xs)
@@ -473,7 +447,7 @@ def _(definition, mo):
     Given $x \in S_X$, with $f_X(x) > 0$, we define the **conditional pmf/pdf** of $Y$ given $X = x$ as
 
     $$
-    f_{Y|X}(y \mid x) = \frac{f_{X,Y}(x, y)}{f_X(x)} \qquad (y \text{: possible values of } Y, \quad x \text{: given value of } X)
+    f_{Y|X}(y \mid x) = \frac{f_{X,Y}(x, y)}{f_X(x)} \qquad \begin{array}{l} y \text{: possible values of } Y \\ x \text{: given value of } X \end{array}
     $$
     """,
                 "Conditional pmf and pdf",
@@ -492,7 +466,7 @@ def _(definition, mo):
 
     | $y$ | $2$ | $3$ | $4$ | $5$ | $6$ | $7$ | $8$ |
     |:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-    | $f_{Y\vert X}(y \mid 3)$ | $0$ | $0$ | $\dfrac{2/16}{5/16} = \dfrac{2}{5}$ | $\dfrac{2}{5}$ | $\dfrac{1}{5}$ | $0$ | $0$ |
+    | $f_{Y\vert X}(y \mid 3)$ | $0$ | $0$ | $(2/16)/(5/16) = 2/5$ | $2/5$ | $1/5$ | $0$ | $0$ |
 
     $$
     \text{e.g.} \qquad f_{Y|X}(4 \mid 3) = \frac{f_{X,Y}(3, 4)}{f_X(3)} = \frac{2/16}{5/16} = \frac{2}{5}
@@ -500,7 +474,7 @@ def _(definition, mo):
 
     $\leadsto$ &nbsp; are the two measurements independent?
 
-    $\leadsto$ &nbsp; knowledge about measurement $X$ **changed the probabilities** of measurement $Y$! &nbsp; $\leadsto$ &nbsp; we shouldn't call them independent
+    $\leadsto$ &nbsp; knowledge about measurement $X$ **changed the probabilities** of measurement $Y$! &nbsp; <span class="nw">$\leadsto$ &nbsp; we</span> shouldn't call them independent
     """
             ),
         ]
@@ -510,12 +484,12 @@ def _(definition, mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    c_x = mo.ui.slider(1, 4, 1, value=3, label="given value $x$ of $X$ (largest face)", show_value=True)
+    c_x = mo.ui.slider(1, 4, 1, value=3, label="$x$", show_value=True)
     return (c_x,)
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, Fraction, RED, c_x, dice_counts, mo, over, table, tex):
+def _(BLUE, Figure, Fraction, RED, c_x, dice_counts, mo):
     _x = c_x.value
     _counts = dice_counts(4)
     _ys = list(range(2, 9))
@@ -523,7 +497,7 @@ def _(BLUE, FULL, Figure, Fraction, RED, c_x, dice_counts, mo, over, table, tex)
     _ky = [sum(k for (x, y), k in _counts.items() if y == v) for v in _ys]
     _cond = [Fraction(_counts.get((_x, v), 0), _kx) for v in _ys]
 
-    _fig = Figure(figsize=(FULL, 2.6), layout="constrained")
+    _fig = Figure(figsize=(5.6, 2.6), layout="constrained")
     _ax = _fig.subplots()
     for _vals, _color, _shift in (([k / 16 for k in _ky], RED, 0.1), ([float(p) for p in _cond], BLUE, -0.1)):
         _at = [v + _shift for v in _ys]
@@ -534,25 +508,15 @@ def _(BLUE, FULL, Figure, Fraction, RED, c_x, dice_counts, mo, over, table, tex)
     _ax.set_xlim(1.4, 8.6)
     _ax.set_ylim(0, 1.05)
     _ax.set_xticks(_ys)
-    _ax.set_yticks([0, 0.5, 1])
+    _ax.set_yticks([0, 0.5, 1], ["0", "0.5", "1"])
     _ax.set_xlabel("$y$")
     _ax.tick_params(labelsize=12)
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
 
-    _rows = "\n".join(
-        [
-            "| $y$ | " + " | ".join(f"${v}$" for v in _ys) + " |",
-            "|:--|" + ":-:|" * len(_ys),
-            rf"| $f_{{Y\vert X}}(y \mid {_x})$ | " + " | ".join(rf"$\textcolor{{{BLUE}}}{{{tex(p)}}}$" for p in _cond) + " |",
-            r"| $f_Y(y)$ | " + " | ".join(rf"$\textcolor{{{RED}}}{{{over(k, 16)}}}$" for k in _ky) + " |",
-        ]
-    )
     mo.vstack(
         [
             mo.hstack([c_x], justify="start", gap=2, wrap=True),
-            table([(rf"$f_X({_x}) = P(X = {_x})$", rf"${over(_kx, 16)}$")]),
-            mo.md(_rows),
             _fig,
         ]
     )
@@ -570,9 +534,9 @@ def _(definition, mo):
 
     $$
     \begin{aligned}
-    & f_{Y|X}(y \mid x) = f_Y(y) && \text{knowledge about } X \text{ does not affect our beliefs about } Y \\[6pt]
-    \Longleftrightarrow \quad & f_{X,Y}(x, y) = f_X(x)\, f_Y(y) \\[6pt]
-    \Longleftrightarrow \quad & f_{X|Y}(x \mid y) = f_X(x) && \text{knowledge about } Y \text{ does not affect our beliefs about } X
+    & f_{Y|X}(y \mid x) = f_Y(y) && \begin{array}{l} \text{knowledge about } X \text{ does not} \\ \text{affect our beliefs about } Y \end{array} \\[1.4em]
+    \Longleftrightarrow \quad & f_{X,Y}(x, y) = f_X(x)\, f_Y(y) \\[1.4em]
+    \Longleftrightarrow \quad & f_{X|Y}(x \mid y) = f_X(x) && \begin{array}{l} \text{knowledge about } Y \text{ does not} \\ \text{affect our beliefs about } X \end{array}
     \end{aligned}
     $$
     """,
@@ -583,8 +547,10 @@ def _(definition, mo):
     **Remark.** If $X, Y$ are independent
 
     $$
-    P(X \in A \text{ and } Y \in B) = P(X \in A) \cdot P(Y \in B) \qquad \text{for any } A \subseteq \mathbb{R} \text{ and } B \subseteq \mathbb{R}
+    P(X \in A \text{ and } Y \in B) = P(X \in A) \cdot P(Y \in B)
     $$
+
+    for any $A \subseteq \mathbb{R}$ and $B \subseteq \mathbb{R}$
     """
             ),
         ]
@@ -631,22 +597,13 @@ def _(Figure, GREY, HALF, LIGHT, mo, np):
 
     $Y - x$ = arrival time of 2nd customer counted from $x$
 
-    $$
-    \Longrightarrow \qquad f_{Y|X}(y \mid x) = \mathrm{Gamma}(1, \lambda)(y - x) = \lambda e^{-\lambda (y - x)}
-    $$
-
-    $$
-    \Longrightarrow \qquad f_{X,Y}(x, y) = f_{Y|X}(y \mid x)\, f_X(x) = \lambda^2 e^{-\lambda y} \qquad \text{for } 0 < x < y
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \quad f_{Y|X}(y \mid x) = \mathrm{Gamma}(1, \lambda)(y - x) = \lambda e^{-\lambda (y - x)}$ $\displaystyle \quad \Longrightarrow \quad f_{X,Y}(x, y) = f_{Y|X}(y \mid x)\, f_X(x) = \lambda^2 e^{-\lambda y} \qquad \text{for } 0 < x < y$</span>
 
     $\leadsto$ &nbsp; marginals
 
-    $$
-    \begin{aligned}
-    f_X(x) &= \int_{-\infty}^{\infty} f_{X,Y}(x, y)\, dy = \int_{x}^{\infty} \lambda^2 e^{-\lambda y}\, dy = \lambda e^{-\lambda x} = \mathrm{Gamma}(1, \lambda)(x) = \mathrm{Exp}(\lambda)(x) \\[6pt]
-    f_Y(y) &= \int_{-\infty}^{\infty} f_{X,Y}(x, y)\, dx = \int_{0}^{y} \lambda^2 e^{-\lambda y}\, dx = \lambda^2 y\, e^{-\lambda y} = \mathrm{Gamma}(2, \lambda)(y)
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle f_X(x) = \int_{-\infty}^{\infty} f_{X,Y}(x, y)\, dy = \int_{x}^{\infty} \lambda^2 e^{-\lambda y}\, dy$ $\displaystyle = \lambda e^{-\lambda x} = \mathrm{Gamma}(1, \lambda)(x) = \mathrm{Exp}(\lambda)(x)$</span>
+
+    <span class="chain">$\displaystyle f_Y(y) = \int_{-\infty}^{\infty} f_{X,Y}(x, y)\, dx = \int_{0}^{y} \lambda^2 e^{-\lambda y}\, dx$ $\displaystyle = \lambda^2 y\, e^{-\lambda y} = \mathrm{Gamma}(2, \lambda)(y)$</span>
     """
             ),
         ]
@@ -656,21 +613,20 @@ def _(Figure, GREY, HALF, LIGHT, mo, np):
 
 @app.cell(hide_code=True)
 def _(mo):
-    a_lam = mo.ui.slider(0.5, 3, 0.1, value=1, label=r"$\lambda$", show_value=True)
-    a_a = mo.ui.slider(0, 5, 0.1, value=1, label="$a$", show_value=True)
-    a_b = mo.ui.slider(0, 5, 0.1, value=2, label="$b$", show_value=True)
-    return a_a, a_b, a_lam
+    a_a = mo.ui.slider(0.2, 2.5, 0.1, value=0.5, label="$a$", show_value=True)
+    a_b = mo.ui.slider(0.2, 2.5, 0.1, value=1, label="$b$", show_value=True)
+    return a_a, a_b
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, a_a, a_b, a_lam, density, math, mo, np, table):
-    _lam, _a, _b = a_lam.value, a_a.value, a_b.value
-    _L = 5.0
+def _(BLUE, Figure, GREEN, GREY, LIGHT, a_a, a_b, density, math, mo, np, table):
+    _lam, _a, _b = 2, a_a.value, a_b.value
+    _L = 3.0
     _g = np.linspace(0, _L, 301)
     _X, _Y = np.meshgrid(_g, _g)
     _f = np.where(_X < _Y, _lam**2 * np.exp(-_lam * _Y), np.nan)
 
-    _fig = Figure(figsize=(FULL, 4.6), layout="constrained")
+    _fig = Figure(figsize=(5.8, 4.4), layout="constrained")
     _grid = _fig.add_gridspec(2, 2, width_ratios=[4, 1], height_ratios=[1, 3])
     _main = _fig.add_subplot(_grid[1, 0])
     _top = _fig.add_subplot(_grid[0, 0], sharex=_main)
@@ -680,9 +636,11 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, a_a, a_b, a_lam, density, math, mo
     density(_main, _f, (0, _L, 0, _L), _lam**2)
     _main.plot([0, _L], [0, _L], color=GREY, lw=1.0)
     _main.plot([0, _a, _a], [_b, _b, 0], color=GREEN, lw=1.4)
-    _main.text(0.5, 4.5, "$S_{X,Y}$", fontsize=13, ha="center", va="center")
+    _main.text(0.3, 2.7, "$S_{X,Y}$", fontsize=13, ha="center", va="center")
     _main.set_xlim(0, _L)
     _main.set_ylim(0, _L)
+    _main.set_xticks([0, 1, 2, 3])
+    _main.set_yticks([0, 1, 2, 3])
     _main.set_xlabel("$x$")
     _main.set_ylabel("$y$")
 
@@ -711,15 +669,27 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, a_a, a_b, a_lam, density, math, mo
     _py = 1 - math.exp(-_lam * _b) - _lam * _b * math.exp(-_lam * _b)
     _m = min(_a, _b)  # beyond a = b the event {X <= a, Y <= b} is {Y <= b}
     _pxy = 1 - math.exp(-_lam * _m) - _lam * _m * math.exp(-_lam * _b)
+
+    def _p(v):
+        """Two decimals; two significant digits when small or near 1."""
+        if v <= 0:
+            return "0"
+        if v >= 1:
+            return "1"
+        if 0.095 <= v <= 0.995:
+            return f"{v:.2f}"
+        if v > 0.995:
+            return f"{v:.{-math.floor(math.log10(1 - v))}f}"
+        return f"{v:.{1 - math.floor(math.log10(v))}f}"
+
     mo.vstack(
         [
-            mo.hstack([a_lam, a_a, a_b], justify="start", gap=2, wrap=True),
+            mo.md(r"$\lambda = 2$ (as in the example below)"),
+            mo.hstack([a_a, a_b], justify="start", gap=2, wrap=True),
             table(
                 [
-                    (r"$P(X \leq a,\ Y \leq b) = \iint f_{X,Y}(x, y)\, dx\, dy$ &nbsp; (inside the green corner)", rf"$\textcolor{{{GREEN}}}{{{_pxy:.4f}}}$"),
-                    (r"$P(X \leq a) = 1 - e^{-\lambda a}$ &nbsp; (area, top)", rf"${_px:.4f}$"),
-                    (r"$P(Y \leq b) = 1 - e^{-\lambda b} - \lambda b\, e^{-\lambda b}$ &nbsp; (area, right)", rf"${_py:.4f}$"),
-                    (r"$P(X \leq a) \cdot P(Y \leq b)$", rf"${_px * _py:.4f}$"),
+                    (r"$P(X \leq a,\ Y \leq b)$ &nbsp; (inside the green corner)", rf"${_p(_pxy)}$"),
+                    (r"$P(X \leq a) \cdot P(Y \leq b)$ &nbsp; (product of the two shaded areas)", rf"${_p(_px * _py)}$"),
                 ]
             ),
             _fig,
@@ -748,14 +718,14 @@ def _(definition, mo):
     Given $u : \mathbb{R} \longrightarrow \mathbb{R}$ real valued single variable function, the **conditional expectation** of $u(Y)$, given $X = x$, is
 
     $$
-    E[u(Y) \mid X = x] = \sum_y u(y)\, f_{Y|X}(y \mid x) \qquad \text{or} \qquad \int_{-\infty}^{\infty} u(y)\, f_{Y|X}(y \mid x)\, dy
+    E[u(Y) \mid X = x] = \sum_y u(y)\, f_{Y|X}(y \mid x) \quad \text{or} \quad \int_{-\infty}^{\infty} u(y)\, f_{Y|X}(y \mid x)\, dy
     $$
     """,
                 "Conditional expectation",
             ),
             mo.md(
                 r"""
-    - $u(Y) = Y$ &nbsp; $\leadsto$ &nbsp; $\underbrace{E[Y \mid X = x]}_{=\, g(x)}$ &nbsp; **conditional mean** of $Y$ given $X = x$
+    - $u(Y) = Y$ &nbsp; <span class="nw">$\leadsto$ &nbsp; $E[Y \mid X = x] = g(x)$</span> &nbsp; **conditional mean** of $Y$ given $X = x$
 
         = expected value of $Y$ given the observed value of $X = x$
 
@@ -765,13 +735,9 @@ def _(definition, mo):
 
     **Example** (Customer arrivals).
 
-    $$
-    f_{X,Y}(x, y) = \lambda^2 e^{-\lambda y}, \quad 0 < x < y \qquad \leadsto \qquad f_{Y|X}(y \mid x) = \lambda e^{-\lambda (y - x)}, \quad y > x
-    $$
+    <span class="chain">$\displaystyle f_{X,Y}(x, y) = \lambda^2 e^{-\lambda y}, \quad 0 < x < y$ $\displaystyle \quad \leadsto \quad f_{Y|X}(y \mid x) = \lambda e^{-\lambda (y - x)}, \quad y > x$</span>
 
-    $$
-    \Longrightarrow \qquad E[Y \mid X = x] = \int_{-\infty}^{+\infty} y\, f_{Y|X}(y \mid x)\, dy = \int_{x}^{+\infty} y\, \lambda e^{-\lambda (y - x)}\, dy = x + \frac{1}{\lambda}
-    $$
+    <span class="chain">$\displaystyle \Longrightarrow \qquad E[Y \mid X = x] = \int_{-\infty}^{+\infty} y\, f_{Y|X}(y \mid x)\, dy$ $\displaystyle = \int_{x}^{+\infty} y\, \lambda e^{-\lambda (y - x)}\, dy = x + \frac{1}{\lambda}$</span>
 
     $\leadsto$ &nbsp; the regression function of $Y$ on $X$ is linear
 
@@ -785,21 +751,23 @@ def _(definition, mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    r_lam = mo.ui.slider(0.5, 4, 0.1, value=2, label=r"$\lambda$ (customers per hour)", show_value=True)
-    r_x = mo.ui.slider(0, 3, 0.05, value=1, label="$x$ (1st arrival, hours)", show_value=True)
+    r_lam = mo.ui.slider(1, 4, 0.1, value=2, label=r"$\lambda$", show_value=True)
+    r_x = mo.ui.slider(0.25, 3, 0.05, value=1, label="$x$", show_value=True)
     return r_lam, r_x
 
 
 @app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, RED, density, mo, np, r_lam, r_x, table):
+def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, RED, density, mo, np, r_lam, r_x):
     _lam, _x = r_lam.value, r_x.value
     _m = _x + 1 / _lam
+
     _L = 5.0
     _g = np.linspace(0, _L, 301)
     _X, _Y = np.meshgrid(_g, _g)
     _f = np.where(_X < _Y, _lam**2 * np.exp(-_lam * _Y), np.nan)
 
     _fig = Figure(figsize=(FULL, 3.2), layout="constrained")
+    _fig.get_layout_engine().set(wspace=0.08)
     _left, _right = _fig.subplots(1, 2)
 
     # left: the regression line y = x + 1/lambda through the joint pdf, and the slice X = x
@@ -807,8 +775,8 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, RED, density, mo, np, r_lam, r_x, 
     _left.plot([0, _L], [0, _L], color=GREY, lw=1.0)
     _left.plot([_x, _x], [_x, _L], color=BLUE, lw=1.2, ls=(0, (4, 3)))
     _left.plot(_g, _g + 1 / _lam, color=GREEN, lw=1.4)
-    _left.plot(_x, _m, "o", color=GREEN, ms=5, zorder=4)
-    _left.text(0.15, _L - 0.2, r"$y = x + 1/\lambda$", color=GREEN, fontsize=12, ha="left", va="top", bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
+    _left.plot(_x, _m, "o", color=GREEN, ms=5, zorder=4, clip_on=False)
+    _left.text(_L - 0.15, 0.3, r"$y = x + 1/\lambda$", color=GREEN, fontsize=12, ha="right", va="bottom")
     _left.set_xlim(0, _L)
     _left.set_ylim(0, _L)
     _left.set_xlabel("$x$")
@@ -819,7 +787,7 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, RED, density, mo, np, r_lam, r_x, 
     _right.fill_between(_yy, _lam * np.exp(-_lam * (_yy - _x)), color=LIGHT, lw=0)
     _right.plot(np.r_[0, _x, _yy], np.r_[0, 0, _lam * np.exp(-_lam * (_yy - _x))], color=BLUE, lw=1.4)
     _right.plot(_g, _lam**2 * _g * np.exp(-_lam * _g), color=RED, lw=1.2)
-    _right.plot([_m, _m], [0, 1.1 * _lam], color=GREEN, lw=1.2, ls=(0, (4, 3)))
+    _right.plot([_m, _m], [0, _lam * np.exp(-1)], color=GREEN, lw=1.2, ls=(0, (4, 3)))
     _right.text(_L, 1.15 * _lam, r"$f_{Y|X}(y \mid x)$", color=BLUE, fontsize=12, ha="right", va="top")
     _right.text(_L, 0.95 * _lam, r"$f_Y(y)$", color=RED, fontsize=12, ha="right", va="top")
     _right.set_xlim(0, _L)
@@ -834,56 +802,7 @@ def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, RED, density, mo, np, r_lam, r_x, 
     mo.vstack(
         [
             mo.hstack([r_lam, r_x], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$E[Y \mid X = x] = x + 1/\lambda$ &nbsp; (green)", rf"$\textcolor{{{GREEN}}}{{{_m:.3f}}}$"),
-                    (r"$E[Y] = 2/\lambda$ &nbsp; (mean of $f_Y$, not knowing $x$)", rf"${2 / _lam:.3f}$"),
-                ]
-            ),
             _fig,
         ]
     )
     return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - joint distribution of a pair $(X, Y)$ on the same $(S, \mathcal{E}, P)$, with joint pmf or pdf $f_{X,Y}$:
-
-        $$
-        P_{X,Y}(A) = P((X, Y) \in A) = \sum_{(x, y) \in S_{X,Y} \cap A} f_{X,Y}(x, y) \qquad \text{or} \qquad \iint_{S_{X,Y} \cap A} f_{X,Y}(x, y)\, dx\, dy
-        $$
-    - marginals: &nbsp; $f_X(x) = \sum_y f_{X,Y}(x, y)$ or $\int f_{X,Y}(x, y)\, dy$, and similarly $f_Y$; the marginals do not determine the joint
-    - conditional pmf/pdf, a proper pmf/pdf in $y$ for each fixed $x$:
-
-        $$
-        f_{Y|X}(y \mid x) = \frac{f_{X,Y}(x, y)}{f_X(x)}
-        $$
-    - $X$ and $Y$ independent:
-
-        $$
-        f_{Y|X}(y \mid x) = f_Y(y) \quad \Longleftrightarrow \quad f_{X,Y}(x, y) = f_X(x)\, f_Y(y) \quad \Longleftrightarrow \quad f_{X|Y}(x \mid y) = f_X(x)
-        $$
-
-        and then $P(X \in A \text{ and } Y \in B) = P(X \in A)\, P(Y \in B)$
-    - conditional expectation:
-
-        $$
-        E[u(Y) \mid X = x] = \sum_y u(y)\, f_{Y|X}(y \mid x) \qquad \text{or} \qquad \int_{-\infty}^{\infty} u(y)\, f_{Y|X}(y \mid x)\, dy
-        $$
-
-        the conditional mean $E[Y \mid X = x]$ is the regression function of $Y$ on $X$
-    - customer arrivals: &nbsp; marginals $\mathrm{Exp}(\lambda)$ and $\mathrm{Gamma}(2, \lambda)$, and a linear regression function
-
-        $$
-        f_{X,Y}(x, y) = \lambda^2 e^{-\lambda y} \quad (0 < x < y), \qquad E[Y \mid X = x] = x + \frac{1}{\lambda}
-        $$
-    """)
-    return
-
-
-if __name__ == "__main__":
-    app.run()

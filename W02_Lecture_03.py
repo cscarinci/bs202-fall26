@@ -30,7 +30,7 @@ def _(mo):
     #   ORANGE a third series, only when three are needed
     #   GREY   reference geometry (guides, unit circle, reference curves)
     #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#1b458f", "#b3261e", "#2e7d32", "#e65100", "#888888", "#cfe3f5"
+    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
     # Figure widths: FULL spans the page, HALF sits beside text or in a pair
     FULL, HALF = 7.4, 3.6
 
@@ -75,12 +75,13 @@ def _(mo):
 
     def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
         """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        One head size and one line weight for every figure, so arrows look alike across lectures."""
+        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
+        so arrows look alike in every figure whatever its axis range."""
         ax.annotate(
             "",
             xy=tip,
             xytext=tail,
-            arrowprops={"arrowstyle": "-|>,head_width=0.15,head_length=0.35", "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
+            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
         )
         if label:
             pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
@@ -119,24 +120,15 @@ def _(mo):
 
     def table(rows):
         """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        return mo.md("\n".join(["| | |", "|:--|--:|"] + [f"| {k} | {v} |" for k, v in rows]))
+        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
+        return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    def check(field, answer):
-        """Feedback mark for a numeric answer typed into a text field."""
-        s = field.value.strip().replace(",", ".")
-        if not s:
-            return ""
-        try:
-            return "correct" if abs(float(s) - answer) < 1e-6 else "try again"
-        except ValueError:
-            return "enter a number"
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, check, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
 
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Lecture 03", "Week 02", "Lecture 03 · Conditioning, independence, and Bayes' rule")
+    header("Lecture 03", "Week 02", "Lecture 03 • Conditioning, independence, and Bayes' rule")
     return
 
 
@@ -163,23 +155,18 @@ def _(mo):
     mo.md(r"""
     ## Last time
 
-    - probability spaces with equally likely outcomes: &nbsp; $P(A) = \dfrac{\# A}{\# S}$ &nbsp; $\leadsto$ &nbsp; calculating probability reduces to counting
+    - probability spaces with equally likely outcomes: &nbsp; $P(A) = \dfrac{\# A}{\# S}$ &nbsp; <span class="nw">$\leadsto$ &nbsp; calculating</span> probability reduces to counting
     - basic counting rules ($n$ objects, $r$ positions):
-        - **ordered** without repetitions: &nbsp; $P^n_r = \dfrac{n!}{(n - r)!}$ &nbsp; (ranking of a competition)
-        - **unordered** without repetitions: &nbsp; $C^n_r = \dfrac{n!}{r!\,(n - r)!}$ &nbsp; (hands of poker)
-        - **ordered** with repetitions: &nbsp; $n^r = n \times n \times \cdots \times n$ &nbsp; (passwords of given length)
-        - **unordered** with repetitions: &nbsp; $C^{n + r - 1}_r = \dfrac{(n + r - 1)!}{r!\,(n - 1)!}$ &nbsp; (ice cream cups)
+        - **ordered** without repetitions: &nbsp; $P^n_r = \dfrac{n!}{(n - r)!}$ &nbsp; (ranking&nbsp;of&nbsp;a&nbsp;competition)
+        - **unordered** without repetitions: &nbsp; $C^n_r = \dfrac{n!}{r!\,(n - r)!}$ &nbsp; (hands&nbsp;of&nbsp;poker)
+        - **ordered** with repetitions: &nbsp; $n^r = n \times n \times \cdots \times n$ &nbsp; (passwords&nbsp;of&nbsp;given&nbsp;length)
+        - **unordered** with repetitions: &nbsp; $C^{n + r - 1}_r = \dfrac{(n + r - 1)!}{r!\,(n - 1)!}$ &nbsp; (ice&nbsp;cream&nbsp;cups)
 
-            $$
-            \text{e.g.} \quad \#\left(\substack{\text{cups of 4 scoops} \\ \text{from 6 flavours}}\right) = C^{6 + 4 - 1}_4 = C^9_4 = \frac{9!}{4!\, 5!} = 126
-            $$
+            <span class="chain">$\displaystyle \text{e.g.}\ \#(\text{cups of 4 scoops from 6 flavours}) = C^{6 + 4 - 1}_4$ $\displaystyle = C^9_4 = \frac{9!}{4!\, 5!} = 126$</span>
 
     - **Example** (defective items). 20 items, 3 defective &nbsp; $\leadsto$ &nbsp; pick 4 (samples): &nbsp; $P(\text{at least one is defective}) = \ ?$ &nbsp; (not easy to compute…)
 
-        $$
-        \{\text{at least 1}\} = \{\text{exactly 1}\} \cup \{\text{exactly 2}\} \cup \{\text{exactly 3}\} = \{\text{none}\}^c
-        \qquad \leadsto \quad \#\{\text{none}\} = C^{17}_4 = \frac{17!}{4!\, 13!}
-        $$
+        <span class="chain">$\displaystyle \{\text{at least 1}\} = \{\text{exactly 1}\} \cup \{\text{exactly 2}\} \cup \{\text{exactly 3}\} = \{\text{none}\}^c$ $\displaystyle \quad \leadsto \quad \#\{\text{none}\} = C^{17}_4 = \frac{17!}{4!\, 13!}$</span>
 
         $$
         \Longrightarrow \qquad P(\text{at least one}) = 1 - \frac{\ \dfrac{17!}{4!\, 13!}\ }{\dfrac{20!}{4!\, 16!}} = 1 - \frac{17!\, 16!}{20!\, 13!} \approx 50.9\%
@@ -203,8 +190,8 @@ def _(BLUE, Figure, HALF, LIGHT, RED, table):
         ax.set_aspect("equal")
         ax.set_xticks(range(1, 7))
         ax.set_yticks(range(1, 7))
-        ax.set_xlabel("1st")
-        ax.set_ylabel("2nd")
+        ax.set_xlabel("1st die")
+        ax.set_ylabel("2nd die")
         for s in ("top", "right"):
             ax.spines[s].set_visible(False)
         for i in range(1, 7):
@@ -226,13 +213,15 @@ def _(BLUE, Figure, HALF, LIGHT, RED, table):
     def _frac(n, d):
         from fractions import Fraction
 
+        if d == 1:
+            return str(n)
         q = Fraction(n, d)
-        reduced = rf"\dfrac{{{q.numerator}}}{{{q.denominator}}}" if q.denominator != 1 else str(q.numerator)
-        return rf"\dfrac{{{n}}}{{{d}}}" + ("" if q.denominator == d else " = " + reduced)
+        reduced = f"{q.numerator}/{q.denominator}" if q.denominator != 1 else str(q.numerator)
+        return f"{n}/{d}" + ("" if q.denominator == d else " = " + reduced)
 
-    def cond_panel(t, verdict=False):
+    def cond_panel(t):
         """Two-dice outcomes with A = {sum is t} circled and B = {1st is even} outlined;
-        readout of P(A), P(A | B), P(B | A), optionally with the independence verdict."""
+        readout of P(A), P(A | B), P(B | A)."""
         fig, ax = outcome_grid()
         for k in (2, 4, 6):
             strip(ax, k, RED, "$B$")
@@ -247,16 +236,10 @@ def _(BLUE, Figure, HALF, LIGHT, RED, table):
         ax.text(i0 + (0.45 if i0 % 2 else -0.56), t - i0 + (0.36 if i0 % 2 else 0.3), "$A$", color=BLUE, fontsize=13, ha="center", va="center", zorder=5)
 
         rows = [
-            (rf"$\textcolor{{{BLUE}}}{{\# A}}$ &nbsp; ($A$ = sum is ${t}$)", rf"$\textcolor{{{BLUE}}}{{{nA}}}$"),
-            (rf"$\textcolor{{{RED}}}{{\# B}}$ &nbsp; ($B$ = 1st is even)", rf"$\textcolor{{{RED}}}{{18}}$"),
-            (r"$\# A \cap B$", rf"${nAB}$"),
-            (r"$P(A) = \dfrac{\# A}{\# S}$", rf"${_frac(nA, 36)}$"),
-            (r"$P(A \mid B) = \dfrac{\# A \cap B}{\# B}$", rf"${_frac(nAB, 18)}$"),
-            (r"$P(B \mid A) = \dfrac{\# A \cap B}{\# A}$", rf"${_frac(nAB, nA)}$"),
+            (r"$P(A)$", rf"${_frac(nA, 36)}$"),
+            (r"$P(A \mid B)$", rf"${_frac(nAB, 18)}$"),
         ]
-        if verdict:
-            same = nAB * 36 == nA * 18
-            rows.append((r"$A, B$ independent", r"yes: $P(A \mid B) = P(A)$" if same else r"no: $P(A \mid B) \neq P(A)$"))
+        rows.append((r"$P(B \mid A)$", rf"${_frac(nAB, nA)}$"))
         return table(rows), fig
 
     return cond_panel, outcome_grid, strip
@@ -274,6 +257,7 @@ def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
     _ax.text(0.3, 1.5, "$A$", color=BLUE, fontsize=13, ha="center", va="center")
     _ax.text(3.05, 0.85, "$B$", color=RED, fontsize=13, ha="center", va="center")
     _ax.text(3.45, 0.22, "$S$", fontsize=13, ha="center", va="center")
+    _ax.text(1.43, 1.08, r"$A \cap B$", fontsize=12, ha="center", va="center")
 
     mo.vstack(
         [
@@ -286,7 +270,10 @@ def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
     $\leadsto$ &nbsp; the probability of an event might change depending on our knowledge about the occurrence of other events!
 
     $$
-    \text{roll two fair dice:} \qquad P(\text{sum is 8}) = \tfrac{5}{36}, \qquad P\left(\substack{\text{sum is 8 when} \\ \text{1st die is even}}\right) = \tfrac{3}{18} = \tfrac{1}{6}
+    \begin{aligned}
+    \text{roll two fair dice:} \qquad P(\text{sum is 8}) &= \frac{5}{36} \\[14pt]
+    P(\text{sum is 8 when 1st die is even}) &= \frac{3}{18} = \frac{1}{6}
+    \end{aligned}
     $$
     """
             ),
@@ -295,7 +282,7 @@ def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
     The **conditional probability** of an event $A \subseteq S$, given that an event $B$ is known to have occurred, is
 
     $$
-    \underbrace{P(A \mid B)}_{\text{probability of } A \text{ given } B} = \frac{P(A \cap B)}{P(B)} \qquad (\text{provided } P(B) > 0)
+    \underbrace{P(A \mid B)}_{\mathclap{\footnotesize \text{probability of } A \text{ given } B}} = \frac{P(A \cap B)}{P(B)} \qquad (\text{provided } P(B) > 0)
     $$
     """,
                 "Conditional probability",
@@ -306,12 +293,11 @@ def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
     Once we know $B$ has occurred
 
     $$
-    P(A) \qquad \leadsto \qquad P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \qquad
-    P(B) \qquad \leadsto \qquad P(B \mid B) = \frac{P(B \cap B)}{P(B)} = 1
-    $$
-
-    $$
-    \leadsto \qquad P(S \mid B) = \frac{P(S \cap B)}{P(B)} = 1
+    \begin{aligned}
+    P(A) \qquad & \leadsto \qquad P(A \mid B) = \frac{P(A \cap B)}{P(B)} \\[14pt]
+    P(B) \qquad & \leadsto \qquad P(B \mid B) = \frac{P(B \cap B)}{P(B)} = 1 \\[14pt]
+    & \leadsto \qquad P(S \mid B) = \frac{P(S \cap B)}{P(B)} = 1
+    \end{aligned}
     $$
 
     $\leadsto$ &nbsp; for the purpose of calculating $P(A \mid B)$, we think of $B$ as the “new version” of $S$, and of $A \cap B$ as the “new version” of $A$ inside $B$
@@ -352,19 +338,6 @@ def _(BLUE, HALF, LIGHT, RED, blank, definition, mo, np, theorem):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    total = mo.ui.slider(2, 12, 1, value=8, label="$A$: sum is", show_value=True)
-    return (total,)
-
-
-@app.cell(hide_code=True)
-def _(cond_panel, mo, total):
-    _table, _fig = cond_panel(total.value)
-    mo.vstack([mo.hstack([total], justify="start", gap=2, wrap=True), _table, _fig])
-    return
-
-
-@app.cell(hide_code=True)
 def _(definition, mo):
     mo.vstack(
         [
@@ -373,7 +346,7 @@ def _(definition, mo):
     **Remark.** In general $P(A \mid B) \neq P(B \mid A)$
 
     $$
-    P(\text{sum is 8} \mid \text{1st is even}) = \tfrac{1}{6} \ \neq \ P(\text{1st is even} \mid \text{sum is 8}) = \tfrac{3}{5}
+    P(\text{sum is 8} \mid \text{1st is even}) = \frac{1}{6} \ \neq \ P(\text{1st is even} \mid \text{sum is 8}) = \frac{3}{5}
     $$
 
     **Remark.** Many times it is useful to read
@@ -382,22 +355,13 @@ def _(definition, mo):
     P(A \cap B) = P(A \mid B)\, P(B)
     $$
 
-    $$
-    \leadsto \qquad P\left(\substack{\text{sum is 8 and} \\ \text{1st is even}}\right) = \underbrace{P\left(\substack{\text{sum is 8 given} \\ \text{1st is even}}\right)}_{\text{2nd stage}}\ \underbrace{P(\text{1st is even})}_{\text{1st stage}} \qquad (\text{stages of the random experiment})
-    $$
+    <span class="chain">$\displaystyle \leadsto \quad P(\text{sum is 8 and 1st is even})$ $\displaystyle = \underbrace{P(\text{sum is 8 given 1st is even})}_{\footnotesize \text{2nd stage}}\ \underbrace{P(\text{1st is even})}_{\footnotesize \text{1st stage}}$ $\displaystyle \quad (\text{stages of the random experiment})$</span>
 
     $\leadsto$ &nbsp; generalizations:
 
-    $$
-    P(A \cap B \cap C) = P(A \mid B \cap C)\, P(B \cap C) = P(A \mid B \cap C)\, P(B \mid C)\, P(C)
-    $$
+    <span class="chain">$\displaystyle P(A \cap B \cap C) = P(A \mid B \cap C)\, P(B \cap C)$ $\displaystyle = P(A \mid B \cap C)\, P(B \mid C)\, P(C)$</span>
 
-    $$
-    \begin{aligned}
-    \underbrace{P(A_1 \cap A_2 \cap \cdots \cap A_n)}_{n \text{ stages}} = {} & \underbrace{P(A_1 \mid A_2 \cap \cdots \cap A_n)}_{n\text{th}} \\
-    & \times \underbrace{P(A_2 \mid A_3 \cap \cdots \cap A_n)}_{(n-1)\text{th}} \cdots \underbrace{P(A_{n-1} \mid A_n)}_{\text{2nd}}\ \underbrace{P(A_n)}_{\text{1st}}
-    \end{aligned}
-    $$
+    <span class="chain">$\displaystyle \underbrace{P(A_1 \cap A_2 \cap \cdots \cap A_n)}_{\footnotesize n \text{ stages}}$ $\displaystyle = \underbrace{P(A_1 \mid A_2 \cap \cdots \cap A_n)}_{\footnotesize n\text{th}} \times \underbrace{P(A_2 \mid A_3 \cap \cdots \cap A_n)}_{\footnotesize (n-1)\text{th}}$ $\displaystyle \cdots \underbrace{P(A_{n-1} \mid A_n)}_{\footnotesize \text{2nd}}\ \underbrace{P(A_n)}_{\footnotesize \text{1st}}$</span>
 
     **Remark.** Here we see another possible interpretation of probability:
 
@@ -414,9 +378,7 @@ def _(definition, mo):
                 r"""
     Two events $A, B \subseteq S$ are called **independent** if
 
-    $$
-    P(A \mid B) = P(A) \qquad \Longleftrightarrow \qquad P(A \cap B) = P(A)\, P(B) \qquad \Longleftrightarrow \qquad P(B \mid A) = P(B)
-    $$
+    <span class="chain">$\displaystyle P(A \mid B) = P(A)$ $\displaystyle \quad \Longleftrightarrow \quad P(A \cap B) = P(A)\, P(B)$ $\displaystyle \quad \Longleftrightarrow \quad P(B \mid A) = P(B)$</span>
 
     (knowledge about $B$ does not influence our belief about $A$)
     """,
@@ -439,9 +401,9 @@ def _(definition, mo):
     P(A \mid B) = \frac{P(A \cap B)}{P(B)} = \frac{3/36}{18/36} = \frac{1}{6} = \frac{6}{36} = P(A)
     $$
 
-    $\leadsto$ &nbsp; if $A$ = “sum is 8”, relative counting changes if we know $B$ = “1st is even” &nbsp; $\Longrightarrow$ &nbsp; $A, B$ not independent
+    $\leadsto$ &nbsp; if $A$ = “sum is 8”, relative counting changes if we know $B$&nbsp;=&nbsp;“1st&nbsp;is&nbsp;even” &nbsp; $\Longrightarrow$ &nbsp; $A, B$ not independent
 
-    $\leadsto$ &nbsp; if $A$ = “sum is 7”, relative counting remains same if we know $B$ = “1st is even” &nbsp; $\Longrightarrow$ &nbsp; $A, B$ independent
+    $\leadsto$ &nbsp; if $A$ = “sum is 7”, relative counting remains same if we know $B$&nbsp;=&nbsp;“1st&nbsp;is&nbsp;even” &nbsp; $\Longrightarrow$ &nbsp; $A, B$ independent
     """
             ),
         ]
@@ -451,13 +413,13 @@ def _(definition, mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    total_ind = mo.ui.slider(2, 12, 1, value=7, label="$A$: sum is", show_value=True)
+    total_ind = mo.ui.slider(2, 12, 1, value=8, label="$A$: sum is", show_value=True)
     return (total_ind,)
 
 
 @app.cell(hide_code=True)
 def _(cond_panel, mo, total_ind):
-    _table, _fig = cond_panel(total_ind.value, verdict=True)
+    _table, _fig = cond_panel(total_ind.value)
     mo.vstack([mo.hstack([total_ind], justify="start", gap=2, wrap=True), _table, _fig])
     return
 
@@ -471,17 +433,20 @@ def _(definition, mo, theorem):
     **Remark.** independence $\neq$ mutually exclusive!
 
     $$
-    P(A \cap B) = P(A)\, P(B) \qquad \not\Longleftrightarrow \qquad A \cap B = \emptyset
+    P(A \cap B) = P(A)\, P(B) \qquad \mathrel{\Longleftrightarrow\mathllap{/\hspace{0.72em}}} \qquad A \cap B = \emptyset
     $$
 
     $$
-    A \cap B = \emptyset \qquad \Longrightarrow \qquad P(A \cap B) = 0 \qquad \Longrightarrow \qquad \text{not independent if } P(A) \neq 0 \text{ and } P(B) \neq 0
+    \begin{aligned}
+    A \cap B = \emptyset \qquad & \Longrightarrow \qquad P(A \cap B) = 0 \\
+    & \Longrightarrow \qquad \text{not independent if } P(A) \neq 0 \text{ and } P(B) \neq 0
+    \end{aligned}
     $$
     """
             ),
             theorem(
                 r"""
-    If $A$ and $B$ are independent, then so are $A$ and $B^c$, &nbsp; $A^c$ and $B$, &nbsp; $A^c$ and $B^c$.
+    If $A$ and $B$ are independent, then so are <span style="white-space: nowrap">$A$ and $B^c$,</span> &nbsp; <span style="white-space: nowrap">$A^c$ and $B$,</span> &nbsp; <span style="white-space: nowrap">$A^c$ and $B^c$.</span>
     """,
                 "Independence of complements",
             ),
@@ -490,7 +455,10 @@ def _(definition, mo, theorem):
     **Proof.**
 
     $$
-    P(A^c \cap B) = P(A^c \mid B)\, P(B) = \big( 1 - P(A \mid B) \big)\, P(B) = \big( 1 - P(A) \big)\, P(B) = P(A^c)\, P(B) \qquad \square
+    \begin{align*}
+    P(A^c \cap B) &= P(A^c \mid B)\, P(B) = \big( 1 - P(A \mid B) \big)\, P(B) \\
+    &= \big( 1 - P(A) \big)\, P(B) = P(A^c)\, P(B) \tag*{$\square$}
+    \end{align*}
     $$
     """
             ),
@@ -499,7 +467,11 @@ def _(definition, mo, theorem):
     $A, B, C \subseteq S$ are **pairwise independent** if
 
     $$
-    \underbrace{P(A \cap B) = P(A)\, P(B), \qquad P(B \cap C) = P(B)\, P(C), \qquad P(C \cap A) = P(C)\, P(A)}_{\text{each pair is independent}}
+    \left.\begin{aligned}
+    P(A \cap B) &= P(A)\, P(B) \\
+    P(B \cap C) &= P(B)\, P(C) \\
+    P(C \cap A) &= P(C)\, P(A)
+    \end{aligned}\right\} \quad \text{each pair is independent}
     $$
 
     $A, B, C \subseteq S$ are **mutually independent** if they are pairwise independent and
@@ -518,21 +490,14 @@ def _(definition, mo, theorem):
 @app.cell(hide_code=True)
 def _(BLUE, GREEN, RED, mo, outcome_grid, strip):
     _fig, _ax = outcome_grid(left=-0.4)
-    _A, _B, _C = set(), set(), set()
     for _i in range(1, 7):
         for _j in range(1, 7):
-            if _i % 2 == 1:
-                _A.add((_i, _j))
-            if _j % 2 == 1:
-                _B.add((_i, _j))
-            if (_i + _j) % 2 == 1:
-                _C.add((_i, _j))
+            if (_i + _j) % 2 == 1:  # C = sum is odd
                 _ax.plot(_i, _j, "D", ms=9, mfc="none", mec=GREEN, mew=1.4, zorder=3)
     for _k in (1, 3, 5):
         strip(_ax, _k, BLUE, "$A$")
         strip(_ax, _k, RED, "$B$", across=True)
-    for _k in (2, 4, 6):
-        _ax.text(0.15, _k, "$C$", color=GREEN, fontsize=13, ha="center", va="center")
+    _ax.text(0.42, 6.45, "$C$", color=GREEN, fontsize=13, ha="center", va="center")  # at the corner of the diamond (1, 6)
 
     mo.vstack(
         [
@@ -550,9 +515,7 @@ def _(BLUE, GREEN, RED, mo, outcome_grid, strip):
     P(A) = \frac{3 \times 6}{36}, \qquad P(B) = \frac{3 \times 6}{36}, \qquad P(C) = \frac{18}{36}
     $$
 
-    $$
-    P(A \cap B) = \frac{9}{36} = P(A)\, P(B), \qquad P(B \cap C) = \frac{9}{36} = P(B)\, P(C), \qquad P(C \cap A) = \frac{9}{36} = P(C)\, P(A)
-    $$
+    <span class="chain">$\displaystyle P(A \cap B) = \frac{9}{36} = P(A)\, P(B),$ $\displaystyle \quad P(B \cap C) = \frac{9}{36} = P(B)\, P(C),$ $\displaystyle \quad P(C \cap A) = \frac{9}{36} = P(C)\, P(A)$</span>
 
     $$
     P(A \cap B \cap C) = 0
@@ -561,15 +524,7 @@ def _(BLUE, GREEN, RED, mo, outcome_grid, strip):
             ),
             _fig,
             mo.md(
-                rf"""
-    $$
-    \# A = {len(_A)}, \quad \# B = {len(_B)}, \quad \# C = {len(_C)}
-    $$
-
-    $$
-    \# A \cap B = {len(_A & _B)}, \quad \# B \cap C = {len(_B & _C)}, \quad \# C \cap A = {len(_C & _A)}, \qquad \# A \cap B \cap C = {len(_A & _B & _C)}
-    $$
-
+                r"""
     $\leadsto$ &nbsp; knowledge about $A$ does not affect our belief in $C$; &nbsp; $B$ does not affect our belief in $C$; &nbsp; knowledge about **$A$ and $B$** affects our belief in $C$!
     """
             ),
@@ -585,7 +540,7 @@ def _(mo):
 
     $\leadsto$ &nbsp; updating our level of belief in a collection of hypotheses after a new event has occurred
 
-    **Example.** A disease affects 1% of a population &nbsp; $\leadsto$ &nbsp; $P(\text{have disease}) = 1\%$ &nbsp; (disease prevalence)
+    **Example.** A disease affects 1% of a population &nbsp; <span class="nw">$\leadsto$ &nbsp; $P(\text{have disease}) = 1\%$</span> &nbsp; (disease prevalence)
 
     A test has 90% **sensitivity** $P(+\text{ve} \mid \text{disease})$ (true positive rate) and 95% **specificity** $P(-\text{ve} \mid \text{no disease})$ (true negative rate)
 
@@ -596,64 +551,17 @@ def _(mo):
     $$
 
     $$
-    \left.\begin{aligned} T &= \text{tested positive} \\ T^c &= \text{tested negative} \end{aligned}\right\} \quad P(T \mid D) = 90\%, \quad \underbrace{P(T^c \mid D^c) = 95\%}_{P(T \mid D^c) \,=\, 5\%}
+    \left.\begin{aligned} T &= \text{tested positive} \\ T^c &= \text{tested negative} \end{aligned}\right\} \quad \begin{aligned} P(T \mid D) = 90\%, \quad & P(T^c \mid D^c) = 95\% \\ & \leadsto \ P(T \mid D^c) = 5\% \end{aligned}
     $$
 
     $$
     \leadsto \qquad P(D \mid T) = \ ?
     $$
 
-    $$
-    \begin{aligned}
-    \text{Bayes' rule:} \qquad P(D \mid T) &= \frac{P(D \cap T)}{P(T)} = \frac{P(T \mid D)\, P(D)}{P(T)} \\[10pt]
-    &= \frac{P(T \mid D)\, P(D)}{P(T \cap D) + P(T \cap D^c)} = \frac{P(T \mid D)\, P(D)}{P(T \mid D)\, P(D) + P(T \mid D^c)\, P(D^c)} \\[10pt]
-    &= \frac{0.9 \times 0.01}{0.9 \times 0.01 + 0.05 \times 0.99} = \frac{2}{13} \approx 15.4\%
-    \end{aligned}
-    $$
+    Bayes' rule:
+
+    <span class="chain">$\displaystyle P(D \mid T) = \frac{P(D \cap T)}{P(T)} = \frac{P(T \mid D)\, P(D)}{P(T)}$ $\displaystyle = \frac{P(T \mid D)\, P(D)}{P(T \cap D) + P(T \cap D^c)}$ $\displaystyle = \frac{P(T \mid D)\, P(D)}{P(T \mid D)\, P(D) + P(T \mid D^c)\, P(D^c)}$ $\displaystyle = \frac{0.9 \times 0.01}{0.9 \times 0.01 + 0.05 \times 0.99} = \frac{2}{13} \approx 15.4\%$</span>
     """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    prev = mo.ui.slider(0.1, 50, 0.1, value=1, label="prevalence $P(D)$ (%)", show_value=True)
-    sens = mo.ui.slider(50, 100, 0.5, value=90, label=r"sensitivity $P(T \mid D)$ (%)", show_value=True)
-    spec = mo.ui.slider(50, 100, 0.5, value=95, label=r"specificity $P(T^c \mid D^c)$ (%)", show_value=True)
-    return prev, sens, spec
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, LIGHT, RED, mo, prev, sens, spec, table):
-    _p, _se, _sp = prev.value / 100, sens.value / 100, spec.value / 100
-    _tp, _fp = _se * _p, (1 - _sp) * (1 - _p)
-    _post = _tp / (_tp + _fp)  # P(T) > 0 on the whole slider range
-
-    _fig = Figure(figsize=(FULL, 1.5), layout="constrained")
-    _ax = _fig.subplots()
-    _ax.fill([0, _tp, _tp, 0], [0, 0, 1, 1], color=LIGHT, lw=0)
-    _ax.plot([_tp, _tp + _fp, _tp + _fp, _tp, _tp], [0, 0, 1, 1, 0], color=RED, lw=1.4)
-    _ax.plot([0, _tp, _tp, 0, 0], [0, 0, 1, 1, 0], color=BLUE, lw=1.4)
-    _ax.text(0, 1.25, r"$P(T \cap D)$", color=BLUE, fontsize=13, ha="left", va="bottom")
-    if _fp > 0:  # at specificity 100 % there is no false-positive box to label
-        _ax.text(_tp + _fp, 1.25, r"$P(T \cap D^c)$", color=RED, fontsize=13, ha="right", va="bottom")
-    _ax.set_xlim(-0.01 * (_tp + _fp), 1.01 * (_tp + _fp))
-    _ax.set_ylim(-0.1, 2.0)
-    _ax.set_yticks([])
-    _ax.set_xlabel(r"$P(T) = P(T \cap D) + P(T \cap D^c)$")
-    for _s in ("top", "right", "left"):
-        _ax.spines[_s].set_visible(False)
-
-    mo.vstack(
-        [
-            mo.hstack([prev, sens, spec], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$P(D \mid T) = \dfrac{P(T \mid D)\, P(D)}{P(T \mid D)\, P(D) + P(T \mid D^c)\, P(D^c)}$", rf"$\dfrac{{{_se:g} \times {_p:g}}}{{{_se:g} \times {_p:g} + {1 - _sp:.3g} \times {1 - _p:g}}} \approx {100 * _post:.1f}\%$"),
-                ]
-            ),
-            _fig,
-        ]
-    )
     return
 
 
@@ -677,42 +585,3 @@ def _(mo):
     $P(B_i)$ = **prior**, &nbsp; $P(B_i \mid A)$ = **posterior**, &nbsp; $P(A \mid B_i)$ = **likelihood**
     """)
     return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Summary
-
-    - conditional probability
-
-        $$
-        P(A \mid B) = \frac{P(A \cap B)}{P(B)} \qquad (\text{for } P(B) > 0)
-        $$
-
-        $B$ is the “new version” of $S$, and $P(\,\cdot \mid B)$ is again a probability measure; in general $P(A \mid B) \neq P(B \mid A)$
-    - reading $P(A \cap B) = P(A \mid B)\, P(B)$ by stages of the random experiment:
-
-        $$
-        P(A \cap B) = P(A \mid B)\, P(B) \qquad \text{and} \qquad P(A \cap B \cap C) = P(A \mid B \cap C)\, P(B \mid C)\, P(C)
-        $$
-    - $A, B$ independent if $P(A \cap B) = P(A)\, P(B)$ (not the same as mutually exclusive!); pairwise independence does not imply mutual independence
-    - for a partition $\{B_1, \dots, B_k\}$ of $S$: law of total probability
-
-        $$
-        P(A) = \sum_{i} P(A \mid B_i)\, P(B_i)
-        $$
-
-        and Bayes' rule
-
-        $$
-        P(B_j \mid A) = \frac{P(A \mid B_j)\, P(B_j)}{\sum_{i} P(A \mid B_i)\, P(B_i)}
-        $$
-
-        ($P(B_i)$ = prior, $P(B_i \mid A)$ = posterior, $P(A \mid B_i)$ = likelihood)
-    """)
-    return
-
-
-if __name__ == "__main__":
-    app.run()
