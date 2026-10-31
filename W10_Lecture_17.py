@@ -471,7 +471,13 @@ def _(mo):
     \text{③} \qquad m_Y(s) = E[e^{sY}] = 1 + s\, E[Y] + \frac{s^2}{2}\, E[Y^2] + \frac{s^3}{3!}\, E[Y^3] + \cdots
     $$
 
-    <span class="chain">$\displaystyle \Longrightarrow \qquad m_Y(t / \sqrt{n}) = 1 + \frac{t^2}{2n} + \frac{t^3}{6n\sqrt{n}}\, E[Y^3] + \cdots$ $\displaystyle \quad \Longrightarrow \quad m_{Z_n}(t) = \left( 1 + \frac{t^2}{2n} + \frac{t^3}{6n\sqrt{n}}\, E[Y^3] + \cdots \right)^{\!n}$ $\displaystyle \xrightarrow[n \to \infty]{} e^{t^2/2} = m_Z(t), \qquad Z \sim \mathcal{N}(0, 1)$ <span class="qed">$\square$</span></span>
+    $$
+    \begin{alignat*}{2}
+    \Longrightarrow \qquad & m_Y(t / \sqrt{n}) &&= 1 + \frac{t^2}{2n} + \frac{t^3}{6n\sqrt{n}}\, E[Y^3] + \cdots \\[14pt]
+    \Longrightarrow \qquad & m_{Z_n}(t) &&= \left( 1 + \frac{t^2}{2n} + \frac{t^3}{6n\sqrt{n}}\, E[Y^3] + \cdots \right)^{\!n} \\[14pt]
+    & &&\xrightarrow[n \to \infty]{} e^{t^2/2} = m_Z(t), \qquad Z \sim \mathcal{N}(0, 1) \tag*{$\square$}
+    \end{alignat*}
+    $$
     """)
     return
 
