@@ -11,12 +11,13 @@ def _():
 
     import marimo as mo
     import matplotlib
+    import numpy as np
     from matplotlib.figure import Figure
 
     # Figures use the same Computer Modern typeface as the text
     matplotlib.rcParams.update({"font.size": 14, "font.family": "serif", "font.serif": ["cmr10", "DejaVu Serif"], "mathtext.fontset": "cm", "axes.formatter.use_mathtext": True, "axes.unicode_minus": False})
 
-    return Figure, Fraction, math, mo
+    return Figure, Fraction, math, mo, np
 
 
 @app.cell(hide_code=True)
@@ -93,7 +94,7 @@ def _(mo):
         _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
         return mo.Html(f'<div class="readout">{_md.text}</div>')
 
-    return BLUE, FULL, GREEN, GREY, HALF, RED, arrow, blank, corollary, definition, header, table, theorem
+    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, RED, arrow, blank, corollary, definition, header, table, theorem
 
 
 @app.cell(hide_code=True)
@@ -206,11 +207,8 @@ def _(corollary, mo, theorem):
 
 
 @app.cell(hide_code=True)
-def _(mo, theorem):
-    mo.vstack(
-        [
-            mo.md(
-                r"""
+def _(mo):
+    mo.md(r"""
     **Example** (Customers arrive independently following $\mathrm{Pois}(\lambda)$).
 
     - $Y_i$ = time of arrival of the $i$th customer
@@ -227,8 +225,76 @@ def _(mo, theorem):
     $$
     \therefore \quad X_1, \dots, X_n \sim \mathrm{Exp}(\lambda) \text{ iid} \ \Longrightarrow \ X_1 + \dots + X_n \sim \mathrm{Gamma}(n, \lambda) \ !
     $$
-    """
-            ),
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    w_n = mo.ui.slider(1, 10, 1, value=3, label="$n$", show_value=True)
+    return (w_n,)
+
+
+@app.cell(hide_code=True)
+def _(np):
+    # one fixed run of ten waiting times, and 2000 fixed runs of Y_1, ..., Y_10 (lambda = 2); moving n keeps them
+    w_run = np.random.default_rng(1641).exponential(1 / 2, 10)
+    w_sims = np.random.default_rng(1642).exponential(1 / 2, (2000, 10)).cumsum(axis=1)
+    return w_run, w_sims
+
+
+@app.cell(hide_code=True)
+def _(BLUE, Figure, GREEN, RED, math, mo, np, w_n, w_run, w_sims):
+    _n, _lam = w_n.value, 2
+    _y = w_run[:_n].cumsum()  # arrival times Y_1, ..., Y_n of the run
+    _prev = np.concatenate([[0], _y[:-1]])
+
+    _fig = Figure(figsize=(5.6, 3.2), layout="constrained")
+    _top, _bot = _fig.subplots(2, 1, sharex=True, gridspec_kw={"height_ratios": [1, 2.6]})
+
+    # top: the time line of one run, the waiting times X_i between the arrivals
+    _top.plot([0, 10], [0, 0], color="black", lw=0.8)
+    _top.plot(0, 0, "o", color="black", ms=3.5)
+    for _i, _t in enumerate(_y):
+        _last = _i == _n - 1
+        _top.plot([_t, _t], [-0.18, 0.18], color=GREEN if _last else "black", lw=1.4 if _last else 1.0)
+    for _i in range(_n) if _n <= 4 else (0, _n - 1):
+        _top.text((_prev[_i] + _y[_i]) / 2, 0.3, f"$X_{{{_i + 1}}}$", color=BLUE, fontsize=12, ha="center", va="bottom")
+    if _n > 4:
+        _top.text((_prev[1] + _prev[_n - 1]) / 2, 0.3, r"$\cdots$", color=BLUE, fontsize=12, ha="center", va="bottom")
+    _top.text(_y[-1], -0.35, f"$Y_{{{_n}}}$", color=GREEN, fontsize=12, ha="center", va="top")
+    _top.set_ylim(-1.3, 1.3)
+    _top.axis("off")
+
+    # bottom: 2000 simulated values of Y_n against the Gamma(n, lambda) density
+    _t = np.linspace(0.001, 10, 600)
+    _f = _lam**_n * _t ** (_n - 1) * np.exp(-_lam * _t) / math.factorial(_n - 1)
+    _bins = np.arange(0, 10.01, 0.25)
+    _h = np.histogram(w_sims[:, _n - 1], bins=_bins, density=True)[0]
+    _bot.stairs(_h, _bins, color=RED, lw=1.0)
+    _bot.plot(_t, _f, color=BLUE, lw=1.6, zorder=4)
+    _ymax = 1.25 * max(float(_f.max()), float(_h.max()))
+    _peak = (_n - 1) / _lam
+    _xr = _peak + 1.3 * math.sqrt(_n) / _lam + 0.25
+    _fr = _lam**_n * _xr ** (_n - 1) * math.exp(-_lam * _xr) / math.factorial(_n - 1)
+    _bot.text(_xr, _fr + 0.04 * _ymax, r"$\mathrm{Gamma}(n, \lambda)$", color=BLUE, fontsize=12, ha="left", va="bottom")
+    _bot.text(_peak + 0.35, 0.9 * _ymax, "2000 simulated values of $Y_n$", color=RED, fontsize=12, ha="left", va="center")
+    _bot.set_xlim(0, 10)
+    _bot.set_ylim(0, _ymax)
+    _bot.set_xlabel("$t$")
+    _bot.set_yticks([])
+    _bot.tick_params(labelsize=12)
+    for _s in ("top", "right", "left"):
+        _bot.spines[_s].set_visible(False)
+
+    mo.vstack([mo.hstack([w_n, mo.md(r"$\lambda = 2$")], justify="start", gap=2, wrap=True), _fig])
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo, theorem):
+    mo.vstack(
+        [
             theorem(
                 r"""
     Similarly
@@ -349,6 +415,43 @@ def _(mo):
 
     $\leadsto$ &nbsp; $T \sim \mathrm{Binom}(2, 1/6)$
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    t_rv = mo.ui.dropdown(["X₁", "X₂", "T = X₁ + X₂"], value="T = X₁ + X₂", label="random variable", allow_select_none=False)
+    return (t_rv,)
+
+
+@app.cell(hide_code=True)
+def _(Figure, GREY, LIGHT, mo, t_rv):
+    # the value of the chosen random variable at each outcome (k_1, k_2) of two rolls
+    _value = {
+        "X₁": lambda k1, k2: int(k1 == 6),
+        "X₂": lambda k1, k2: int(k2 == 6),
+        "T = X₁ + X₂": lambda k1, k2: int(k1 == 6) + int(k2 == 6),
+    }[t_rv.value]
+
+    _fig = Figure(figsize=(3.8, 3.6), layout="constrained")
+    _ax = _fig.subplots()
+    for _k1 in range(1, 7):
+        for _k2 in range(1, 7):
+            _v = _value(_k1, _k2)
+            _ax.fill([_k1 - 0.5, _k1 + 0.5, _k1 + 0.5, _k1 - 0.5], [_k2 - 0.5, _k2 - 0.5, _k2 + 0.5, _k2 + 0.5], facecolor=LIGHT if _v else "white", edgecolor=GREY, lw=0.8)
+            _ax.text(_k1, _k2, f"${_v}$", ha="center", va="center", fontsize=13)
+    _ax.set_xlim(0.5, 6.5)
+    _ax.set_ylim(0.5, 6.5)
+    _ax.set_aspect("equal")
+    _ax.set_xticks(range(1, 7))
+    _ax.set_yticks(range(1, 7))
+    _ax.set_xlabel("$k_1$")
+    _ax.set_ylabel("$k_2$", rotation=0, labelpad=10)
+    _ax.tick_params(length=0, labelsize=12)
+    for _s in _ax.spines.values():
+        _s.set_visible(False)
+
+    mo.vstack([mo.hstack([t_rv], justify="start", gap=2, wrap=True), _fig])
     return
 
 

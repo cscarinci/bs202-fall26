@@ -382,7 +382,92 @@ def _(definition, mo, theorem):
             mo.md(
                 r"""
     $\leadsto$ &nbsp; the distribution of the standardized mean approaches the standard normal distribution for large sample sizes **for any population!**
+    """
+            ),
+        ]
+    )
+    return
 
+
+@app.cell(hide_code=True)
+def _(mo):
+    c_pop = mo.ui.dropdown(["fair die", "waiting time ~ Exp(λ)"], value="fair die", label="population", allow_select_none=False)
+    c_n = mo.ui.slider(1, 100, 1, value=10, label="$n$", show_value=True)
+    c_z = mo.ui.slider(-3, 3, 0.1, value=1, label="$z$", show_value=True)
+    return c_n, c_pop, c_z
+
+
+@app.cell(hide_code=True)
+def _(BLUE, Figure, GREY, HALF, RED, c_n, c_pop, c_z, math, mo, np, table):
+    _n, _z0 = c_n.value, round(c_z.value, 1) + 0.0
+    _zz = np.linspace(-3.2, 3.2, 641)
+
+    def _Phi(z):
+        return 0.5 * (1 + np.vectorize(math.erf)(np.asarray(z, dtype=float) / math.sqrt(2)))
+
+    def _val(q):
+        """A probability with four decimals, more when it is within 0.0005 of 0 or 1; exactly 0 or 1 as is."""
+        if q < 1e-12 or q > 1 - 1e-12:
+            return f"{round(q)}"
+        d = max(4, 1 - math.floor(math.log10(min(q, 1 - q))))
+        return f"{q:.{d}f}"
+
+    _fig = Figure(figsize=(HALF + 0.6, 2.3), layout="constrained")
+    _ax = _fig.subplots()
+    _ax.plot(_zz, _Phi(_zz), color=RED, lw=1.4, zorder=3)
+    if c_pop.value == "fair die":
+        # X = result of a fair die (mu = 7/2, sigma^2 = 35/12): exact pmf of X_1 + ... + X_n by repeated convolution
+        _p = np.array([1.0])
+        for _ in range(_n):
+            _p = np.convolve(_p, np.full(6, 1 / 6))
+        _k = np.arange(_n, 6 * _n + 1)
+        _zk = (_k / _n - 3.5) / math.sqrt(35 / 12 / _n)  # the values of Z_n
+        _F = np.cumsum(_p)
+        _xs = np.concatenate([[-3.2], np.repeat(np.clip(_zk, -3.2, 3.2), 2), [3.2]])
+        _ys = np.concatenate([[0, 0], np.repeat(_F, 2)])
+        _ax.plot(_xs, _ys, color=BLUE, lw=1.4, zorder=4)
+        _below = _zk <= _z0 + 1e-9
+        _P = float(_F[_below][-1]) if _below.any() else 0.0
+    else:
+        # X ~ Exp(lambda): X_1 + ... + X_n ~ Gamma(n, lambda), so P(Z_n <= z) = P(Gamma(n, 1) <= n + z sqrt(n)) for every lambda
+        def _cdf(z):
+            x = np.maximum(_n + np.asarray(z, dtype=float) * math.sqrt(_n), 0)
+            return 1 - np.exp(-x) * sum(x**j / math.factorial(j) for j in range(_n))
+
+        _ax.plot(_zz, _cdf(_zz), color=BLUE, lw=1.4, zorder=4)
+        _P = float(_cdf(_z0))
+    _ax.plot([_z0, _z0], [0, 1.05], color=GREY, lw=1.0, ls=(0, (4, 3)))
+    _ax.plot(_z0, _P, "o", color=BLUE, ms=4, zorder=5)
+    _ax.plot(_z0, float(_Phi(_z0)), "o", color=RED, ms=4, zorder=5)
+    _ax.text(-0.45, 0.8, r"$P(Z_n \leq z)$", color=BLUE, fontsize=12, ha="right", va="center")
+    _ax.text(0.45, 0.2, r"$\Phi(z)$", color=RED, fontsize=12, ha="left", va="center")
+    _ax.text(_z0, 1.06, "$z$", color=GREY, fontsize=12, ha="center", va="bottom")
+    _ax.set_xlim(-3.2, 3.2)
+    _ax.set_ylim(0, 1.15)
+    _ax.set_xticks([-3, -2, -1, 0, 1, 2, 3])
+    _ax.set_yticks([0, 0.5, 1], ["$0$", "$0.5$", "$1$"])
+    _ax.tick_params(labelsize=12)
+    for _s in ("top", "right"):
+        _ax.spines[_s].set_visible(False)
+
+    mo.vstack(
+        [
+            mo.hstack([c_pop, c_n, c_z], justify="start", gap=2, wrap=True),
+            table(
+                [
+                    (r"$P(Z_n \leq z)$", rf"${_val(_P)}$"),
+                    (r"$\Phi(z)$", rf"${_val(float(_Phi(_z0)))}$"),
+                ]
+            ),
+            _fig,
+        ]
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
     **Example.** &nbsp; $X \sim \mathrm{Binom}(1, p)$ &nbsp; ($E[X] = p$, $\mathrm{Var}(X) = pq$)
 
     $X_1, \dots, X_n \sim \mathrm{Binom}(1, p)$ iid
@@ -397,10 +482,7 @@ def _(definition, mo, theorem):
     $$
     \text{CLT} \quad \Longrightarrow \quad \mathrm{Binom}(n, p) \approx \mathcal{N}(np, npq) \qquad \text{for large } n\,!
     $$
-    """
-            ),
-        ]
-    )
+    """)
     return
 
 

@@ -654,55 +654,55 @@ def _(BLUE, GREEN, GREY, RED, blank, math, mo, np, num, table, v_rho, v_sx, v_sy
 
 @app.cell(hide_code=True)
 def _(mo):
-    g_a =mo.ui.slider(-2, 2, 0.1, value=1, label="$a$", show_value=True)
-    g_c = mo.ui.slider(0, 2, 0.1, value=1, label="$c$", show_value=True)
-    return g_a, g_c
+    g_a = mo.ui.slider(-2, 2, 0.1, value=1, label="$a$", show_value=True)
+    g_b = mo.ui.slider(0, 2, 0.1, value=1, label="$b$", show_value=True)
+    return g_a, g_b
 
 
 @app.cell(hide_code=True)
 def _(np):
     # one fixed sample (fixed seed); moving a or c keeps it
-    g_xw = np.random.default_rng(1515).standard_normal((2, 400))
-    return (g_xw,)
+    g_xy = np.random.default_rng(1515).standard_normal((2, 400))
+    return (g_xy,)
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREY, RED, g_a, g_c, g_xw, math, mo, np, num, table):
-    _a, _c = round(g_a.value, 1) + 0.0, round(g_c.value, 1) + 0.0
-    _X, _W = g_xw
-    _Y = _a * _X + _c * _W
-    _prod = _X * _Y  # both means are 0, so the sign of the product gives the quadrant
+def _(BLUE, Figure, GREY, RED, g_a, g_b, g_xy, math, mo, np, num, table):
+    _a, _b = round(g_a.value, 1) + 0.0, round(g_b.value, 1) + 0.0
+    _X, _Y = g_xy
+    _Z = _a * _X + _b * _Y
+    _prod = _X * _Z  # both means are 0, so the sign of the product gives the quadrant
 
     _fig = Figure(figsize=(4.6, 4.4), layout="constrained")
     _ax = _fig.subplots()
     _ax.axvline(0, color=GREY, lw=1.0, ls=(0, (4, 3)))
     _ax.axhline(0, color=GREY, lw=1.0, ls=(0, (4, 3)))
     for _mask, _color in ((_prod > 0, BLUE), (_prod < 0, RED), (_prod == 0, GREY)):
-        _ax.scatter(_X[_mask], _Y[_mask], s=10, color=_color, lw=0, zorder=3)
+        _ax.scatter(_X[_mask], _Z[_mask], s=10, color=_color, lw=0, zorder=3)
     for _q, _xy, _ha, _va, _color in (("Q1", (0.99, 0.98), "right", "top", BLUE), ("Q2", (0.01, 0.98), "left", "top", RED), ("Q3", (0.01, 0.02), "left", "bottom", BLUE), ("Q4", (0.99, 0.02), "right", "bottom", RED)):
         _ax.text(*_xy, _q, transform=_ax.transAxes, color=_color, fontsize=13, ha=_ha, va=_va)
-    # the frame follows the spread of Y (sigma_Y = sqrt(a^2 + c^2)), never smaller than that of X; one scale on both axes
-    _lim = 3.5 * max(1.0, math.sqrt(_a**2 + _c**2))
+    # the frame follows the spread of Z (sigma_Z = sqrt(a^2 + b^2)), never smaller than that of X; one scale on both axes
+    _lim = 3.5 * max(1.0, math.sqrt(_a**2 + _b**2))
     _ax.set_xlim(-_lim, _lim)
     _ax.set_ylim(-_lim, _lim)
     _ax.set_aspect("equal")
     _ax.xaxis.set_major_formatter(lambda _v, _p: f"${_v:g}$")
     _ax.yaxis.set_major_formatter(lambda _v, _p: f"${_v:g}$")
     _ax.set_xlabel("$x$")
-    _ax.set_ylabel("$y$", rotation=0, labelpad=10)
+    _ax.set_ylabel("$z$", rotation=0, labelpad=10)
     _ax.tick_params(labelsize=12)
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
 
-    _var = _a**2 + _c**2
+    _var = _a**2 + _b**2
     _rho = rf"${num(_a / math.sqrt(_var))}$" if _var > 0 else "undefined"
     mo.vstack(
         [
-            mo.md(r"400 simulated values of $(X, Y)$, with $X, W \sim \mathcal{N}(0, 1)$ independent and $Y = aX + cW$"),
-            mo.hstack([g_a, g_c], justify="start", gap=2, wrap=True),
+            mo.md(r"400 simulated values of $(X, Z)$, with $X, Y \sim \mathcal{N}(0, 1)$ independent and $Z = aX + bY$"),
+            mo.hstack([g_a, g_b], justify="start", gap=2, wrap=True),
             table(
                 [
-                    (r"$\rho_{X,Y} = a / \sqrt{a^2 + c^2}$", _rho),
+                    (r"$\rho_{X,Z} = a / \sqrt{a^2 + b^2}$", _rho),
                     (r"share of the points in Q1 and Q3 &nbsp; (blue)", rf"${100 * float(np.mean(_prod > 0)):.0f}\%$"),
                 ]
             ),
