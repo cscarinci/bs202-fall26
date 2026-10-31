@@ -40,6 +40,8 @@ TITLES = {  # lecture number -> title shown on the index
     17: "The central limit theorem",
 }
 
+UNLISTED = {19}  # published, but left off the index and the neighbours' arrows
+
 PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -157,7 +159,7 @@ def main():
     for number in notebooks:  # previous / next navigation, injected into each exported page
         page = SITE / f"Lecture_{number:02d}" / "index.html"
         html = re.sub(r'<nav class="bs-nav">.*?</nav>(<a class="bs-ask".*?</a>)?', "", page.read_text(encoding="utf-8"), flags=re.S)
-        html = html.replace("</body>", nav_html(number, notebooks) + "</body>", 1)
+        html = html.replace("</body>", nav_html(number, set(notebooks) - (UNLISTED - {number})) + "</body>", 1)
         html = re.sub(r"<script data-goatcounter=.*?</script>", "", html, flags=re.S).replace("</head>", COUNTER + "</head>", 1)
         page.write_text(html, encoding="utf-8")
 
@@ -170,7 +172,7 @@ def main():
         items = [
             f'<li><a href="Lecture_{n:02d}/">Lecture {n:02d}</a> &mdash; {TITLES.get(n, "")}</li>'
             for n in range(first, last + 1)
-            if n in notebooks
+            if n in notebooks and n not in UNLISTED
         ]
         body = "<ul>" + "".join(items) + "</ul>" if items else '<div class="none">not yet available</div>'
         sections.append(f"<h2>{name}</h2>{body}")
