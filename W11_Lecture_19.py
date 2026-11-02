@@ -69,7 +69,11 @@ def _(mo):
     def repeat_button():
         return mo.ui.button(label="Repeat", value=0, on_click=lambda v: v + 1)
 
-    return BLUE, GREY, LIGHT, PINK, POLLS, RED, WIDTH, header, norm_pdf, norm_sf, plain_axes, repeat_button, thin
+    def percent(slider):
+        """A slider of percentages, with its value written as a percentage at its end."""
+        return mo.hstack([slider, mo.md(f"{slider.value:g}%").style({"font-size": "0.8rem", "color": "#6b7280"})], justify="start", gap=0.5, align="center")
+
+    return BLUE, GREY, LIGHT, PINK, POLLS, RED, WIDTH, header, norm_pdf, norm_sf, percent, plain_axes, repeat_button, thin
 
 
 @app.cell(hide_code=True)
@@ -98,7 +102,7 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(POLLS, mo, repeat_button):
-    s1_p = mo.ui.slider(5, 95, 1, value=30, label="$p$ (%)", show_value=True)
+    s1_p = mo.ui.slider(5, 95, 1, value=30, label="$p$")
     s1_n = mo.ui.number(start=100, stop=25000, step=1, value=1000, label="$n$")
     s1_e = mo.ui.radio(options={"3.1%": 3.1, "1.55%": 1.55}, value="3.1%", label=r"$\varepsilon$", inline=True)
     s1_k = mo.ui.slider(steps=POLLS, value=0, label="number of polls", show_value=True)
@@ -107,20 +111,13 @@ def _(POLLS, mo, repeat_button):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    show1 = mo.ui.button(label="Show simulation 1", value=False, on_click=lambda _: True)
-    return (show1,)
-
-
-@app.cell(hide_code=True)
-def _(mo, s1_e, s1_k, s1_n, s1_p, s1_r, show1):
-    # the simulation stays hidden until its button is clicked
-    show1 if not show1.value else mo.vstack([mo.md(r"""*Simulation 1.* Each dot is the $\hat p_X$ of one poll of $n$ voters. A dot is red when its error $|\hat p_X - p|$ is larger than $\varepsilon$. The fraction of red dots estimates $P(|\hat p_X - p| > \varepsilon)$."""), mo.hstack([s1_p, s1_n, s1_e], justify="start", gap=2), mo.hstack([s1_k, s1_r], justify="start", gap=2)])
+def _(fig1, mo, percent, s1_e, s1_k, s1_n, s1_p, s1_r):
+    mo.accordion({"Simulation 1": mo.vstack([mo.vstack([mo.md(r"""Each dot is one poll of $n$ voters. A dot is red when $|\hat p_X - p| > \varepsilon$."""), mo.hstack([percent(s1_p), s1_n, s1_e], justify="start", gap=2), mo.hstack([s1_k, s1_r], justify="start", gap=2)]), fig1])})
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, LIGHT, RED, WIDTH, np, plain_axes, s1_e, s1_k, s1_n, s1_p, s1_r, show1, thin):
+def _(BLUE, Figure, LIGHT, MaxNLocator, np, plain_axes, RED, s1_e, s1_k, s1_n, s1_p, s1_r, thin, WIDTH):
     def _sim1():
         p, n, e, k = s1_p.value, int(s1_n.value), s1_e.value, s1_k.value
         ph = np.random.default_rng(100 + s1_r.value).binomial(n, p / 100, 1000)[:k] / n * 100
@@ -139,7 +136,9 @@ def _(BLUE, Figure, LIGHT, RED, WIDTH, np, plain_axes, s1_e, s1_k, s1_n, s1_p, s
         ax.text(xmax * 1.015, p + e, r"$p + \varepsilon$", va="center", fontsize=12)
         ax.text(xmax * 1.015, p - e, r"$p - \varepsilon$", va="center", fontsize=12)
         ax.set_xlim(0, xmax * 1.01)
-        ax.set_ylim(p - half, p + half)
+        # a fraction lies between 0% and 100%
+        ax.set_ylim(max(p - half, 0), min(p + half, 100))
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         ax.set_xlabel("poll")
         ax.set_ylabel(r"$\hat p_X$ (%)")
         plain_axes(ax)
@@ -150,8 +149,8 @@ def _(BLUE, Figure, LIGHT, RED, WIDTH, np, plain_axes, s1_e, s1_k, s1_n, s1_p, s
         fig.tight_layout()
         return fig
 
-    _sim1() if show1.value else None
-    return
+    fig1 = _sim1()
+    return (fig1,)
 
 
 @app.cell(hide_code=True)
@@ -171,33 +170,246 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
+def _(mo, repeat_button):
+    # ==== BEGIN: CLT box, the sample means M_1, ..., M_1000 of one population (added 2026-11-02) ====
+    clt_pop = mo.ui.dropdown(options=["Binom(1, p)", "Geom(p)", "Pois(λ)", "Exp(λ)", "N(μ, σ²)"], value="Binom(1, p)", label="population")
+    clt_p = mo.ui.slider(5, 95, 1, value=30, label="$p$")
+    clt_l = mo.ui.slider(0.5, 5, 0.5, value=2, label=r"$\lambda$", show_value=True)
+    clt_m = mo.ui.slider(-5, 5, 0.5, value=0, label=r"$\mu$", show_value=True)
+    clt_s = mo.ui.slider(0.5, 3, 0.5, value=1, label=r"$\sigma$", show_value=True)
+    clt_ax = mo.ui.radio(options=["Mₙ", "Zₙ"], value="Mₙ", inline=True)
+    clt_r = repeat_button()
+    return clt_ax, clt_l, clt_m, clt_p, clt_pop, clt_r, clt_s
+
+
+@app.cell(hide_code=True)
+def _(clt_ax, clt_l, clt_m, clt_p, clt_pop, clt_r, clt_s, fig_clt, mo, percent):
+    # only the parameter of the chosen population
+    _par = {"Binom(1, p)": [percent(clt_p)], "Geom(p)": [percent(clt_p)], "Pois(λ)": [clt_l], "Exp(λ)": [clt_l], "N(μ, σ²)": [clt_m, clt_s]}[clt_pop.value]
+    mo.accordion({"CLT": mo.vstack([mo.hstack([clt_pop, *_par, clt_ax, clt_r], justify="start", gap=2, wrap=True), fig_clt])})
+    return
+
+
+@app.cell(hide_code=True)
+def _(BLUE, clt_ax, clt_l, clt_m, clt_p, clt_pop, clt_r, clt_s, math, mo, np):
+    import html as _html
+    import json as _json
+
+    # a canvas drawn by hand, so that the picture turns when dragged (double-click resets the view)
+    _PAGE = """<!doctype html><html><head><meta charset="utf-8"><style>
+    html, body { margin: 0; background: #fff; }
+    canvas { display: block; width: 100%; height: 520px; cursor: grab; touch-action: none; }
+    canvas.drag { cursor: grabbing; }
+    </style></head><body><canvas id="c"></canvas><script>
+    (() => {
+      const S = __DATA__;
+      const cv = document.getElementById("c"), g = cv.getContext("2d");
+      let store = {};
+      try { store = window.parent.__bs202clt || (window.parent.__bs202clt = {}); } catch (e) {}
+      const HOME = { az: -60, el: 24 };
+      let view = store.view ? { ...store.view } : { ...HOME };
+      const N = S.slices.length, BX = 1, BY = 2.2, BZ = 0.75, TOP = 34;
+      const X = (x) => ((x - S.lo) / (S.hi - S.lo) - 0.5) * BX;
+      const Y = (i) => (i / (N - 1) - 0.5) * BY;
+      const Z = (h) => (h / S.top - 0.5) * BZ;
+      let W = 0, H = 0, sc = 1, cx = 0, cy = 0;
+      function fit() {
+        const r = window.devicePixelRatio || 1;
+        W = cv.clientWidth; H = cv.clientHeight;
+        cv.width = W * r; cv.height = H * r; g.setTransform(r, 0, 0, r, 0, 0);
+      }
+      // the box, as seen now, fills the canvas with room for the labels
+      function frame() {
+        sc = 1; cx = 0; cy = 0;
+        const q = [];
+        for (const x of [-BX / 2, BX / 2]) for (const y of [-BY / 2, BY / 2]) for (const z of [-BZ / 2, BZ / 2]) q.push(proj(x, y, z));
+        const xs = q.map((p) => p[0]), ys = q.map((p) => p[1]);
+        const bw = Math.max(...xs) - Math.min(...xs), bh = Math.max(...ys) - Math.min(...ys);
+        sc = Math.min((W - 120) / bw, (H - TOP - 70) / bh);
+        cx = W / 2 - sc * (Math.max(...xs) + Math.min(...xs)) / 2;
+        cy = TOP + 10 + (H - TOP - 30) / 2 - sc * (Math.max(...ys) + Math.min(...ys)) / 2;
+      }
+      // the same projection as matplotlib's view_init(elev, azim)
+      function proj(x, y, z) {
+        const a = view.az * Math.PI / 180, e = view.el * Math.PI / 180;
+        const sx = -x * Math.sin(a) + y * Math.cos(a);
+        const sy = -(x * Math.cos(a) + y * Math.sin(a)) * Math.sin(e) + z * Math.cos(e);
+        const d = (x * Math.cos(a) + y * Math.sin(a)) * Math.cos(e) + z * Math.sin(e);
+        return [cx + sc * sx, cy - sc * sy, d];
+      }
+      const font = (s, it) => (it ? "italic " : "") + s + "px 'Latin Modern Roman', 'CMU Serif', Georgia, serif";
+      function line(pts, c, w) {
+        g.beginPath(); pts.forEach((p, i) => { const q = proj(...p); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); });
+        g.strokeStyle = c; g.lineWidth = w; g.stroke();
+      }
+      function text(p, s, size, it) {
+        const q = proj(...p); g.fillStyle = "#000"; g.font = font(size, it); g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(s, q[0], q[1]);
+      }
+      function draw() {
+        g.clearRect(0, 0, W, H);
+        frame();
+        g.fillStyle = "#000"; g.font = font(17); g.textAlign = "center"; g.textBaseline = "top"; g.fillText(S.title, W / 2, 6);
+        const fl = -BZ / 2, hx = BX / 2, hy = BY / 2;
+        // the edges nearer the viewer carry the axes
+        const ey = proj(0, -hy, fl)[2] > proj(0, hy, fl)[2] ? -hy : hy;
+        const ex = proj(hx, 0, fl)[2] > proj(-hx, 0, fl)[2] ? hx : -hx;
+        line([[-hx, ey, fl], [hx, ey, fl]], "#000", 1);
+        line([[ex, -hy, fl], [ex, hy, fl]], "#000", 1);
+        const out = Math.sign(ey), side = Math.sign(ex);
+        for (const [v, s] of S.ticks) {
+          line([[X(v), ey, fl], [X(v), ey + out * 0.03, fl]], "#000", 1);
+          text([X(v), ey + out * 0.12, fl], s, 13);
+        }
+        text([0, ey + out * 0.3, fl], S.axis, 17, true);
+        S.slices.forEach((s, i) => {
+          line([[ex, Y(i), fl], [ex + side * 0.025, Y(i), fl]], "#000", 1);
+          text([ex + side * 0.09, Y(i), fl], String(s.n), 13);
+        });
+        text([ex + side * 0.2, 0, fl], "n", 17, true);
+        // the mean of the population, on the floor
+        line([[X(S.mu), Y(0), fl], [X(S.mu), Y(N - 1), fl]], "#000", 1);
+        // the slices, from the far one to the near one
+        const order = S.slices.map((s, i) => i).sort((i, j) => proj(0, Y(i), 0)[2] - proj(0, Y(j), 0)[2]);
+        for (const i of order) {
+          const s = S.slices[i];
+          g.beginPath();
+          s.sx.forEach((x, k) => { const q = proj(X(x), Y(i), Z(s.sy[k])); k ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); });
+          g.closePath(); g.fillStyle = S.light; g.fill();
+          // the exact distribution, down to the floor at both ends
+          line([[X(s.ex[0]), Y(i), Z(0)], ...s.ex.map((x, k) => [X(x), Y(i), Z(s.ey[k])]), [X(s.ex[s.ex.length - 1]), Y(i), Z(0)]], S.blue, 1.2);
+        }
+      }
+      let pending = false;
+      const redraw = () => { if (!pending) { pending = true; requestAnimationFrame(() => { pending = false; draw(); }); } };
+      let grab = null;
+      cv.addEventListener("pointerdown", (e) => { grab = { x: e.clientX, y: e.clientY, ...view }; cv.setPointerCapture(e.pointerId); cv.classList.add("drag"); });
+      cv.addEventListener("pointermove", (e) => {
+        if (!grab) return;
+        view = { az: grab.az - (e.clientX - grab.x) * 0.45, el: Math.max(0, Math.min(89, grab.el + (e.clientY - grab.y) * 0.45)) };
+        store.view = { ...view }; redraw();
+      });
+      const drop = () => { grab = null; cv.classList.remove("drag"); };
+      cv.addEventListener("pointerup", drop); cv.addEventListener("pointercancel", drop);
+      cv.addEventListener("dblclick", () => { view = { ...HOME }; delete store.view; redraw(); });
+      new ResizeObserver(() => { fit(); draw(); }).observe(cv);
+      fit(); draw();
+    })();
+    </script></body></html>"""
+
+    def _sim_clt():
+        kind, p, lam, m0, s0 = clt_pop.value, clt_p.value / 100, clt_l.value, clt_m.value, clt_s.value
+        standard = clt_ax.value == "Zₙ"
+        sizes = [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 500, 1000]
+        samples = 10000
+        rng = np.random.default_rng(19 + clt_r.value)
+        # mean, standard deviation, window of the axis, and one draw of n values of X
+        if kind == "Binom(1, p)":
+            mu, sd, lo, hi, title = p, math.sqrt(p * (1 - p)), -0.04, 1.04, "Binom(1, %g)" % p
+            draw = lambda m, n: (rng.random((m, n)) < p).sum(axis=1)
+            # the sum is Binom(n, p)
+            logpmf = lambda k, n: math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1) + k * math.log(p) + (n - k) * math.log(1 - p)
+        elif kind == "Geom(p)":
+            mu, sd, title = 1 / p, math.sqrt(1 - p) / p, "Geom(%g)" % p
+            lo, hi = 0.5, mu + 4 * sd
+            draw = lambda m, n: rng.geometric(p, (m, n)).sum(axis=1)
+            # the sum is NB(n, p), the number of trials until the n-th success
+            logpmf = lambda k, n: math.lgamma(k) - math.lgamma(n) - math.lgamma(k - n + 1) + n * math.log(p) + (k - n) * math.log(1 - p)
+        elif kind == "Pois(λ)":
+            mu, sd, title = lam, math.sqrt(lam), "Pois(%g)" % lam
+            lo, hi = -0.5, mu + 4 * sd + 0.5
+            draw = lambda m, n: rng.poisson(lam, (m, n)).sum(axis=1)
+            # the sum is Pois(n lambda)
+            logpmf = lambda k, n: -n * lam + k * math.log(n * lam) - math.lgamma(k + 1)
+        elif kind == "Exp(λ)":
+            mu, sd, lo, hi, title = 1 / lam, 1 / lam, 0, 5 / lam, "Exp(%g)" % lam
+            draw = lambda m, n: rng.exponential(1 / lam, (m, n)).sum(axis=1)
+            # M_n ~ Gamma(n, n lambda)
+            density = lambda x, n: np.where(x > 0, np.exp(n * math.log(n * lam) + (n - 1) * np.log(np.maximum(x, 1e-300)) - n * lam * x - math.lgamma(n)), 0)
+        else:
+            mu, sd, title = m0, s0, "𝒩(%g, %g²)" % (m0, s0)
+            lo, hi = mu - 4 * sd, mu + 4 * sd
+            draw = lambda m, n: (m0 + s0 * rng.standard_normal((m, n))).sum(axis=1)
+            # M_n ~ N(mu, sigma^2 / n)
+            density = lambda x, n: np.sqrt(n / (2 * math.pi)) / sd * np.exp(-n * (x - mu) ** 2 / (2 * sd**2))
+        discrete = kind in ("Binom(1, p)", "Geom(p)", "Pois(λ)")
+
+        slices = []
+        for n in sizes:
+            # the sum of n draws of X, for each of 10 000 samples
+            sums = np.concatenate([draw(1000, n) for _ in range(samples // 1000)])
+            # the window of M_n on the axis; for the standardized mean, Z_n between -4.5 and 4.5
+            se = sd / math.sqrt(n)
+            wlo, whi = (mu - 4.5 * se, mu + 4.5 * se) if standard else (lo, hi)
+            if discrete:
+                # the sum takes whole values k, so M_n takes the values k/n; grp of them share a bar
+                kmin = {"Binom(1, p)": 0, "Geom(p)": n, "Pois(λ)": 0}[kind]
+                k0 = max(math.ceil(wlo * n - 0.5), kmin)
+                k1 = math.floor(whi * n + 0.5)
+                if kind == "Binom(1, p)":
+                    k1 = min(k1, n)
+                grp = max(1, math.ceil((k1 - k0 + 1) / 150))
+                nb = (k1 - k0) // grp + 1
+                edges = (k0 - 0.5 + grp * np.arange(nb + 1)) / n
+                idx = (sums - k0) // grp
+                sim = np.bincount(idx[(idx >= 0) & (idx < nb)], minlength=nb) / samples
+                # the last bar may reach past the largest value of the sum (n, for Binom); those values have probability 0
+                kmax = n if kind == "Binom(1, p)" else math.inf
+                exact = np.array([math.exp(logpmf(k, n)) if k <= kmax else 0.0 for k in range(k0, k0 + grp * nb)]).reshape(nb, grp).sum(axis=1)
+                width = grp / n
+                ex, ey = np.repeat(edges, 2)[1:-1], np.repeat(exact / width, 2)
+            else:
+                width = (whi - wlo) / 150
+                edges = wlo + width * np.arange(151)
+                sim = np.histogram(sums / n, bins=edges)[0] / samples
+                ex = np.linspace(wlo, whi, 300)
+                ey = density(ex, n)
+            sx = np.clip(np.repeat(edges, 2), wlo, whi)
+            sy = np.concatenate([[0], np.repeat(sim / width, 2), [0]])
+            ex = np.clip(ex, wlo, whi)
+            if standard:
+                # Z_n = (M_n - mu) / (sigma / sqrt(n)); a density in z is se times the density in M_n
+                sx, ex, sy, ey = (sx - mu) / se, (ex - mu) / se, sy * se, ey * se
+            slices.append({"n": n, "sx": np.round(sx, 5).tolist(), "sy": np.round(sy, 5).tolist(), "ex": np.round(ex, 5).tolist(), "ey": np.round(ey, 5).tolist()})
+
+        xlo, xhi = (-4.5, 4.5) if standard else (lo, hi)
+        top = 1.02 * max(max(max(s["sy"]), max(s["ey"])) for s in slices)
+        step = [t for t in (0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 25, 50) if (xhi - xlo) / t <= 8][0]
+        ticks = [round(t, 6) for t in np.arange(math.ceil(xlo / step) * step, xhi + 1e-9, step)]
+        data = {
+            "title": "population " + title, "axis": "Zₙ" if standard else "Mₙ", "lo": xlo, "hi": xhi, "top": top,
+            "mu": 0 if standard else mu, "ticks": [[t, f"{t:g}".replace("-", "−")] for t in ticks],
+            # the bars darker than LIGHT and see-through, so the slices behind show
+            "blue": BLUE, "light": "rgba(120, 150, 190, 0.45)", "slices": slices,
+        }
+        page = _PAGE.replace("__DATA__", _json.dumps(data))
+        return mo.Html(f'<iframe srcdoc="{_html.escape(page)}" title="The distribution of the sample mean for n = 1 to 1000; drag to turn" style="display: block; width: 100%; height: 524px; border: 0;"></iframe>')
+
+    fig_clt = _sim_clt()
+    # ==== END: CLT box ====
+    return (fig_clt,)
+
+
+@app.cell(hide_code=True)
 def _(mo):
-    s2_p = mo.ui.slider(5, 95, 1, value=30, label="$p$ (%)", show_value=True)
+    s2_p = mo.ui.slider(5, 95, 1, value=30, label="$p$")
     s2_n = mo.ui.number(start=100, stop=25000, step=1, value=2000, label="$n$")
     return s2_n, s2_p
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    show2 = mo.ui.button(label="Show simulation 2", value=False, on_click=lambda _: True)
-    return (show2,)
-
-
-@app.cell(hide_code=True)
-def _(mo, s2_n, s2_p, show2):
-    # the simulation stays hidden until its button is clicked
-    show2 if not show2.value else mo.vstack([mo.md(r"""*Simulation 2.* The histogram shows $\hat p_X$ for 10 000 polls of $n$ voters each. The curve is the density of $\mathcal N(p, pq/n)$. A bar is red when $|\hat p_X - p| > 1.55\%$."""), mo.hstack([s2_p, s2_n], justify="start", gap=2)])
+def _(fig2, mo, percent, s2_n, s2_p):
+    mo.accordion({"Simulation 2": mo.vstack([mo.vstack([mo.md(r"""The histogram shows 10 000 polls of $n$ voters. The curve is the density of $\mathcal N(p, pq/n)$. A bar is red when $|\hat p_X - p| > 1.55\%$."""), mo.hstack([percent(s2_p), s2_n], justify="start", gap=2)]), fig2])})
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, LIGHT, PINK, WIDTH, norm_pdf, norm_sf, np, s2_n, s2_p, show2, thin):
+def _(BLUE, Figure, LIGHT, norm_pdf, norm_sf, np, PINK, s2_n, s2_p, WIDTH):
     def _sim2():
         p, n, e = s2_p.value, int(s2_n.value), 1.55
         sd = np.sqrt(p * (100 - p) / n)
         ph = np.random.default_rng(8).binomial(n, p / 100, 10000) / n * 100
         half = max(6.0, 4 * sd)
-        lo, hi = p - half, p + half
+        lo, hi = max(p - half, 0), min(p + half, 100)
         step = 100 / n
         width = max(1, round(0.1 / step)) * step
         edges = p - step / 2 + width * np.arange(np.floor(-half / width), np.ceil(half / width) + 1)
@@ -220,12 +432,25 @@ def _(BLUE, Figure, LIGHT, PINK, WIDTH, norm_pdf, norm_sf, np, s2_n, s2_p, show2
         ax.tick_params(labelsize=11)
         ax.set_xlabel(r"$\hat p_X$ (%)")
         red = np.mean(np.abs(ph - p) > e + 1e-9)
-        ax.set_title(r"$p = %d\%%$, $n = %s$:  %.1f%% of the polls are red.  Same area under the curve: %.1f%%" % (p, thin(n), 100 * red, 200 * norm_sf(e / sd)), fontsize=12)
+
+        def pct(v):
+            """A percentage; a small one with two significant digits, never 0.0%."""
+            if v == 0:
+                return "0%"
+            if v >= 1:
+                return "%.1f%%" % v
+            k = int(np.floor(np.log10(v)))
+            if k >= -3:
+                return "%.*f%%" % (1 - k, v)
+            m, k = f"{v:.1e}".split("e")
+            return r"$%s \times 10^{%d}$%%" % (m, int(k))
+
+        ax.set_title(r"$P(|\hat p_X - p| > %s\%%)$: simulation %s, normal approximation %s" % (f"{e:g}", pct(100 * red), pct(200 * norm_sf(e / sd))), fontsize=12)
         fig.tight_layout()
         return fig
 
-    _sim2() if show2.value else None
-    return
+    fig2 = _sim2()
+    return (fig2,)
 
 
 @app.cell(hide_code=True)
@@ -254,25 +479,18 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    fa_p = mo.ui.slider(5, 95, 1, value=50, label="$p$ (%)", show_value=True)
+    fa_p = mo.ui.slider(5, 95, 1, value=50, label="$p$")
     return (fa_p,)
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    showA = mo.ui.button(label="Show figure A", value=False, on_click=lambda _: True)
-    return (showA,)
-
-
-@app.cell(hide_code=True)
-def _(fa_p, showA):
-    # the figure stays hidden until its button is clicked
-    showA if not showA.value else fa_p
+def _(fa_p, figA, mo, percent):
+    mo.accordion({"Figure A": mo.vstack([percent(fa_p), figA])})
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREY, RED, WIDTH, fa_p, norm_sf, np, plain_axes, showA):
+def _(BLUE, fa_p, Figure, GREY, norm_sf, np, plain_axes, RED, WIDTH):
     def _figA():
         p, e = fa_p.value / 100, 0.0155
         pq = p * (1 - p)
@@ -287,27 +505,27 @@ def _(BLUE, Figure, GREY, RED, WIDTH, fa_p, norm_sf, np, plain_axes, showA):
         ax.plot(n, bound, color=RED, lw=1.8)
         ax.axhline(0.05, color=GREY, lw=1, ls="--")
         ax.text(1.05e5, 0.05, "$0.05$", va="center", fontsize=12)
-        for x, c, shown in ((n_clt, BLUE, round(n_clt, -1 if n_clt < 1e4 else -2)), (n_lln, RED, np.ceil(n_lln))):
+        # the smallest n of each method, on a row of its own under the ticks
+        for x, c in ((n_clt, BLUE), (n_lln, RED)):
             ax.plot([x, x], [0, 0.05], color=c, lw=1, ls=":")
             ax.plot(x, 0.05, "o", color=c, ms=5)
-            ax.text(x, -0.07, "$%s$" % f"{int(shown):,}".replace(",", r"\,"), ha="center", va="top", fontsize=11, color=c)
-        # each name sits beside its own curve
-        clt_1000 = 2 * norm_sf(e * np.sqrt(1000) / np.sqrt(pq))
-        ax.text(200, max(0.12, clt_1000 - 0.08), "central limit theorem", color=BLUE, fontsize=12, va="top")
+            ax.text(x, -0.19, "$%s$" % f"{int(np.ceil(x)):,}".replace(",", r"\,"), ha="center", va="top", fontsize=11, color=c)
+        # each name sits beside its own curve, at a fixed place
+        ax.text(108, 0.08, "central limit\ntheorem", color=BLUE, fontsize=12, va="bottom", linespacing=1.1)
         n_half = pq / (0.5 * e**2)
         ax.text(n_half * 1.25, 0.5, "law of large numbers bound", color=RED, fontsize=12, va="center")
         ax.set_xscale("log")
         ax.set_xlim(100, 1e5)
         ax.set_ylim(0, 1.02)
-        ax.set_xlabel("$n$", labelpad=14)
+        ax.set_xlabel("$n$", labelpad=30)
         ax.set_ylabel(r"$P(|\hat p_X - p| > 1.55\%)$", fontsize=13)
         plain_axes(ax)
         ax.set_title(r"$p = %d\%%$" % fa_p.value, fontsize=12)
         fig.tight_layout()
         return fig
 
-    _figA() if showA.value else None
-    return
+    figA = _figA()
+    return (figA,)
 
 
 @app.cell(hide_code=True)
@@ -326,8 +544,8 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(POLLS, mo, repeat_button):
-    s3_p = mo.ui.slider(5, 95, 1, value=30, label="$p$ (%)", show_value=True)
-    s3_b = mo.ui.slider(0, 5, 1, value=2, label="$r - p$ (%)", show_value=True)
+    s3_p = mo.ui.slider(5, 95, 1, value=30, label="$p$")
+    s3_b = mo.ui.slider(0, 5, 1, value=2, label="$r - p$")
     s3_n = mo.ui.number(start=100, stop=1000000, step=1, value=1000, label="$n$")
     s3_k = mo.ui.slider(steps=POLLS, value=0, label="number of polls", show_value=True)
     s3_r = repeat_button()
@@ -335,20 +553,13 @@ def _(POLLS, mo, repeat_button):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    show3 = mo.ui.button(label="Show simulation 3", value=False, on_click=lambda _: True)
-    return (show3,)
-
-
-@app.cell(hide_code=True)
-def _(mo, s3_b, s3_k, s3_n, s3_p, s3_r, show3):
-    # the simulation stays hidden until its button is clicked
-    show3 if not show3.value else mo.vstack([mo.md(r"""*Simulation 3.* Each dot is the $\hat p_Y$ of one poll of $n$ voters from the subgroup. A dot is red when its error $|\hat p_Y - p|$ is larger than $3.1\%$. The fraction of red dots estimates $P(|\hat p_Y - p| > 3.1\%)$. The dashed line is at $r$."""), mo.hstack([s3_p, s3_b, s3_n], justify="start", gap=2), mo.hstack([s3_k, s3_r], justify="start", gap=2)])
+def _(fig3, mo, percent, s3_b, s3_k, s3_n, s3_p, s3_r):
+    mo.accordion({"Simulation 3": mo.vstack([mo.vstack([mo.md(r"""Each dot is one poll of $n$ voters from the subgroup. A dot is red when $|\hat p_Y - p| > 3.1\%$."""), mo.hstack([percent(s3_p), percent(s3_b), s3_n], justify="start", gap=2), mo.hstack([s3_k, s3_r], justify="start", gap=2)]), fig3])})
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, LIGHT, RED, WIDTH, np, plain_axes, s3_b, s3_k, s3_n, s3_p, s3_r, show3, thin):
+def _(BLUE, Figure, LIGHT, MaxNLocator, np, plain_axes, RED, s3_b, s3_k, s3_n, s3_p, s3_r, thin, WIDTH):
     def _sim3():
         p, b, n, k, e = s3_p.value, s3_b.value, int(s3_n.value), s3_k.value, 3.1
         r = p + b
@@ -365,12 +576,15 @@ def _(BLUE, Figure, LIGHT, RED, WIDTH, np, plain_axes, s3_b, s3_k, s3_n, s3_p, s
         size = 14 if k <= 100 else 5
         ax.scatter(x[~red], ph[~red], s=size, color=BLUE)
         ax.scatter(x[red], ph[red], s=size, color=RED)
-        ax.text(xmax * 1.015, p, "$p$", va="center")
-        ax.text(xmax * 1.015, r, "$r$", va="center")
-        ax.text(xmax * 1.015, p + e, r"$p + 3.1\%$", va="center", fontsize=12)
-        ax.text(xmax * 1.015, p - e, r"$p - 3.1\%$", va="center", fontsize=12)
+        # the names centred in one column right of the plot; one name when the two lines coincide
+        names = [(p + e, r"$p + 3.1\%$", 12), (p - e, r"$p - 3.1\%$", 12)]
+        names += [(p, "$r = p$", 14)] if b == 0 else [(r, "$r$", 14), (p, "$p$", 14)]
+        for y, name, size in names:
+            ax.annotate(name, (1, y), xycoords=ax.get_yaxis_transform(), xytext=(27, 0), textcoords="offset points", ha="center", va="center", fontsize=size)
         ax.set_xlim(0, xmax * 1.01)
-        ax.set_ylim(min(p - 6, r - spread), max(p + 10, r + spread))
+        # a fraction lies between 0% and 100%
+        ax.set_ylim(max(min(p - 6, r - spread), 0), min(max(p + 10, r + spread), 100.5))
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         ax.set_xlabel("poll")
         ax.set_ylabel(r"$\hat p_Y$ (%)")
         plain_axes(ax)
@@ -381,8 +595,8 @@ def _(BLUE, Figure, LIGHT, RED, WIDTH, np, plain_axes, s3_b, s3_k, s3_n, s3_p, s
         fig.tight_layout()
         return fig
 
-    _sim3() if show3.value else None
-    return
+    fig3 = _sim3()
+    return (fig3,)
 
 
 @app.cell(hide_code=True)
@@ -395,25 +609,18 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    fb_b = mo.ui.slider(0, 5, 1, value=2, label="$r - p$ (%)", show_value=True)
+    fb_b = mo.ui.slider(0, 5, 1, value=0, label="$r - p$")
     return (fb_b,)
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    showB = mo.ui.button(label="Show figure B", value=False, on_click=lambda _: True)
-    return (showB,)
-
-
-@app.cell(hide_code=True)
-def _(fb_b, showB):
-    # the figure stays hidden until its button is clicked
-    showB if not showB.value else fb_b
+def _(fb_b, figB, mo, percent):
+    mo.accordion({"Figure B": mo.vstack([percent(fb_b), figB])})
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREY, RED, WIDTH, fb_b, np, plain_axes, showB):
+def _(BLUE, fb_b, Figure, GREY, np, plain_axes, RED, WIDTH):
     def _figB():
         p, b = 0.30, fb_b.value / 100
         r = p + b
@@ -423,7 +630,8 @@ def _(BLUE, Figure, GREY, RED, WIDTH, fb_b, np, plain_axes, showB):
         fig = Figure(figsize=(WIDTH, 3.8))
         ax = fig.subplots()
         ax.plot(n, mse_y, color=BLUE, lw=1.8)
-        ax.plot(n, mse_x, color=RED, lw=1.8)
+        # dashed and on top, so it stays visible where the two curves meet (r = p)
+        ax.plot(n, mse_x, color=RED, lw=1.8, ls=(0, (5, 3)), zorder=3)
         if b > 0:
             ax.axhline(b**2, color=GREY, lw=1.2, ls="--")
             ax.text(1.2e6, b**2, "$(r - p)^2$", va="center", fontsize=12)
@@ -431,7 +639,7 @@ def _(BLUE, Figure, GREY, RED, WIDTH, fb_b, np, plain_axes, showB):
         ax.set_yscale("log")
         ax.set_xlim(100, 1e6)
         ax.set_ylim(1e-7, 4 * mse_y[0])
-        ax.text(2e4, 1.8 * mse_y[-1], r"$\mathrm{MSE}(\hat p_Y)$", color=BLUE, fontsize=12)
+        ax.text(2e4, 1.9 * (r * (1 - r) / 2e4 + b**2), r"$\mathrm{MSE}(\hat p_Y)$", color=BLUE, fontsize=12)
         ax.text(1.3e5, 2.6 * p * (1 - p) / 1.3e5, r"$\mathrm{MSE}(\hat p_X)$", color=RED, fontsize=12)
         ax.set_xlabel("$n$")
         ax.set_ylabel("mean squared error")
@@ -440,8 +648,49 @@ def _(BLUE, Figure, GREY, RED, WIDTH, fb_b, np, plain_axes, showB):
         fig.tight_layout()
         return fig
 
-    _figB() if showB.value else None
+    figB = _figB()
+    return (figB,)
+
+
+@app.cell(hide_code=True)
+def _(figC, mo):
+    mo.accordion({"Figure C": figC})
     return
+
+
+@app.cell(hide_code=True)
+def _(BLUE, Figure, GREY, norm_sf, np, plain_axes, RED, WIDTH):
+    def _figC():
+        p, e = 0.30, 0.031
+        n = np.logspace(2, 6, 400)
+
+        def inside(r):
+            """P(|p_Y - p| <= e), with the normal approximation."""
+            sd = np.sqrt(r * (1 - r) / n)
+            return norm_sf((p - e - r) / sd) - norm_sf((p + e - r) / sd)
+
+        fig = Figure(figsize=(WIDTH, 3.8))
+        ax = fig.subplots()
+        # the unbiased poll, dashed and on top
+        ax.plot(n, inside(p), color=GREY, lw=1.6, ls="--", zorder=3)
+        ax.plot(n, inside(p + 0.02), color=BLUE, lw=1.8)
+        ax.plot(n, inside(p + 0.04), color=RED, lw=1.8)
+        ax.text(2e3, 1.02, r"$r = p$", color=GREY, fontsize=12, ha="left", va="bottom")
+        ax.text(1.5e3, 0.80, r"$r = p + 2\%$", color=BLUE, fontsize=12, ha="left", va="top")
+        ax.text(2.5e3, 0.30, r"$r = p + 4\%$", color=RED, fontsize=12, ha="left", va="bottom")
+        ax.set_xscale("log")
+        ax.set_xlim(100, 1e6)
+        ax.set_ylim(0, 1.12)
+        ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1])
+        ax.set_xlabel("$n$")
+        ax.set_ylabel(r"$P(|\hat p_Y - p| \leq 3.1\%)$", fontsize=13)
+        plain_axes(ax)
+        ax.set_title(r"$p = 30\%$", fontsize=12)
+        fig.tight_layout()
+        return fig
+
+    figC = _figC()
+    return (figC,)
 
 
 @app.cell(hide_code=True)
@@ -454,7 +703,7 @@ def _(mo):
     1. Two independent groups of $n$ voters are asked, one in each poll.
     2. The same $n$ voters are asked in both polls.
 
-    Let $U_i$ and $V_i$ be the answers of the $i$-th voter in the first and in the second poll with method 1, and $\tilde U_i$ and $\tilde V_i$ with method 2. Each answer is $1$ if the voter supports A, and $0$ otherwise. The answers $U_i$ and $V_i$ are independent, the joint pmf of $(\tilde U_i, \tilde V_i)$ is
+    Let $U_i$ and $V_i$ be the answers of the $i$-th voter in the first and in the second poll with method 1, and $\tilde U_i$ and $\tilde V_i$ with method 2. Each answer is $1$ if the voter supports A, and $0$ otherwise. The answers $U_i$ and $V_i$ are independent, while the joint pmf of $(\tilde U_i, \tilde V_i)$ is
 
     $$
     \def\arraystretch{1.5}
@@ -484,9 +733,9 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(POLLS, mo, repeat_button):
-    s4_p = mo.ui.slider(5, 95, 1, value=30, label="$p$ (%)", show_value=True)
-    s4_a = mo.ui.slider(0, 30, 1, value=1, label="$a$ (%)", show_value=True)
-    s4_b = mo.ui.slider(0, 30, 1, value=4, label="$b$ (%)", show_value=True)
+    s4_p = mo.ui.slider(5, 95, 1, value=30, label="$p$")
+    s4_a = mo.ui.slider(0, 30, 1, value=1, label="$a$")
+    s4_b = mo.ui.slider(0, 30, 1, value=4, label="$b$")
     s4_n = mo.ui.number(start=100, stop=100000, step=1, value=1000, label="$n$")
     s4_k = mo.ui.slider(steps=POLLS, value=0, label="number of runs", show_value=True)
     s4_r = repeat_button()
@@ -494,20 +743,13 @@ def _(POLLS, mo, repeat_button):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    show4 = mo.ui.button(label="Show simulation 4", value=False, on_click=lambda _: True)
-    return (show4,)
-
-
-@app.cell(hide_code=True)
-def _(mo, s4_a, s4_b, s4_k, s4_n, s4_p, s4_r, show4):
-    # the simulation stays hidden until its button is clicked
-    show4 if not show4.value else mo.vstack([mo.md(r"""*Simulation 4.* Each dot is the estimate of $d$ from one run of both polls, with $n$ voters in each poll. The left panel uses method 1, and the right panel uses method 2. The solid line is at $d$. The standard deviation of the dots estimates the standard error of the estimator."""), mo.hstack([s4_p, s4_a, s4_b, s4_n], justify="start", gap=2), mo.hstack([s4_k, s4_r], justify="start", gap=2)])
+def _(fig4, mo, percent, s4_a, s4_b, s4_k, s4_n, s4_p, s4_r):
+    mo.accordion({"Simulation 4": mo.vstack([mo.vstack([mo.md(r"""Each dot is the estimate of $d$ from one run of both polls, with $n$ voters in each poll."""), mo.hstack([percent(s4_p), percent(s4_a), percent(s4_b), s4_n], justify="start", gap=2, wrap=True), mo.hstack([s4_k, s4_r], justify="start", gap=2)]), fig4])})
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, MaxNLocator, mo, np, plain_axes, s4_a, s4_b, s4_k, s4_n, s4_p, s4_r, show4, thin):
+def _(BLUE, Figure, MaxNLocator, mo, np, plain_axes, s4_a, s4_b, s4_k, s4_n, s4_p, s4_r, thin):
     def _sim4():
         p, a, b, n, k = s4_p.value / 100, s4_a.value / 100, s4_b.value / 100, int(s4_n.value), s4_k.value
         if a > p or b > 1 - p:
@@ -546,8 +788,8 @@ def _(BLUE, Figure, MaxNLocator, mo, np, plain_axes, s4_a, s4_b, s4_k, s4_n, s4_
         fig.tight_layout()
         return fig
 
-    _sim4() if show4.value else None
-    return
+    fig4 = _sim4()
+    return (fig4,)
 
 
 @app.cell(hide_code=True)
@@ -560,32 +802,23 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    fc_p = mo.ui.slider(5, 95, 1, value=30, label="$p$ (%)", show_value=True)
-    fc_d = mo.ui.slider(0, 5, 1, value=3, label="$d$ (%)", show_value=True)
-    fc_n = mo.ui.number(start=100, stop=100000, step=1, value=1000, label="$n$")
-    return fc_d, fc_n, fc_p
+    # p stops at 90%, so that p + d < 100% and every setting has a curve
+    fd_p = mo.ui.slider(5, 90, 1, value=30, label="$p$")
+    fd_d = mo.ui.slider(0, 5, 1, value=3, label="$d$")
+    return fd_d, fd_p
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    showC = mo.ui.button(label="Show figure C", value=False, on_click=lambda _: True)
-    return (showC,)
-
-
-@app.cell(hide_code=True)
-def _(fc_d, fc_n, fc_p, mo, showC):
-    # the figure stays hidden until its button is clicked
-    showC if not showC.value else mo.hstack([fc_p, fc_d, fc_n], justify="start", gap=2)
+def _(fd_d, fd_p, figD, mo, percent):
+    mo.accordion({"Figure D": mo.vstack([mo.hstack([percent(fd_p), percent(fd_d)], justify="start", gap=2), figD])})
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREY, RED, WIDTH, fc_d, fc_n, fc_p, mo, np, plain_axes, showC, thin):
-    def _figC():
-        p, d, n = fc_p.value / 100, fc_d.value / 100, int(fc_n.value)
+def _(BLUE, fd_d, fd_p, Figure, GREY, np, plain_axes, RED, thin, WIDTH):
+    def _figD():
+        p, d, n = fd_p.value / 100, fd_d.value / 100, 1000
         p2 = p + d
-        if p2 > 1:
-            return mo.md(r"$p + d$ must be at most $1$.")
         amax = min(p, 1 - p2)
         a = np.linspace(0, amax, 400)
         se1 = np.full_like(a, np.sqrt((p * (1 - p) + p2 * (1 - p2)) / n))
@@ -597,20 +830,21 @@ def _(BLUE, Figure, GREY, RED, WIDTH, fc_d, fc_n, fc_p, mo, np, plain_axes, show
         ax.plot(100 * a, 100 * se2, color=BLUE, lw=1.8)
         if a0 <= amax:
             ax.plot([100 * a0] * 2, [0, 100 * se1[0]], color=GREY, lw=1, ls="--")
-            ax.text(100 * a0 - 0.5, 100 * se1[0] * 1.04, r"$\mathrm{Cov}(\tilde U_i, \tilde V_i) = 0$", ha="right", va="bottom", fontsize=12)
-        ax.text(100 * amax * 1.01, 100 * se1[-1], r"$\mathrm{SE}(\hat d_{U,V})$", color=RED, va="center", fontsize=12)
+            ax.text(100 * a0 - 0.5 * amax / 0.3, 100 * se1[0] * 1.04, r"$\mathrm{Cov}(\tilde U_i, \tilde V_i) = 0$", ha="right", va="bottom", fontsize=12)
+        # the flat curve is named at its left end, away from the crossing
+        ax.text(100 * amax * 0.01, 100 * se1[0] * 1.04, r"$\mathrm{SE}(\hat d_{U,V})$", color=RED, va="bottom", fontsize=12)
         ax.text(100 * amax * 1.01, 100 * se2[-1], r"$\mathrm{SE}(\hat d_{\tilde U,\tilde V})$", color=BLUE, va="center", fontsize=12)
         ax.set_xlim(0, 100 * amax)
         ax.set_ylim(0, 100 * max(se1[0], se2[-1]) * 1.25)
         ax.set_xlabel("$a$ (%)")
         ax.set_ylabel("standard error (%)")
         plain_axes(ax)
-        ax.set_title(r"$p = %d\%%$, $d = b - a = %d\%%$, $n = %s$" % (fc_p.value, fc_d.value, thin(n)), fontsize=12)
+        ax.set_title(r"$p = %d\%%$, $d = b - a = %d\%%$, $n = %s$" % (fd_p.value, fd_d.value, thin(n)), fontsize=12)
         fig.tight_layout()
         return fig
 
-    _figC() if showC.value else None
-    return
+    figD = _figD()
+    return (figD,)
 
 
 if __name__ == "__main__":
