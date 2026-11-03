@@ -186,7 +186,7 @@ def _(mo, repeat_button):
 def _(clt_ax, clt_l, clt_m, clt_p, clt_pop, clt_r, clt_s, fig_clt, mo, percent):
     # only the parameter of the chosen population
     _par = {"Binom(1, p)": [percent(clt_p)], "Geom(p)": [percent(clt_p)], "Pois(λ)": [clt_l], "Exp(λ)": [clt_l], "N(μ, σ²)": [clt_m, clt_s]}[clt_pop.value]
-    mo.accordion({"CLT": mo.vstack([mo.hstack([clt_pop, *_par, clt_ax, clt_r], justify="start", gap=2, wrap=True), fig_clt])})
+    mo.accordion({"CLT": mo.vstack([mo.vstack([mo.md(r"""Each slice is one $n$. The bars show 10 000 sample means, and the line is the exact distribution."""), mo.hstack([clt_pop, *_par, clt_ax, clt_r], justify="start", gap=2, wrap=True)]), fig_clt])})
     return
 
 
@@ -609,7 +609,7 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    fb_b = mo.ui.slider(0, 5, 1, value=0, label="$r - p$")
+    fb_b = mo.ui.slider(0, 5, 1, value=2, label="$r - p$")
     return (fb_b,)
 
 
