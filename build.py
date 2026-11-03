@@ -38,6 +38,7 @@ TITLES = {  # lecture number -> title shown on the index
     15: "Covariance and correlation",
     16: "Random samples and the law of large numbers",
     17: "The central limit theorem",
+    18: "Estimators: bias, standard error and consistency",
 }
 
 UNLISTED = {19}  # published, but left off the index and the neighbours' arrows
