@@ -78,7 +78,7 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(header):
-    header("Guided Practice 2 (draft)", "Week 11", "Guided Practice 2 (draft)")
+    header("Guided Practice 2", "Week 11", "Guided Practice 2")
     return
 
 
@@ -121,7 +121,7 @@ def _(BLUE, Figure, LIGHT, MaxNLocator, np, plain_axes, RED, s1_e, s1_k, s1_n, s
     def _sim1():
         p, n, e, k = s1_p.value, int(s1_n.value), s1_e.value, s1_k.value
         ph = np.random.default_rng(100 + s1_r.value).binomial(n, p / 100, 1000)[:k] / n * 100
-        red = np.abs(ph - p) > e
+        red = np.abs(ph - p) > e + 1e-9
         x = np.arange(1, k + 1)
         half = max(5.0, 4 * np.sqrt(p * (100 - p) / n))
         xmax = max(k, 10)
@@ -144,7 +144,7 @@ def _(BLUE, Figure, LIGHT, MaxNLocator, np, plain_axes, RED, s1_e, s1_k, s1_n, s
         plain_axes(ax)
         top = r"$p = %d\%%$, $n = %s$, $\varepsilon = %s\%%$" % (p, thin(n), f"{e:g}")
         if k:
-            top += r":  %d of %d polls are red (%.0f%%)" % (red.sum(), k, 100 * red.mean())
+            top += r":  %d of %d polls are red (%.1f%%)" % (red.sum(), k, 100 * red.mean())
         ax.set_title(top, fontsize=12)
         fig.tight_layout()
         return fig
@@ -415,9 +415,14 @@ def _(BLUE, Figure, LIGHT, norm_pdf, norm_sf, np, PINK, s2_n, s2_p, WIDTH):
         edges = p - step / 2 + width * np.arange(np.floor(-half / width), np.ceil(half / width) + 1)
         h, ed = np.histogram(ph, bins=edges, density=True)
         mid = (ed[:-1] + ed[1:]) / 2
+        
+        in_bar, _ = np.histogram(ph, bins=edges)
+        red_in_bar, _ = np.histogram(ph[np.abs(ph - p) > e + 1e-9], bins=edges)
+        h_red = h * red_in_bar / np.maximum(in_bar, 1)
         fig = Figure(figsize=(WIDTH, 3.4))
         ax = fig.subplots()
-        ax.bar(mid, h, width=ed[1] - ed[0], color=[PINK if abs(m - p) > e else LIGHT for m in mid], edgecolor="white")
+        ax.bar(mid, h, width=ed[1] - ed[0], color=LIGHT, edgecolor="white")
+        ax.bar(mid, h_red, width=ed[1] - ed[0], color=PINK, edgecolor="white")
         xx = np.linspace(lo, hi, 600)
         f = norm_pdf(xx, p, sd)
         ax.plot(xx, f, color=BLUE, lw=1.8)
@@ -456,7 +461,7 @@ def _(BLUE, Figure, LIGHT, norm_pdf, norm_sf, np, PINK, s2_n, s2_p, WIDTH):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    (d) Use (c) to prove that for $n = 1\,000$,
+    (d) Use (c) to show that, in the normal approximation, for $n = 1\,000$,
 
     $$
     P(|\hat p_X - p| \leq 3.1\%) \geq 0.95,
@@ -564,7 +569,7 @@ def _(BLUE, Figure, LIGHT, MaxNLocator, np, plain_axes, RED, s3_b, s3_k, s3_n, s
         p, b, n, k, e = s3_p.value, s3_b.value, int(s3_n.value), s3_k.value, 3.1
         r = p + b
         ph = np.random.default_rng(300 + s3_r.value).binomial(n, r / 100, 1000)[:k] / n * 100
-        red = np.abs(ph - p) > e
+        red = np.abs(ph - p) > e + 1e-9
         x = np.arange(1, k + 1)
         spread = 4 * np.sqrt(r * (100 - r) / n)
         xmax = max(k, 10)
@@ -590,7 +595,7 @@ def _(BLUE, Figure, LIGHT, MaxNLocator, np, plain_axes, RED, s3_b, s3_k, s3_n, s
         plain_axes(ax)
         top = r"$p = %d\%%$, $r = %d\%%$, $n = %s$" % (p, r, thin(n))
         if k:
-            top += r":  %d of %d polls are red (%.0f%%)" % (red.sum(), k, 100 * red.mean())
+            top += r":  %d of %d polls are red (%.1f%%)" % (red.sum(), k, 100 * red.mean())
         ax.set_title(top, fontsize=12)
         fig.tight_layout()
         return fig
@@ -752,7 +757,7 @@ def _(fig4, mo, percent, s4_a, s4_b, s4_k, s4_n, s4_p, s4_r):
 def _(BLUE, Figure, MaxNLocator, mo, np, plain_axes, s4_a, s4_b, s4_k, s4_n, s4_p, s4_r, thin):
     def _sim4():
         p, a, b, n, k = s4_p.value / 100, s4_a.value / 100, s4_b.value / 100, int(s4_n.value), s4_k.value
-        if a > p or b > 1 - p:
+        if s4_a.value > s4_p.value or s4_b.value > 100 - s4_p.value:
             return mo.md(r"$a$ must be at most $p$, and $b$ at most $1 - p$.")
         p2, d = p - a + b, b - a
         rng = np.random.default_rng(400 + s4_r.value)

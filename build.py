@@ -39,9 +39,10 @@ TITLES = {  # lecture number -> title shown on the index
     16: "Random samples and the law of large numbers",
     17: "The central limit theorem",
     18: "Estimators: bias, standard error and consistency",
+    19: "Guided Practice 2",
 }
 
-UNLISTED = {19}  # published, but left off the index and the neighbours' arrows
+UNLISTED = set()  # published, but left off the index and the neighbours' arrows
 
 PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
