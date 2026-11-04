@@ -95,7 +95,7 @@ def _(mo):
 
     Define $\hat p_X = \frac1n(X_1 + \dots + X_n)$, the fraction of polled voters that support A, and its error of estimation $|\hat p_X - p|$.
 
-    (a) For a poll of $n = 1\,000$ voters, the error is at most $3.1\%$ with probability at least $0.95$. How many voters must a poll ask so that the error is at most $1.55\%$ with probability at least $0.95$? Write down a guess.
+    **(a)** For a poll of $n = 1\,000$ voters, the error is at most $3.1\%$ with probability at least $0.95$. How many voters must a poll ask so that the error is at most $1.55\%$ with probability at least $0.95$? Write down a guess.
     """)
     return
 
@@ -156,9 +156,9 @@ def _(BLUE, Figure, LIGHT, MaxNLocator, np, plain_axes, RED, s1_e, s1_k, s1_n, s
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    (b) State the distribution of $X_i$, and the sampling distribution of $\hat p_X$.
+    **(b)** State the distribution of $X_i$, and the sampling distribution of $\hat p_X$.
 
-    (c) Use the central limit theorem to write the probability that the error is at most $\varepsilon$ in terms of $n$, $p$ and $\varepsilon$. For which $p$ is this probability smallest?
+    **(c)** Use the central limit theorem to write the probability that the error is at most $\varepsilon$ in terms of $n$, $p$ and $\varepsilon$. For which $p$ is this probability smallest?
 
     CLT: for large $n$,
 
@@ -461,7 +461,7 @@ def _(BLUE, Figure, LIGHT, norm_pdf, norm_sf, np, PINK, s2_n, s2_p, WIDTH):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    (d) Use (c) to show that, in the normal approximation, for $n = 1\,000$,
+    **(d)** Use (c) to show that, in the normal approximation, for $n = 1\,000$,
 
     $$
     P(|\hat p_X - p| \leq 3.1\%) \geq 0.95,
@@ -469,9 +469,9 @@ def _(mo):
 
     and find the smallest $n$ for which $P(|\hat p_X - p| \leq 1.55\%) \geq 0.95$. Compare with your guess in (a).
 
-    Reminder: $z_{0.975} = 1.96$.
+    Reminder: $z_{0.975} = 1.96$, where $\Phi(z_p) = p$.
 
-    (e) Use the law of large numbers to find an $n$ for which $P(|\hat p_X - p| \leq 1.55\%) \geq 0.95$. Compare it with the $n$ found in (d).
+    **(e)** Use the law of large numbers to find an $n$ for which $P(|\hat p_X - p| \leq 1.55\%) \geq 0.95$. Compare it with the $n$ found in (d).
 
     LLN: for every $\varepsilon > 0$,
 
@@ -540,9 +540,9 @@ def _(mo):
 
     Voters are now chosen at random from a subgroup in which a fraction $r \neq p$ supports A. Let $Y_i = 1$ if the $i$-th voter supports A, and $Y_i = 0$ otherwise. The poll estimates $p$ by $\hat p_Y = \frac1n (Y_1 + \dots + Y_n)$.
 
-    (a) For the poll of $1\,000$ voters in Question 1, the error $|\hat p_X - p|$ is at most $3.1\%$ with probability at least $0.95$. What is the probability that the error $|\hat p_Y - p|$ is at most $3.1\%$ when $r = p + 2\%$ and when $r = p + 4\%$, for $n = 1\,000$? Write down a guess.
+    **(a)** For the poll of $1\,000$ voters in Question 1, the error $|\hat p_X - p|$ is at most $3.1\%$ with probability at least $0.95$. What is the probability that the error $|\hat p_Y - p|$ is at most $3.1\%$ when $r = p + 2\%$ and when $r = p + 4\%$, for $n = 1\,000$? Write down a guess.
 
-    (b) Find the bias, the standard error and the mean squared error of $\hat p_Y$, and the limit of the mean squared error as $n \to \infty$.
+    **(b)** Find the bias, the standard error and the mean squared error of $\hat p_Y$, and the limit of the mean squared error as $n \to \infty$.
     """)
     return
 
@@ -607,7 +607,7 @@ def _(BLUE, Figure, LIGHT, MaxNLocator, np, plain_axes, RED, s3_b, s3_k, s3_n, s
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    (c) Find the limit of $P(|\hat p_Y - p| \leq 3.1\%)$ as $n \to \infty$, when $r = p + 2\%$ and when $r = p + 4\%$. Is $\hat p_Y$ consistent for $p$?
+    **(c)** Find the limit of $P(|\hat p_Y - p| \leq 3.1\%)$ as $n \to \infty$, when $r = p + 2\%$ and when $r = p + 4\%$. Is $\hat p_Y$ consistent for $p$?
     """)
     return
 
@@ -729,9 +729,9 @@ def _(mo):
     \hat d_{\tilde U, \tilde V} = \frac1n (\tilde V_1 + \dots + \tilde V_n) - \frac1n (\tilde U_1 + \dots + \tilde U_n) \quad \text{(method 2)}.
     $$
 
-    (a) Let $p = 30\%$, $a = 1\%$, $b = 4\%$ and $n = 1\,000$. Which estimator of $d$ has the smaller standard error, and how many times smaller is it? Write down a guess.
+    **(a)** Let $p = 30\%$, $a = 1\%$, $b = 4\%$ and $n = 1\,000$. Which estimator of $d$ has the smaller standard error, and how many times smaller is it? Write down a guess.
 
-    (b) Find $\mathrm{Cov}(U_i, V_i)$ and $\mathrm{Cov}(\tilde U_i, \tilde V_i)$, and the bias and the standard error of $\hat d_{U,V}$ and of $\hat d_{\tilde U, \tilde V}$.
+    **(b)** Find $\mathrm{Cov}(U_i, V_i)$ and $\mathrm{Cov}(\tilde U_i, \tilde V_i)$, and the bias and the standard error of $\hat d_{U,V}$ and of $\hat d_{\tilde U, \tilde V}$.
     """)
     return
 
@@ -800,7 +800,7 @@ def _(BLUE, Figure, MaxNLocator, mo, np, plain_axes, s4_a, s4_b, s4_k, s4_n, s4_
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    (c) Answer the question in (a), and compare with your guess. For which $a$ and $b$ does $\hat d_{\tilde U, \tilde V}$ have the smaller standard error?
+    **(c)** Answer the question in (a), and compare with your guess. For which $a$ and $b$ does $\hat d_{\tilde U, \tilde V}$ have the smaller standard error?
     """)
     return
 
