@@ -43,6 +43,7 @@ TITLES = {  # lecture number -> title shown on the index
 }
 
 UNLISTED = set()  # published, but left off the index and the neighbours' arrows
+DRAFTS = {20, 21}  # lectures kept in the repo but not published
 
 PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -148,7 +149,8 @@ def main():
     notebooks = {}
     for path in sorted(HERE.glob("W*_Lecture_*.py")):
         number = int(re.search(r"Lecture_(\d+)", path.stem).group(1))
-        notebooks[number] = path
+        if number not in DRAFTS:
+            notebooks[number] = path
 
     for number, path in notebooks.items():
         print(f"exporting {path.name}")
