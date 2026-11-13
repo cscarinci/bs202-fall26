@@ -189,27 +189,26 @@ def _(corollary, definition, mo):
 
     <span class="chain">$\displaystyle \leadsto \quad P_X(A) = P(X \in A) = \sum_{x \in A \cap S_X} \underbrace{f_X(x)}_{\mathclap{\footnotesize \text{pmf: } P(X = x)}}$ $\displaystyle \quad \leadsto \quad \underbrace{F_X(x)}_{\footnotesize \text{cdf}} = P(X \leq x) = \sum_{y \in (-\infty, x] \cap S_X} f_X(y)$ $\displaystyle \quad \Longrightarrow \quad f_X(x) = F_X(x) - F_X(x^-)$</span>
 
-    ($x^-$ = first element in $S_X$ smaller than $x$; $F_X(x^-) = P(X < x)$)
+    Here $F_X(x^-) = \lim_{t\uparrow x}F_X(t) = P(X < x)$ is the left limit of the cdf.
     """
             ),
             definition(
                 r"""
-    A random variable $X : S \longrightarrow \mathbb{R}$ is **continuous** if
+    A random variable $X : S \longrightarrow \mathbb{R}$ has a **continuous cdf** if
 
-    - $S_X$ is uncountable
     - there exists $F_X : \mathbb{R} \longrightarrow \mathbb{R}$ continuous (cdf) such that
 
         $$
         P(X \leq x) = F_X(x)
         $$
 
-        (does not follow from the assumption on $S_X$ only!)
+        (an uncountable $S_X$ alone does not imply continuity!)
     """,
-                "Continuous random variable, via the cdf",
+                "Continuous cdf",
             ),
             corollary(
                 r"""
-    $X$ continuous random variable &nbsp; <span class="nw">$\Longrightarrow$ &nbsp; $P(X = x) = 0 \quad \forall\, x \in \mathbb{R}$!</span> &nbsp; (no&nbsp;notion&nbsp;of&nbsp;pmf)
+    $F_X$ continuous &nbsp; <span class="nw">$\Longrightarrow$ &nbsp; $P(X = x) = 0 \quad \forall\, x \in \mathbb{R}$!</span> &nbsp; (no&nbsp;notion&nbsp;of&nbsp;pmf)
 
     $$
     \Longrightarrow \qquad P(a \leq X \leq b) = F_X(b) - F_X(a)
@@ -219,19 +218,20 @@ def _(corollary, definition, mo):
             ),
             definition(
                 r"""
-    A random variable $X : S \longrightarrow \mathbb{R}$ is **continuous** if
+    In this course, a **continuous random variable** means one admitting a probability density:
 
-    - $S_X$ is uncountable
     - there exists $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ integrable (pdf:&nbsp;probability&nbsp;density&nbsp;function) such that
 
         $$
         P(a \leq X \leq b) = \int_a^b f_X(x)\, dx = F_X(b) - F_X(a)
         $$
     """,
-                "Continuous random variable, via the pdf",
+                "Continuous random variable",
             ),
             mo.md(
                 r"""
+    Existence of a pdf $\Longrightarrow$ continuous cdf; the converse need not hold.
+
     $\leadsto$ &nbsp; $F_X : \mathbb{R} \longrightarrow \mathbb{R}$ must satisfy
 
     - $F_X(x_1) \leq F_X(x_2) \quad \forall\, x_1 \leq x_2$
@@ -244,7 +244,7 @@ def _(corollary, definition, mo):
 
     $$
     \begin{align*}
-    \text{Given } F_X \ & \Longrightarrow \ f_X(x) = \frac{d}{dx} F_X(x) \\[14pt]
+    \text{Given } F_X \ & \Longrightarrow \ f_X(x) = \frac{d}{dx} F_X(x) \quad \text{where the density is continuous} \\[14pt]
     \text{Given } f_X \ & \Longrightarrow \ F_X(x) = \int_{-\infty}^{x} f_X(u)\, du
     \end{align*}
     $$
