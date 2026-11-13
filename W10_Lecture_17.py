@@ -381,7 +381,7 @@ def _(definition, mo, theorem):
             ),
             mo.md(
                 r"""
-    $\leadsto$ &nbsp; the distribution of the standardized mean approaches the standard normal distribution for large sample sizes **for any population!**
+    $\leadsto$ &nbsp; the distribution of the standardized mean approaches the standard normal distribution for large sample sizes **for any population with finite, positive variance, under iid sampling.**
     """
             ),
         ]
@@ -531,7 +531,9 @@ def _(BLUE, Figure, HALF, RED, b_n, math, mo, np):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    **Proof.** &nbsp; $X_1, \dots, X_n \sim f_X$ iid with $E[X] = \mu$, $\mathrm{Var}(X) = \sigma^2 > 0$
+    **Proof** (assuming the mgf exists in a neighborhood of zero).
+
+    $X_1, \dots, X_n \sim f_X$ iid with $E[X] = \mu$, $\mathrm{Var}(X) = \sigma^2 > 0$
 
     ① &nbsp; standardize each measurement $X_i$
 
