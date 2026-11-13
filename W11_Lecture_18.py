@@ -305,7 +305,7 @@ def _(BLUE, Figure, GREY, HALF, RED, d_n, math, mo, np, table):
     for _x in (4, 5.6):
         # at n = 5 the page's own values (0.66 from SE rounded to 0.76, 2.75 from the exact SE); otherwise exact
         _kk = {4: 0.66, 5.6: 2.75}[_x] if _n == 5 else abs(_x - 3.5) / _se
-        _rows.append((rf"$\lvert {_x:g} - 3.5 \rvert$", rf"${_kk:.2f}\, \mathrm{{SE}}(M_n)$, &nbsp; $2(1 - \Phi({_kk:.2f})) {_pct(math.erfc(_kk / math.sqrt(2)))}$"))
+        _rows.append((rf"$\lvert {_x:g} - 3.5 \rvert$", rf"${_kk:.2f}\, \mathrm{{SE}}(M_n)$, &nbsp; $P(\lvert Z_n \rvert \geq {_kk:.2f}) \approx 2(1 - \Phi({_kk:.2f})) {_pct(math.erfc(_kk / math.sqrt(2)))}$"))
 
     mo.vstack([mo.hstack([d_n], justify="start", gap=2, wrap=True), table(_rows), _fig])
     return
@@ -321,7 +321,7 @@ def _(mo):
     $$
 
     $$
-    2(1 - \Phi(0.66)) \approx 51\%, \qquad 2(1 - \Phi(2.75)) \approx 0.6\%\,!
+    P(|Z_5| \geq 0.66) \approx 2(1 - \Phi(0.66)) \approx 51\%, \qquad P(|Z_5| \geq 2.75) \approx 2(1 - \Phi(2.75)) \approx 0.6\%\,!
     $$
 
     $\leadsto$ &nbsp; $\mathrm{SE}(\hat{\theta}_n)$ measures the typical error range <span class="nw">(but only for unbiased estimators!)</span>
