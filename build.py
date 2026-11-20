@@ -40,10 +40,12 @@ TITLES = {  # lecture number -> title shown on the index
     17: "The central limit theorem",
     18: "Estimators: bias, standard error and consistency",
     19: "Guided Practice 2",
+    20: "Confidence intervals",
+    21: "Methods of estimation",
 }
 
 UNLISTED = set()  # published, but left off the index and the neighbours' arrows
-DRAFTS = {20, 21}  # lectures kept in the repo but not published
+DRAFTS = set()  # lectures kept in the repo but not published
 
 PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
