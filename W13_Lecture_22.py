@@ -88,27 +88,36 @@ def _(header):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, LIGHT, np):
-    # the sketch of p. 5: the pdf of Z - delta ~ N(0, 1), with the tails beyond -z_0 - delta and z_0 - delta shaded;
-    # drawn with z_0 = 1.5 and delta = 0.5
+def _(BLUE, Figure, LIGHT, arrow, np):
     def power_sketch(z0=1.5, delta=0.5):
-        fig = Figure(figsize=(5.6, 2.4), layout="constrained")
+        fig = Figure(figsize=(6.4, 2.9), layout="constrained")
         ax = fig.subplots()
-        x = np.linspace(-4, 4, 400)
+        ax.axis("off")
         pdf = lambda w: np.exp(-w**2 / 2) / np.sqrt(2 * np.pi)
-        for a, b in ((-4, -z0 - delta), (z0 - delta, 4)):
-            w = np.linspace(a, b, 200)
-            ax.fill_between(w, pdf(w), color=LIGHT, lw=0)
-        for c in (-z0 - delta, z0 - delta):
-            ax.plot([c, c], [0, pdf(c)], color=BLUE, lw=1.0)
-        ax.plot(x, pdf(x), color=BLUE, lw=1.4)
-        ax.set_xticks([-z0 - delta, z0 - delta], [r"$-z_0-\delta$", r"$z_0-\delta$"])
-        ax.set_xlim(-4, 4)
-        ax.set_ylim(0, 0.43)
-        ax.set_yticks([])
-        ax.tick_params(labelsize=12)
-        for s in ("top", "right", "left"):
-            ax.spines[s].set_visible(False)
+        x = np.linspace(-3.9, 3.9, 400)
+        lo, hi = -z0 - delta, z0 - delta
+        if lo > -3.9:
+            w = np.linspace(-3.9, lo, 200)
+            ax.fill_between(w, pdf(w), facecolor=LIGHT, edgecolor=BLUE, hatch="////", lw=0)
+        if hi < 3.9:
+            w = np.linspace(hi, 3.9, 200)
+            ax.fill_between(w, pdf(w), facecolor=LIGHT, edgecolor=BLUE, hatch="////", lw=0)
+        for c, name, y in ((lo, r"$-z_0-\delta$", -0.03), (hi, r"$z_0-\delta$", -0.03 if hi - lo > 1.3 else -0.075)):
+            if -3.9 < c < 3.9:
+                ax.plot([c, c], [0, pdf(c)], color=BLUE, lw=1.2)
+                ax.plot([c, c], [-0.012, 0.012], color="black", lw=1.0)
+                ax.text(c, y, name, ha="center", va="top", fontsize=14)
+        ax.plot(x, pdf(x), color=BLUE, lw=2)
+        arrow(ax, (-4.1, 0), (4.3, 0), "black", lw=1.0)
+        ax.text(-1.55, 0.33, r"$Z-\delta\sim\mathcal{N}(0,1)$", color=BLUE, fontsize=14, ha="right")
+        if hi + lo < 0:
+            tip, text_at = min(max(hi, -3.9) + 0.35, 3.6), (2.7, 0.25)
+        else:
+            tip, text_at = max(min(lo, 3.9) - 0.35, -3.6), (-2.9, 0.17)
+        ax.annotate(r"$\mathrm{area}=K(\mu)$", (tip, pdf(tip) / 2), xytext=text_at, color=BLUE, fontsize=14, ha="center",
+                    arrowprops={"arrowstyle": "-", "color": BLUE, "lw": 0.9})
+        ax.set_xlim(-4.2, 4.4)
+        ax.set_ylim(-0.1, 0.43)
         return fig
     return (power_sketch,)
 
@@ -126,7 +135,9 @@ def _(mo):
 
     **In this lecture:** hypothesis testing
 
-    $\leadsto$ &nbsp; how plausible is a given value of $\theta$? &nbsp; <span class="nw">$\leadsto$ &nbsp; a given statement about $\theta$</span>
+    $\leadsto$ &nbsp; how plausible is a given value of $\theta$?
+
+    $\leadsto$ &nbsp; a given statement about $\theta$
 
     **References:** WMS 10.1–10.4, 10.10
 
@@ -177,8 +188,13 @@ def _(definition):
     definition(r"""
     A **hypothesis test** of $H_0$ against $H_1$ consists of
 
-    - a **test statistic** $T=u(X_1,\dots,X_n)$ &nbsp; <span class="nw">$\leadsto$ &nbsp; to compare data with predictions made under the assumption $H_0$ is true</span>
-    - a **rejection region** $R\subseteq\mathbb R$ &nbsp; <span class="nw">$\leadsto$ &nbsp; describing the values of $T$ that are unlikely under $H_0$</span>
+    - a **test statistic** $T=u(X_1,\dots,X_n)$
+
+        $\leadsto$ &nbsp; to compare data with predictions made under the assumption $H_0$ is true
+
+    - a **rejection region** $R\subseteq\mathbb R$
+
+        $\leadsto$ &nbsp; describing the values of $T$ that are unlikely under $H_0$
     """, "Hypothesis test")
     return
 
@@ -186,38 +202,35 @@ def _(definition):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Given data $X_1=x_1,\dots,X_n=x_n$ (evidence),
+    Given data $X_1=x_1,\dots,X_n=x_n$ (evidence), we **reject** $H_0$ if
 
-    - we **reject** $H_0$ if $T=t=u(x_1,\dots,x_n)\in R$
+    $$
+    T=t=u(x_1,\dots,x_n)\in R
+    $$
 
-      $\leadsto$ &nbsp; $T=t\in R$ is unlikely under $H_0$ &nbsp; $\leadsto$ &nbsp; evidence against $H_0$
+    $\leadsto$ &nbsp; $T=t\in R$ is unlikely under $H_0$
 
-    or
+    $\leadsto$ &nbsp; evidence against $H_0$
 
-    - we **do not reject** $H_0$ if $T=t=u(x_1,\dots,x_n)\notin R$
+    or we **do not reject** $H_0$ if
 
-      $\leadsto$ &nbsp; $T=t\notin R$ is likely under $H_0$
+    $$
+    T=t=u(x_1,\dots,x_n)\notin R
+    $$
 
-      $\leadsto$ &nbsp; but $T=t\notin R$ might also be likely under $H_1=H_0^c$
+    $\leadsto$ &nbsp; $T=t\notin R$ is likely under $H_0$
 
-      $\leadsto$ &nbsp; evidence does not rule out $H_0$!
+    $\leadsto$ &nbsp; but $T=t\notin R$ might also be likely under $H_1=H_0^c$
 
-      $\leadsto$ &nbsp; not the same as evidence in favor of $H_0$!
+    $\leadsto$ &nbsp; evidence does not rule out $H_0$!
+
+    $\leadsto$ &nbsp; not the same as evidence in favor of $H_0$!
 
     **Example (presumption of innocence).** Criminal trial: $H_0=\text{“innocent”}$.
 
-    $$
-    \begin{aligned}
-    \underbrace{\text{convicted}}_{\mathclap{\footnotesize \text{= reject } H_0}}
-    &\quad\Longleftrightarrow\quad
-    \text{sufficient evidence to reduce doubt beyond a reasonable level}
-    &&\leadsto\quad T\in R\\[18pt]
-    \underbrace{\text{acquitted}}_{\mathclap{\footnotesize \text{= do not reject } H_0}}
-    &\quad\Longleftrightarrow\quad
-    \text{insufficient evidence}
-    &&\leadsto\quad T\notin R
-    \end{aligned}
-    $$
+    convicted (= reject $H_0$) &nbsp; $\Longleftrightarrow$ &nbsp; sufficient evidence to reduce doubt beyond a reasonable level &nbsp; $\leadsto$ &nbsp; $T\in R$
+
+    acquitted (= do not reject $H_0$) &nbsp; $\Longleftrightarrow$ &nbsp; insufficient evidence &nbsp; $\leadsto$ &nbsp; $T\notin R$
     """)
     return
 
@@ -227,8 +240,13 @@ def _(definition):
     definition(r"""
     A test can be wrong in two different ways:
 
-    - rejects $H_0$, but $H_0$ is true &nbsp; (**type I error**) &nbsp; <span class="nw">$\leadsto$ &nbsp; convicted, but innocent: wrongful conviction</span>
-    - does not reject $H_0$, but $H_0$ is false &nbsp; (**type II error**) &nbsp; <span class="nw">$\leadsto$ &nbsp; acquitted, but guilty: wrongful acquittal</span>
+    - rejects $H_0$, but $H_0$ is true &nbsp; (**type I error**)
+
+        $\leadsto$ &nbsp; convicted, but innocent: wrongful conviction
+
+    - does not reject $H_0$, but $H_0$ is false &nbsp; (**type II error**)
+
+        $\leadsto$ &nbsp; acquitted, but guilty: wrongful acquittal
 
     $\leadsto$ &nbsp; we would like our test to minimize the probability of both types of error!
     """, "Type I and type II errors")
@@ -271,22 +289,33 @@ def _(mo):
     \end{cases}
     $$
 
-    $$
-    \leadsto\quad\text{not possible if } f_X(x;\theta) \text{ is } \underbrace{\text{continuous in }\theta}_{\mathclap{\footnotesize \text{usually the case!}}}
-    $$
+    $\leadsto$ &nbsp; not possible if $f_X(x;\theta)$ is continuous in $\theta$
 
-    ### Strategy for test design
+    $\leadsto$ &nbsp; usually the case!
+
+    **Strategy for test design.**
 
     ① choose a test statistic
 
     $$
-    \underbrace{T=u(X_1,\dots,X_n)}_{\mathclap{\footnotesize \text{usually an appropriate estimator for the parameter}}}
+    T=u(X_1,\dots,X_n)
     $$
+
+    $\leadsto$ &nbsp; usually an appropriate estimator for the parameter
 
     ② fix a **significance level** $\alpha$ (tolerance level) for type I errors, and choose a rejection region $R\subseteq\mathbb R$ such that
 
-    - $K(\theta_0)=P(T\in R;\theta=\theta_0)\le\alpha$
-    - $K(\theta)=P(T\in R;\theta\neq\theta_0)$ is the largest possible &nbsp; <span class="nw">$\leadsto$ &nbsp; at least amongst regions of a certain type</span>
+    $$
+    K(\theta_0)=P(T\in R;\theta=\theta_0)\le\alpha
+    $$
+
+    $$
+    K(\theta)=P(T\in R;\theta\neq\theta_0)
+    $$
+
+    is the largest possible
+
+    $\leadsto$ &nbsp; at least amongst regions of a certain type
 
     **Example ($z$-test for $\mu$).** $X\sim\mathcal N(\mu,\sigma^2)$ with known $\sigma^2>0$.
 
@@ -294,7 +323,11 @@ def _(mo):
     H_0=\text{“}\mu=\mu_0\text{”},\qquad H_1=\text{“}\mu\neq\mu_0\text{”}
     $$
 
-    ① $\displaystyle Z=\frac{M_n-\mu_0}{\sigma/\sqrt n}$
+    ① test statistic
+
+    $$
+    Z=\frac{M_n-\mu_0}{\sigma/\sqrt n}
+    $$
 
     $$
     \begin{aligned}
@@ -307,10 +340,12 @@ def _(mo):
     ② fix $\alpha\in(0,1)$, and regions
 
     $$
-    R=\lbrace |z|\ge z_0\rbrace\qquad\underbrace{\text{symmetric around } z=0}_{\mathclap{\footnotesize \text{choice of type of rejection region}}}
+    R=\lbrace |z|\ge z_0\rbrace
     $$
 
-    - if $\mu=\mu_0$
+    $\leadsto$ &nbsp; symmetric around $z=0$: choice of type of rejection region
+
+    If $\mu=\mu_0$,
 
     $$
     \begin{aligned}
@@ -320,7 +355,7 @@ def _(mo):
     \end{aligned}
     $$
 
-    - if $\mu\neq\mu_0$ &nbsp; $(\mu=\mu_0+\delta\sigma/\sqrt n)$
+    If $\mu\neq\mu_0$ &nbsp; $(\mu=\mu_0+\delta\sigma/\sqrt n)$,
 
     $$
     \begin{aligned}
@@ -334,8 +369,23 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(mo, power_sketch):
-    mo.hstack([power_sketch()], justify="center")
+def _(mo):
+    z0_val = mo.ui.slider(0, 3, step=0.05, value=1.5, label=r"$z_0$", show_value=True)
+    delta_val = mo.ui.slider(-2, 2, step=0.1, value=0.5, label=r"$\delta$", show_value=True)
+    return delta_val, z0_val
+
+
+@app.cell(hide_code=True)
+def _(delta_val, math, mo, power_sketch, table, z0_val):
+    _Phi = lambda w: 0.5 * (1 + math.erf(w / math.sqrt(2)))
+    _z0, _d = z0_val.value, delta_val.value
+    mo.vstack(
+        [
+            mo.hstack([z0_val, delta_val], justify="start", gap=2, wrap=True),
+            table([(r"$K(\mu)=1-\Phi(z_0-\delta)+\Phi(-z_0-\delta)$", f"{100 * (1 - _Phi(_z0 - _d) + _Phi(-_z0 - _d)):.1f}%")]),
+            mo.hstack([power_sketch(_z0, _d)], justify="center"),
+        ]
+    )
     return
 
 
@@ -358,7 +408,11 @@ def _(mo):
 
     tests $H_0=\text{“}\mu=\mu_0\text{”}$ against $H_1=\text{“}\mu\neq\mu_0\text{”}$ with significance level $\approx\alpha$, if $n$ is sufficiently large.
 
-    If $\sigma^2$ is unknown, replace $Z$ by $\displaystyle\frac{M_n-\mu_0}{S_n/\sqrt n}$.
+    If $\sigma^2$ is unknown, replace $Z$ by
+
+    $$
+    \frac{M_n-\mu_0}{S_n/\sqrt n}
+    $$
 
     **Example (coin).**
 
@@ -370,8 +424,9 @@ def _(mo):
 
     $$
     \leadsto\quad Z=\frac{0.6-0.5}{\underbrace{0.5/10}_{\mathclap{\footnotesize \sigma^2=0.25\text{ under }H_0}}}=2\in R=\lbrace |z|\ge1.96\rbrace
-    \qquad(\text{for }\alpha=1\%:\ R=\lbrace |z|\ge2.58\rbrace)
     $$
+
+    For $\alpha=1\%$: &nbsp; $R=\lbrace |z|\ge2.58\rbrace$.
 
     $\Longrightarrow$ &nbsp; we reject $H_0$ at $\alpha=5\%$
 

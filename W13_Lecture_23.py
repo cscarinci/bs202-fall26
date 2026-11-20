@@ -88,53 +88,71 @@ def _(header):
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREY, LIGHT, RED, math, np):
+def _(BLUE, Figure, LIGHT, RED, arrow, math, np):
     def _pdf(w, nu=None):
         if nu is None:
             return np.exp(-w**2 / 2) / np.sqrt(2 * np.pi)
         return math.gamma((nu + 1) / 2) / (math.sqrt(nu * math.pi) * math.gamma(nu / 2)) * (1 + w**2 / nu) ** (-(nu + 1) / 2)
 
-    def _axes(fig):
+    def _axes(fig, right):
         ax = fig.subplots()
-        ax.set_yticks([])
-        ax.tick_params(labelsize=12)
-        for s in ("top", "right", "left"):
-            ax.spines[s].set_visible(False)
+        ax.axis("off")
+        arrow(ax, (-right - 0.2, 0), (right + 0.4, 0), "black", lw=1.0)
+        arrow(ax, (0, -0.01), (0, 0.46), "black", lw=1.0)
+        ax.set_xlim(-right - 0.3, right + 0.5)
+        ax.set_ylim(-0.14, 0.48)
         return ax
 
-    # the sketch of p. 3: the pdf of Z ~ N(0, 1), with the tails beyond -|z| and |z| shaded (area = p); drawn with |z| = 1.5
-    def p_value_sketch(z=1.5):
-        fig = Figure(figsize=(5.6, 2.4), layout="constrained")
-        ax = _axes(fig)
-        x = np.linspace(-4, 4, 400)
-        for a, b in ((-4, -z), (z, 4)):
-            w = np.linspace(a, b, 200)
-            ax.fill_between(w, _pdf(w), color=LIGHT, lw=0)
-        for c in (-z, z):
-            ax.plot([c, c], [0, _pdf(c)], color=BLUE, lw=1.0)
-        ax.plot(x, _pdf(x), color=BLUE, lw=1.4)
-        ax.annotate(r"area $=p$", (2.1, _pdf(2.1) / 2), xytext=(2.6, 0.17), color=BLUE, fontsize=12, ha="center", arrowprops={"arrowstyle": "-", "color": BLUE, "lw": 0.8})
-        ax.set_xticks([-z, z], [r"$-|z|$", r"$|z|$"])
-        ax.set_xlim(-4, 4)
-        ax.set_ylim(0, 0.43)
+    def p_value_sketch(z=1.6):
+        fig = Figure(figsize=(6.4, 2.9), layout="constrained")
+        ax = _axes(fig, 3.9)
+        x = np.linspace(-3.9, 3.9, 400)
+        if z < 3.9:
+            for a_, b_ in ((-3.9, -z), (z, 3.9)):
+                w = np.linspace(a_, b_, 200)
+                ax.fill_between(w, _pdf(w), facecolor=LIGHT, edgecolor=BLUE, hatch="////", lw=0)
+            for c in (-z, z):
+                ax.plot([c, c], [0, _pdf(c)], color=BLUE, lw=1.2)
+                ax.text(c, -0.03, r"$-|z|$" if c < 0 else r"$|z|$", ha="center", va="top", fontsize=14)
+        ax.plot(x, _pdf(x), color=BLUE, lw=2)
+        ax.text(-0.9, 0.36, r"$Z\sim\mathcal{N}(0,1)$", color=BLUE, fontsize=14, ha="right")
+        tip = min(z + 0.35, 3.6)
+        ax.annotate(r"$\mathrm{area}=p$", (tip, _pdf(tip) / 2), xytext=(2.9, 0.24), color=BLUE, fontsize=14, ha="center",
+                    arrowprops={"arrowstyle": "-", "color": BLUE, "lw": 0.9})
         return fig
 
-    # the sketch of p. 5: the pdfs of t_1, t_2 and N(0, 1)
-    def t_sketch():
-        fig = Figure(figsize=(5.6, 2.6), layout="constrained")
-        ax = _axes(fig)
-        x = np.linspace(-5, 5, 500)
-        ax.plot(x, _pdf(x), color=GREY, lw=1.4)
-        ax.plot(x, _pdf(x, 2), color=RED, lw=1.4)
-        ax.plot(x, _pdf(x, 1), color=BLUE, lw=1.4)
-        ax.text(1.75, 0.20, r"$\mathcal{N}(0,1)$", color=GREY, fontsize=12, ha="left")
-        ax.text(2.6, 0.075, r"$t_2$", color=RED, fontsize=12, ha="left")
-        ax.text(3.4, 0.040, r"$t_1$", color=BLUE, fontsize=12, ha="left")
-        ax.set_xticks([])
-        ax.set_xlim(-5, 5)
-        ax.set_ylim(0, 0.43)
+    def t_cdf(x, nu):
+        w = np.linspace(0, x, 4001)
+        f = _pdf(w, nu)
+        return 0.5 + (f[1:] + f[:-1]).sum() * (w[1] - w[0]) / 2
+
+    def t_quantile(p, nu):
+        lo, hi = 0.0, 100.0
+        for _ in range(50):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if t_cdf(mid, nu) < p else (lo, mid)
+        return (lo + hi) / 2
+
+    def t_sketch(n=2):
+        fig = Figure(figsize=(6.4, 2.9), layout="constrained")
+        ax = _axes(fig, 4.6)
+        x = np.linspace(-4.6, 4.6, 500)
+        ax.plot(x, _pdf(x), color=BLUE, lw=2)
+        ax.plot(x, _pdf(x, n), color=RED, lw=2)
+        ax.text(-1.0, 0.36, r"$\mathcal{N}(0,1)$", color=BLUE, fontsize=14, ha="right")
+        ax.text(3.0, _pdf(3.0, n) + 0.04, f"$t_{{{n}}}$", color=RED, fontsize=14, ha="center")
+        z, q = 1.959964, t_quantile(0.975, n)
+        ax.plot([z, z], [0, _pdf(z)], color=BLUE, lw=1.2, ls=(0, (4, 3)))
+        ax.text(z, -0.03, r"$z_{0.975}$", color=BLUE, ha="center", va="top", fontsize=13)
+        y = -0.03 if q - z > 0.9 else -0.085
+        if q < 4.5:
+            ax.plot([q, q], [0, _pdf(q, n)], color=RED, lw=1.2, ls=(0, (4, 3)))
+            ax.text(q, y, f"$t_{{{n},0.975}}$", color=RED, ha="center", va="top", fontsize=13)
+        else:
+            ax.annotate(f"$t_{{{n},0.975}}={q:.2f}$", (4.6, 0.005), xytext=(3.4, 0.17), color=RED, ha="center", fontsize=13,
+                        arrowprops={"arrowstyle": "-|>", "color": RED, "lw": 1.0})
         return fig
-    return p_value_sketch, t_sketch
+    return p_value_sketch, t_quantile, t_sketch
 
 
 @app.cell(hide_code=True)
@@ -173,14 +191,25 @@ def _(mo):
     \end{aligned}
     $$
 
-    $\leadsto$ &nbsp; test design: fix $\alpha$ significance level (tolerance level), choose the region $R_\alpha\subset\mathbb R$
+    $\leadsto$ &nbsp; test design:
+
+    fix $\alpha$ significance level (tolerance level)
+
+    choose the region $R_\alpha\subset\mathbb R$
 
     $$
-    \begin{aligned}
-    &\bullet\quad\underbrace{P(T\in R_\alpha;\theta=\theta_0)}_{\mathclap{\footnotesize \text{probability of type I error}}}\le\alpha\\[18pt]
-    &\bullet\quad\underbrace{P(T\in R_\alpha;\theta\neq\theta_0)}_{\mathclap{\footnotesize 1-\text{probability of type II error}}}\ \text{is as large as possible}
-    \end{aligned}
+    P(T\in R_\alpha;\theta=\theta_0)\le\alpha
     $$
+
+    $\leadsto$ &nbsp; probability of type I error
+
+    $$
+    P(T\in R_\alpha;\theta\neq\theta_0)
+    $$
+
+    is as large as possible
+
+    $\leadsto$ &nbsp; 1 − probability of type II error
 
     **Example (coin).** $X\sim\mathrm{Binom}(1,p)$, $p$ unknown.
 
@@ -197,20 +226,24 @@ def _(mo):
     $n=100$, $60$ heads, $40$ tails &nbsp; $\Longrightarrow$ &nbsp; $M_n=0.6$
 
     $$
-    \Longrightarrow\quad Z=2\quad
-    \begin{cases}
-    2\in R_{5\%}=\lbrace |z|\ge1.96\rbrace & \Longrightarrow\quad\text{reject at }\alpha=5\%\\[4pt]
-    2\notin R_{1\%}=\lbrace |z|\ge2.58\rbrace & \Longrightarrow\quad\text{do not reject at }\alpha=1\%
-    \end{cases}
+    \Longrightarrow\quad Z=2
     $$
 
-    What is the right significance level? &nbsp; <span class="nw">$\leadsto$ &nbsp; somewhat arbitrary choice</span>
+    $\leadsto$ &nbsp; $2\in R_{5\%}=\lbrace |z|\ge1.96\rbrace$ &nbsp; $\Longrightarrow$ &nbsp; reject at $\alpha=5\%$
+
+    $\leadsto$ &nbsp; $2\notin R_{1\%}=\lbrace |z|\ge2.58\rbrace$ &nbsp; $\Longrightarrow$ &nbsp; do not reject at $\alpha=1\%$
+
+    What is the right significance level?
+
+    $\leadsto$ &nbsp; somewhat arbitrary choice
 
     **In this lecture:**
 
     $\leadsto$ &nbsp; p-values = measure of how strong the evidence is against $H_0$
 
-    $\leadsto$ &nbsp; $t$-tests = another type of hypothesis test &nbsp; <span class="nw">$\leadsto$ &nbsp; used when $E[X]$ and $\mathrm{Var}(X)$ are both unknown parameters</span>
+    $\leadsto$ &nbsp; $t$-tests = another type of hypothesis test
+
+    $\leadsto$ &nbsp; used when $E[X]$ and $\mathrm{Var}(X)$ are both unknown parameters
 
     **References:** WMS 7.2, 10.6, 10.8
 
@@ -237,9 +270,10 @@ def _(definition):
     $\leadsto$ &nbsp; a data set rejects $H_0$ at level $\alpha$ if and only if
 
     $$
-    \underbrace{p}_{\mathclap{\footnotesize \text{computed from data!}}}\le\alpha
-    \quad\Longrightarrow\quad\text{no choices involved!}
+    p\le\alpha
     $$
+
+    $\leadsto$ &nbsp; $p$ computed from data! &nbsp; $\Longrightarrow$ &nbsp; no choices involved!
     """, "p-value")
     return
 
@@ -247,7 +281,9 @@ def _(definition):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    $\leadsto$ &nbsp; data with small p-value reject $H_0$ even at small significance levels! &nbsp; $\Longrightarrow$ &nbsp; strong evidence against $H_0$!
+    $\leadsto$ &nbsp; data with small p-value reject $H_0$ even at small significance levels!
+
+    $\Longrightarrow$ &nbsp; strong evidence against $H_0$!
 
     **Example ($z$-test for $\mu$).** A data set with $Z=z$ rejects $H_0$ at level $\alpha$
 
@@ -263,8 +299,21 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(mo, p_value_sketch):
-    mo.hstack([p_value_sketch()], justify="center")
+def _(mo):
+    z_abs = mo.ui.slider(0, 3.5, step=0.05, value=2, label=r"$|z|$", show_value=True)
+    return (z_abs,)
+
+
+@app.cell(hide_code=True)
+def _(math, mo, p_value_sketch, table, z_abs):
+    _Phi = lambda w: 0.5 * (1 + math.erf(w / math.sqrt(2)))
+    mo.vstack(
+        [
+            mo.hstack([z_abs], justify="start", gap=2, wrap=True),
+            table([(r"$p=2(1-\Phi(\lvert z\rvert))$", f"{100 * 2 * (1 - _Phi(z_abs.value)):.2f}%")]),
+            mo.hstack([p_value_sketch(z_abs.value)], justify="center"),
+        ]
+    )
     return
 
 
@@ -272,11 +321,10 @@ def _(mo, p_value_sketch):
 def _(mo):
     mo.md(r"""
     $$
-    \Longrightarrow\quad p=2(1-\Phi(|z|))=
-    \underbrace{P(|Z|\ge|z|;\mu=\mu_0)}_{\mathclap{\footnotesize \text{probability under } H_0 \text{ of observing data sets with at least as extreme statistic}}}
+    \Longrightarrow\quad p=2(1-\Phi(|z|))=P(|Z|\ge|z|;\mu=\mu_0)
     $$
 
-    <br>
+    $\leadsto$ &nbsp; probability under $H_0$ of observing data sets with at least as extreme statistic
 
     **Example (coin).** $n=100$, $60$ heads, $40$ tails.
 
@@ -300,13 +348,9 @@ def _(mo):
 
     **Remark (important!).** The p-value of a data set is **not** the probability that $H_0$ is true!
 
-    $\leadsto$ &nbsp; $H_0$ is either true or false!
+    $\leadsto$ &nbsp; $H_0$ is either true or false! This is unknown, not random!
 
-    $$
-    \text{This is unknown, }\underbrace{\text{not random}}_{\mathclap{\footnotesize \text{there is no meaning to “probability of } H_0 \text{ is true”!}}}!
-    $$
-
-    <br>
+    $\leadsto$ &nbsp; there is no meaning to “probability of $H_0$ is true”!
 
     ### ② t-tests
 
@@ -316,9 +360,19 @@ def _(mo):
     H_0=\text{“}\mu=\mu_0\text{”}\quad\text{vs}\quad H_1=\text{“}\mu\neq\mu_0\text{”}
     $$
 
-    $\leadsto$ &nbsp; $\displaystyle Z=\frac{M_n-\mu_0}{\sigma/\sqrt n}$ depends on $\sigma$ and we have no hypothesis on $\sigma$… &nbsp; $\Longrightarrow$ &nbsp; cannot use $Z$ as a test statistic…
+    $$
+    \leadsto\quad Z=\frac{M_n-\mu_0}{\sigma/\sqrt n}
+    $$
 
-    $\leadsto$ &nbsp; $\displaystyle T=\frac{M_n-\mu_0}{S_n/\sqrt n}$ obtained by replacing $\sigma^2$ by $S_n^2$
+    depends on $\sigma$ and we have no hypothesis on $\sigma$…
+
+    $\Longrightarrow$ &nbsp; cannot use $Z$ as a test statistic…
+
+    $$
+    \leadsto\quad T=\frac{M_n-\mu_0}{S_n/\sqrt n}
+    $$
+
+    obtained by replacing $\sigma^2$ by $S_n^2$
     """)
     return
 
@@ -340,8 +394,25 @@ def _(theorem):
 
 
 @app.cell(hide_code=True)
-def _(mo, t_sketch):
-    mo.hstack([t_sketch()], justify="center")
+def _(mo):
+    t_df = mo.ui.slider(1, 30, step=1, value=2, label=r"$n$", show_value=True)
+    return (t_df,)
+
+
+@app.cell(hide_code=True)
+def _(mo, t_df, t_quantile, t_sketch, table):
+    mo.vstack(
+        [
+            mo.hstack([t_df], justify="start", gap=2, wrap=True),
+            table(
+                [
+                    (r"$t_{n,0.975}$", f"{t_quantile(0.975, t_df.value):.2f}"),
+                    (r"$z_{0.975}$", "1.96"),
+                ]
+            ),
+            mo.hstack([t_sketch(t_df.value)], justify="center"),
+        ]
+    )
     return
 
 
