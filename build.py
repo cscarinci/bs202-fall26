@@ -16,8 +16,8 @@ PARTS = [  # (name, first lecture, last lecture); ranges after part IV are tenta
     ("II. Discrete random variables", 4, 8),
     ("III. Continuous random variables", 9, 13),
     ("IV. Several random variables", 14, 17),
-    ("V. Estimation", 18, 22),
-    ("VI. Hypothesis testing and regression", 23, 27),
+    ("V. Estimation", 18, 21),
+    ("VI. Hypothesis testing and regression", 22, 27),
 ]
 
 TITLES = {  # lecture number -> title shown on the index
@@ -42,6 +42,8 @@ TITLES = {  # lecture number -> title shown on the index
     19: "Guided Practice 2",
     20: "Confidence intervals",
     21: "Methods of estimation",
+    22: "Hypothesis testing",
+    23: "p-values and t-tests",
 }
 
 UNLISTED = set()  # published, but left off the index and the neighbours' arrows
