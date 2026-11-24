@@ -1,524 +1,502 @@
 import marimo
 
 __generated_with = "0.25.1"
-app = marimo.App(width="medium", app_title="BS202 · Lecture 20 · Confidence intervals", css_file="bs202.css")
+app = marimo.App(width="medium", app_title="BS202 · Lecture 20 · Confidence intervals", css_file="lecturekit/style.css")
+
 
 @app.cell(hide_code=True)
-def _():
-    import math
+async def _():
+    import sys
 
     import marimo as mo
-    import matplotlib
-    import numpy as np
     from matplotlib.figure import Figure
 
-    # Figures use the same Computer Modern typeface as the text
-    matplotlib.rcParams.update({"font.size": 14, "font.family": "serif", "font.serif": ["cmr10", "DejaVu Serif"], "mathtext.fontset": "cm", "axes.formatter.use_mathtext": True, "axes.unicode_minus": False, "savefig.format": "svg"})
+    import matplotlib  # noqa: F401  (named here so the browser fetches it while Python starts)
 
-    return Figure, math, mo, np
+    if sys.platform == "emscripten":
+        import micropip
 
-@app.cell(hide_code=True)
-def _(mo):
-    # ---- Building blocks shared by all lectures -------------------------
-    # Palette with fixed roles (figures only; text carries no colour):
-    #   BLUE   the primary object (the point, the chosen vector, the main curve)
-    #   RED    the second object it is compared with
-    #   GREEN  a derived quantity (tangent vector, gradient, mean)
-    #   GREY   reference geometry (guides, unit circle, reference curves)
-    #   LIGHT  fills and grids
-    BLUE, RED, GREEN, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#9a9a9a", "#e3ebf4"
-    # Figure widths: HALF sits beside text or in a pair
-    HALF = 3.6
+        await micropip.install(str(mo.notebook_location() / "public" / "lecturekit-0.1.0-py3-none-any.whl"), deps=False)
+    import lecturekit as lk
+    return Figure, lk
 
-    def header(document, date, running=""):
-        """Course header, as on the exercise sheets and exams."""
-        return mo.Html(
-            f"""
-    <div class="bs-head">
-      <div class="bs-running">BS202 &bull; {running}</div>
-      <div class="bs-title">Introduction to Probability<br>and Mathematical Statistics</div>
-      <div class="bs-inst">Daegu Gyeongbuk Institute of Science and Technology<br>School of Undergraduate Studies</div>
-      <div class="bs-meta">
-        <b>Document</b><span>{document}</span><b>Course</b><span>BS202a</span>
-        <b>Week</b><span>{date.removeprefix('Week ')}</span><b>Instructor</b><span>Professor Scarinci</span>
-      </div>
-    </div>
-    """
-        )
-
-    def _statement(label, title, body):
-        head = f"**{label}" + (f" ({title})" if title else "") + ".**"
-        return mo.md(head + "\n\n" + body).style({"border-left": f"2px solid {BLUE}", "padding-left": "1rem"})
-
-    def definition(body, title=""):
-        return _statement("Definition", title, body)
-
-    def theorem(body, title=""):
-        return _statement("Theorem", title, body)
-
-    def table(rows):
-        """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
-        return mo.Html(f'<div class="readout">{_md.text}</div>')
-
-    def corollary(body, title=""):
-        return _statement("Corollary", title, body)
-
-    def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
-        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
-        so arrows look alike in every figure whatever its axis range."""
-        ax.annotate(
-            "",
-            xy=tip,
-            xytext=tail,
-            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
-        )
-        if label:
-            pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
-            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=13)
-
-    return corollary, LIGHT, BLUE, GREEN, GREY, HALF, RED, arrow, definition, header, table, theorem
 
 @app.cell(hide_code=True)
-def _(header):
-    header("Lecture 20","Week 12","Lecture 20 • Confidence intervals")
+def _(lk):
+    lk.lecture(20, "Confidence intervals")
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREEN, RED, arrow):
-    # the sketches of pp. 2-3: [mu - eps, mu + eps] around mu, or [M_4 - eps, M_4 + eps] around M_4,
-    # with eps = 19.6 and mu = 50; the interval is red when it misses mu
-    def lecture_sketch(kind, value=56):
-        fig = Figure(figsize=(6.6, 1.7))
-        ax = fig.add_axes((0.07, 0.08, 0.85, 0.84))
+def _(Figure, lk):
+    # Helper of this lecture: the sketch of an interval of half-width eps = 19.6 on the number line,
+    # around mu (fixed at 50) or around M_4; the interval is red when it misses mu
+
+    def interval(around, m4=56.0, eps=19.6, mu=50.0):
+        fig = Figure(figsize=(6.4, 1.25))
+        ax = fig.add_axes((0, 0, 1, 1))
+        ax.set_xlim(-6, 106)
+        ax.set_ylim(-0.75, 0.75)
         ax.axis("off")
-        ax.set_xlim(-10, 110)
-        ax.set_ylim(-0.6, 0.7)
 
-        def label(p, text, color, offset):
-            ax.annotate(text, p, xytext=offset, textcoords="offset points", color=color, fontsize=13, ha="center", va="bottom", zorder=10, clip_on=False)
+        def name(x, y, text, color, va):
+            ax.annotate(text, (x, y), textcoords="offset points", xytext=(0, 9 if va == "bottom" else -9), ha="center", va=va, color=color, fontsize=13, zorder=10)
 
-        arrow(ax, (-5, 0), (105, 0), "black", lw=0.9)
-        centre = 50 if kind == "fixed_interval" else value
-        mean = 56 if kind == "fixed_interval" else value
-        colour = RED if abs(centre - 50) > 19.6 else BLUE
-        for x in (centre - 19.6, centre + 19.6):
-            ax.plot([x, x], [-0.08, 0.08], color=colour, lw=1.4)
-        ax.plot([centre - 19.6, centre + 19.6], [0, 0], color=colour, lw=2)
-        ax.plot(mean, 0, "o", color=GREEN, zorder=5, ms=5)
-        ax.plot(50, 0, "o", color=RED, zorder=5, ms=4)
-        label((50, 0), r"$\mu$", RED, (0, -26))
-        label((mean, 0), r"$M_4$", GREEN, (0, 16))
-        name = r"\mu" if kind == "fixed_interval" else "M_4"
-        for sign in (-1, 1):
-            label((centre + sign * 19.6, 0), f"${name} {'-' if sign < 0 else '+'} \\varepsilon$", colour, (0, 16))
+        lk.arrow(ax, (-4, 0), (104, 0), "black", lw=0.9)
+        centre, sym = (mu, r"\mu") if around == "mu" else (m4, "M_4")
+        color = lk.RED if abs(centre - mu) > eps else lk.BLUE
+        ax.plot([centre - eps, centre + eps], [0, 0], color=color, lw=2.2, solid_capstyle="butt", zorder=3)
+        for x in (centre - eps, centre + eps):
+            ax.plot([x, x], [-0.16, 0.16], color=color, lw=1.6, zorder=3)
+        ax.plot(mu, 0, "o", color=lk.RED, ms=5, zorder=5)
+        ax.plot(m4, 0, "o", color=lk.GREEN, ms=5, zorder=5)
+        ends = "top" if around == "mu" else "bottom"
+        name(centre - eps, 0.16 if ends == "bottom" else -0.16, rf"${sym}-\varepsilon$", color, ends)
+        name(centre + eps, 0.16 if ends == "bottom" else -0.16, rf"${sym}+\varepsilon$", color, ends)
+        name(m4, 0.1, "$M_4$", lk.GREEN, "bottom")
+        name(mu, -0.1, r"$\mu$", lk.RED, "top")
         return fig
-    return (lecture_sketch,)
+
+    return (interval,)
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Last time
-
-    Estimators, bias, SE and MSE.
-
-    $X_1,\dots,X_n\sim f_X$ iid with unknown parameter $\theta$.
-
-    $\hat\theta_n=u(X_1,\dots,X_n)$ &nbsp; estimator for $\theta$.
-
-    $$
-    \begin{aligned}
-    \mathrm{Bias}(\hat\theta_n)&=E[\hat\theta_n-\theta]
-    &&\text{expected error},\\
-    \mathrm{SE}(\hat\theta_n)&=\sqrt{\mathrm{Var}(\hat\theta_n)}
-    &&\text{typical error range for unbiased estimators},\\
-    \mathrm{MSE}(\hat\theta_n)&=E[(\hat\theta_n-\theta)^2]
-    &&\text{square of typical error range for any estimator}\\
-    &=\mathrm{Bias}(\hat\theta_n)^2+\mathrm{SE}(\hat\theta_n)^2
-    \end{aligned}
-    $$
-    """)
-    return
+def _(lk):
+    # Controls of the interactive figures. They are shown inside their figures, so modules can be moved freely.
+    m4 = lk.slider(20, 80, step=1, value=56, label="$M_4$")
+    return (m4,)
 
 
 @app.cell(hide_code=True)
-def _(theorem):
-    theorem(r"""
-    If $\mathrm{Bias}(\hat\theta_n)\to0$ and $\mathrm{SE}(\hat\theta_n)\to0$ as $n\to\infty$
+def _(lk):
+    # module: recap
+    # recap
+    lk.recap(
+        r"""
+        Estimators, bias, SE, and MSE
 
-    $\qquad\Longleftrightarrow\quad$ $\mathrm{MSE}(\hat\theta_n)\to0$ as $n\to\infty$,
+        $X_1,\dots,X_n\sim f_X$ iid with unknown parameter $\theta$
 
-    then
+        $\hat\theta_n=u(X_1,\dots,X_n)$ estimator for $\theta$
+        """,
+        lk.aside(r"> $\leadsto$ &nbsp; $\mathrm{Bias}(\hat\theta_n)=E[\hat\theta_n-\theta]$", "expected error"),
+        lk.aside(r"> $\leadsto$ &nbsp; $\mathrm{SE}(\hat\theta_n)=\sqrt{\mathrm{Var}(\hat\theta_n)}$", "typical error range<br>for unbiased estimators"),
+        lk.aside(r"> $\leadsto$ &nbsp; $\mathrm{MSE}(\hat\theta_n)=E\big[(\hat\theta_n-\theta)^2\big]$", "square of typical error<br>range for any estimator"),
+        r"""
+        > <span class="lk-ghost">$\leadsto$ &nbsp; $\mathrm{MSE}(\hat\theta_n)$</span>$=\mathrm{Bias}(\hat\theta_n)^2+\mathrm{SE}(\hat\theta_n)^2$
 
-    $$
-    P(|\hat\theta_n-\theta|\ge\varepsilon)\longrightarrow0
-    \quad\text{as }n\to\infty,\quad\forall\,\varepsilon>0
-    $$
-    """, "Consistent estimator")
-    return
+        If $\mathrm{Bias}(\hat\theta_n)\to0$, $\mathrm{SE}(\hat\theta_n)\to0$ for $n\to\infty$ $\big(\!\Longleftrightarrow\ \mathrm{MSE}(\hat\theta_n)\to0\text{ for }n\to\infty\big)$, then
 
+        > $P\big(|\hat\theta_n-\theta|\ge\varepsilon\big)\longrightarrow0$ &nbsp; as $n\to\infty$ &nbsp; $\forall\varepsilon>0$
 
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    $\leadsto$ &nbsp; $\hat\theta_n$ has arbitrarily large probability of being arbitrarily close to $\theta$ for sufficiently large sample size $n$!
-
-    $\leadsto$ &nbsp; $\hat\theta_n$ is a **consistent estimator** for $\theta$ &nbsp; $\leadsto$ &nbsp; a good estimator!
-
-    **In this lecture:** for fixed $n$, how close and with what probability?
-
-    $\leadsto$ &nbsp; confidence intervals for $\theta$.
-
-    **References:** WMS 8.5–8.7
-
-    ## V.2 &nbsp; Confidence intervals
-
-    **Example.** Midterm scores $X\sim \mathcal{N}(\mu,20^2)$, $\mu$ unknown.
-
-    $\leadsto$ &nbsp; given 4 scores $X_1=30$, $X_2=54$, $X_3=62$, $X_4=78$ &nbsp; $\Longrightarrow$ &nbsp; $M_4=56$.
-
-    How close is $M_4$ to $\mu$? With what probability?
-
-    $$
-    M_4=\frac{X_1+X_2+X_3+X_4}{4}
-    \sim \mathcal{N}\Bigl(\mu,\underbrace{\frac{20^2}{4}}_{\mathclap{\footnotesize 10^2=\mathrm{SE}(M_4)^2}}\Bigr)
-    $$
-
-    $$
-    \Longrightarrow\quad Z_4=\frac{M_4-\mu}{\mathrm{SE}(M_4)}\sim \mathcal{N}(0,1)
-    \qquad\text{(since }X\text{ is normal)}
-    $$
-
-    $$
-    \begin{aligned}
-    \Longrightarrow\quad P\bigl(|M_4-\mu|<\underbrace{z\,\mathrm{SE}(M_4)}_{\mathclap{\footnotesize \text{error threshold }\varepsilon}}\bigr)
-    &=P(|Z_4|<z)\\[1.6em]
-    &=\underbrace{\Phi(z)-\Phi(-z)}_{\mathclap{\footnotesize \text{confidence level}}}=1-\alpha
-    \end{aligned}
-    $$
-
-    $\Longrightarrow$ &nbsp; $M_4$ is within $\varepsilon=z\,\mathrm{SE}(M_4)$ of $\mu$ with probability
-
-    $$
-    1-\alpha=\Phi(z)-\Phi(-z)=2\Phi(z)-1
-    $$
-
-    $$
-    \underbrace{1-\alpha}_{\mathclap{\footnotesize \text{found}}}\text{ chance of }
-    M_4\in\underbrace{[\mu-\varepsilon,\mu+\varepsilon]}_{\mathclap{\footnotesize \text{given}}}
-    $$
-
-    $$
-    \Updownarrow
-    $$
-
-    $$
-    \underbrace{[M_4-\varepsilon,M_4+\varepsilon]}_{\mathclap{\footnotesize \text{found}}}
-    \ni\mu\text{ with confidence level }\underbrace{1-\alpha}_{\mathclap{\footnotesize \text{given}}}
-    $$
-
-    $$
-    \varepsilon=20\quad\Longrightarrow\quad
-    1-\alpha=2\Phi(z)-1=2\Phi(2)-1\approx95.4\%
-    $$
-
-    $\Longrightarrow$ &nbsp; $95.4\%$ chance of $M_4\in[\mu-20,\mu+20]$.
-
-    $M_4=56$ … is it close? Doesn't help us locate $\mu$…
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(lecture_sketch, mo):
-    _fig = lecture_sketch("fixed_interval")
-    mo.vstack([mo.hstack([_fig], justify="center"), mo.hstack([mo.md(r"$P(M_4\in[\mu-\varepsilon,\mu+\varepsilon])=1-\alpha$")], justify="center")])
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    $$
-    1-\alpha=95\%\quad\Longrightarrow\quad
-    \varepsilon=\Phi^{-1}(1-\alpha/2)\mathrm{SE}(M_4)
-    =10\Phi^{-1}(0.975)\approx19.6
-    $$
-
-    $\Longrightarrow$ &nbsp; $[M_4-19.6,M_4+19.6]\ni\mu$ with $95\%$ confidence.
-
-    $\leadsto$ &nbsp; $M_4=56$ &nbsp; $\Longrightarrow$ &nbsp; $[36.4,75.6]\ni\mu$ at $95\%$ confidence level.
-
-    $\leadsto$ &nbsp; gives us a range expected to contain $\mu$ at a desired level.
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    sample_mean = mo.ui.slider(20,80,step=1,value=56,label=r"$M_4$",show_value=True)
-    return (sample_mean,)
-
-
-@app.cell(hide_code=True)
-def _(lecture_sketch, mo, sample_mean):
-    _fig = lecture_sketch("moving_interval", sample_mean.value)
-    mo.vstack(
-        [
-            mo.hstack([sample_mean], justify="start", gap=2, wrap=True),
-            mo.hstack([_fig], justify="center"),
-            mo.hstack([mo.md(r"$P([M_4-\varepsilon,M_4+\varepsilon]\ni\mu)=1-\alpha$")], justify="center"),
-            mo.md(r"Here $\mu=50$ (unknown in practice). In red: an interval that misses $\mu$."),
-        ],
-        gap=1,
+        > > $\leadsto$ &nbsp; $\hat\theta_n$ has arbitrarily large probability of being arbitrarily close to $\theta$<br><span class="lk-ghost">$\leadsto$ &nbsp;</span>for sufficiently large sample size $n$
+        """,
+        lk.aside(
+            r"> $\leadsto$ &nbsp; $\hat\theta_n$ is a <span class='lk-mark'>consistent estimator</span> for $\theta$",
+            "a good estimator!",
+        ),
+        title="Last time",
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    **Remark.** For different sample data $X_i=x_i$, we have different sample mean $M_4=m_4$.
+def _(lk):
+    # module: recap
+    # goals
+    lk.goals(
+        r"""
+        For fixed $n$, how close and with what probability?
 
-    $\Longrightarrow$ &nbsp; different interval $[m_4-\varepsilon,m_4+\varepsilon]$ at the same confidence level $1-\alpha$.
-    """)
+        > $\leadsto$ &nbsp; confidence intervals for $\theta$
+        """,
+        title="In this lecture",
+    )
     return
 
 
 @app.cell(hide_code=True)
-def _(definition):
-    definition(r"""
-    Given $X_1,\dots,X_n\sim f_X$ iid with unknown parameter $\theta$, a **confidence interval** for $\theta$ at level $1-\alpha$ is a pair of statistics
-
-    $$
-    L_n=\ell(X_1,\dots,X_n),\qquad U_n=u(X_1,\dots,X_n)
-    $$
-
-    such that
-
-    $$
-    P(L_n\le\theta\le U_n)=1-\alpha
-    $$
-    """, "Confidence interval")
+def _(lk):
+    # module: recap
+    # references
+    lk.references("WMS 8.5–8.7")
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    **Example.** $X_1,\dots,X_4\sim \mathcal{N}(\mu,20^2)$,
-
-    $$
-    \Longrightarrow\quad L_4=M_4-z\,\mathrm{SE}(M_4),\qquad
-    U_4=M_4+z\,\underbrace{\mathrm{SE}(M_4)}_{\mathclap{\footnotesize \sigma/\sqrt n=20/2=10}}
-    $$
-
-    where $\Phi(z)=1-\alpha/2$ &nbsp; $\leadsto$ &nbsp; $z=z_{1-\alpha/2}$.
-
-    **Remark.** For $X_1,\dots,X_n\sim \mathcal{N}(\mu,\sigma^2)$ iid, with known $\sigma^2>0$, we can find the error threshold $\varepsilon=z_{1-\alpha/2}\mathrm{SE}(M_n)$ since
-
-    $$
-    Z_n=\frac{M_n-\mu}{\sigma/\sqrt n}
-    =\frac{M_n-\mu}{\mathrm{SE}(M_n)}\sim \mathcal{N}(0,1)
-    $$
-
-    In general, for non-normal $X$, we need the CLT!
-
-    $$
-    Z_n\longrightarrow Z\sim \mathcal{N}(0,1)\qquad\text{as }n\to\infty
-    $$
-
-    **Remark.** $\varepsilon=z\,\mathrm{SE}(M_n)=z\sigma/\sqrt n$ depends explicitly on $\sigma$.
-
-    If $\sigma$ is unknown, we cannot get $\varepsilon$ from
-
-    $$
-    P(|M_n-\mu|<\varepsilon)=1-\alpha
-    \qquad\text{(even for }X\sim \mathcal{N}(\mu,\sigma^2)\text{)}
-    $$
-
-    In this case, we must use $S_n^2$ (consistent for $\sigma^2$) instead of $\sigma^2$!
-    """)
+def _(lk):
+    # module: confidence intervals
+    # section
+    lk.section("Confidence intervals")
     return
 
 
 @app.cell(hide_code=True)
-def _(theorem):
-    theorem(r"""
-    For any population $X$ with $E[X]=\mu$, $\mathrm{Var}(X)=\sigma^2>0$, both unknown, for large enough $n$,
+def _(interval, lk, m4):
+    # module: confidence intervals
+    # example: midterm scores, the interval around mu and the interval around M_4
+    lk.example(
+        [
+            r"""
+            Midterm scores $X\sim\mathcal N(\mu,20^2)$, $\mu$ unknown
 
-    $$
-    \left[M_n-z_{1-\alpha/2}\frac{S_n}{\sqrt n},\ M_n+z_{1-\alpha/2}\frac{S_n}{\sqrt n}\right]
-    $$
+            > $\leadsto$ &nbsp; given 4 scores $X_1=30$, $X_2=54$, $X_3=62$, $X_4=78$ &nbsp; $\Longrightarrow$ &nbsp; $M_4=56$
 
-    is an approximate confidence interval for $\mu$ at level $1-\alpha$:
+            > $\leadsto$ &nbsp; how close is $M_4$ to $\mu$? with what probability?
 
-    $$
-    P\left(M_n-z_{1-\alpha/2}\frac{S_n}{\sqrt n}\le\mu\le
-    M_n+z_{1-\alpha/2}\frac{S_n}{\sqrt n}\right)\longrightarrow1-\alpha
-    \quad\text{as }n\to\infty
-    $$
-    """, "Large-sample confidence interval for the mean")
+            $M_4=\dfrac{X_1+X_2+X_3+X_4}{4}\sim\mathcal N\Big(\mu,\underbrace{\dfrac{20^2}{4}}_{\footnotesize 10^2=\mathrm{SE}(M_4)^2}\Big)$
+            """,
+            lk.aside(
+                r"> $\Longrightarrow$ &nbsp; $Z_4=\dfrac{M_4-\mu}{\mathrm{SE}(M_4)}\sim\mathcal N(0,1)$",
+                r"since $X$ is normal",
+            ),
+            r"""
+            > $\Longrightarrow$ &nbsp; $P\big(|M_4-\mu|<\overbrace{\underbrace{z\,\mathrm{SE}(M_4)}_{\footnotesize\text{error threshold}}}^{\footnotesize\varepsilon}\big)=P(|Z_4|<z)=\underbrace{\Phi(z)-\Phi(-z)}_{\footnotesize\text{confidence level}}=1-\alpha$
+
+            > $\Longrightarrow$ &nbsp; $M_4$ is within $\varepsilon=z\,\mathrm{SE}(M_4)$ from $\mu$ with probability $1-\alpha=\underbrace{\Phi(z)-\Phi(-z)}_{\footnotesize 2\Phi(z)-1}$
+
+            $$
+            \Longrightarrow\quad\underbrace{1-\alpha}_{\footnotesize\text{found}}\text{ chance of }M_4\in\big[\mu-\underbrace{\varepsilon}_{\footnotesize\text{given}},\,\mu+\underbrace{\varepsilon}_{\footnotesize\text{given}}\big]
+            $$
+
+            <span class="lk-turn">$\leftrightsquigarrow$</span>
+
+            $$
+            \big[M_4-\underbrace{\varepsilon}_{\footnotesize\text{found}},\,M_4+\underbrace{\varepsilon}_{\footnotesize\text{found}}\big]\ni\mu\text{ with confidence level }\underbrace{1-\alpha}_{\footnotesize\text{given}}
+            $$
+
+            $\varepsilon=20$ &nbsp; $\Longrightarrow$ &nbsp; $1-\alpha=2\Phi(z)-1=2\Phi(2)-1\approx95.4\%$
+
+            <span class="lk-ghost">$\varepsilon=20$ &nbsp;</span>$\Longrightarrow$ &nbsp; $95.4\%$ chance of $M_4\in[\mu-20,\mu+20]$
+
+            <span class="lk-ghost">$\varepsilon=20$ &nbsp; $\Longrightarrow$ &nbsp;</span>$\leadsto$ &nbsp; $M_4=56$ … is it close?
+
+            <span class="lk-ghost">$\varepsilon=20$ &nbsp; $\Longrightarrow$ &nbsp;</span>$\leadsto$ &nbsp; doesn't help us locate $\mu$ …
+            """,
+            lk.figure(interval("mu"), caption=r"$P\big(M_4\in[\mu-\varepsilon,\mu+\varepsilon]\big)=1-\alpha$"),
+            lk.gap(),
+            r"""
+            $1-\alpha=95\%$ &nbsp; $\Longrightarrow$ &nbsp; $\varepsilon=\Phi^{-1}(1-\alpha/2)\,\mathrm{SE}(M_4)=10\,\Phi^{-1}(0.975)\approx19.6$
+
+            <span class="lk-ghost">$1-\alpha=95\%$ &nbsp;</span>$\Longrightarrow$ &nbsp; $[M_4-19.6,M_4+19.6]\ni\mu$ with $95\%$ confidence
+
+            <span class="lk-ghost">$1-\alpha=95\%$ &nbsp; $\Longrightarrow$ &nbsp;</span>$\leadsto$ &nbsp; $M_4=56$ &nbsp; $\Longrightarrow$ &nbsp; $[36.4,75.6]\ni\mu$ at $95\%$ confidence level
+
+            <span class="lk-ghost">$1-\alpha=95\%$ &nbsp; $\Longrightarrow$ &nbsp;</span>$\leadsto$ &nbsp; gives us a range expected to contain $\mu$ at a desired level
+            """,
+            lk.interactive(
+                interval("M4", m4=m4.value),
+                controls=[m4],
+                caption=r"$P\big([M_4-\varepsilon,M_4+\varepsilon]\ni\mu\big)=1-\alpha$",
+            ),
+        ]
+    )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    **Example (poll).**
+def _(lk):
+    # module: confidence intervals
+    # remark: different data, different interval
+    lk.remark(
+        r"""
+        For different sample data $X_i=x_i$ we have different sample mean $M_4=m_4$
 
-    $$
-    X=\begin{cases}1&\text{if supports A},\\0&\text{otherwise}.
-    \end{cases}
-    $$
-
-    $$
-    X_1,\dots,X_n\sim\mathrm{Binom}(1,p)\text{ iid},\qquad
-    \mu=\underbrace{p}_{\mathclap{\footnotesize \text{fraction of all voters who support A}}},\quad\sigma^2=p(1-p)
-    $$
-
-    both unknown.
-
-    $$
-    \hat p=M_n=\text{fraction of polled voters who support A}
-    $$
-
-    $$
-    \hat p(1-\hat p)=\hat\sigma_n^2=\text{biased sample variance}
-    =\frac{n-1}{n}S_n^2
-    $$
-
-    $$
-    \Longrightarrow\quad
-    \left[\hat p-z_{1-\alpha/2}\sqrt{\frac{\hat p(1-\hat p)}{n-1}},\
-    \hat p+z_{1-\alpha/2}\sqrt{\frac{\hat p(1-\hat p)}{n-1}}\right]
-    $$
-
-    is a confidence interval for $p$ at level $\approx1-\alpha$.
-
-    $n=1000$, with $540$ supporters:
-
-    $$
-    \Longrightarrow\quad\hat p=0.54,\qquad
-    \sqrt{\frac{\hat p(1-\hat p)}{n-1}}\approx0.0158
-    $$
-
-    $$
-    \begin{aligned}
-    1-\alpha=95\%&\quad\Longrightarrow\quad z_{1-\alpha/2}\approx1.96
-    \quad\Longrightarrow\quad\varepsilon\approx1.96\times0.0158\approx0.031,\\
-    1-\alpha=99\%&\quad\Longrightarrow\quad z_{1-\alpha/2}\approx2.58
-    \quad\Longrightarrow\quad\varepsilon\approx2.58\times0.0158\approx0.04
-    \end{aligned}
-    $$
-
-    $\Longrightarrow$ &nbsp; $[0.54-0.031,0.54+0.031]$ for $p$ at approximate level $0.95$,
-
-    $[0.54-0.04,0.54+0.04]$ at approximate level $0.99$.
-
-    $\leadsto$ &nbsp; we estimate $p$ to be $54\%$, with margin of error $\pm3.1$ percentage points at $95\%$ confidence ($\pm4$ at $99\%$).
-    """)
+        > $\Longrightarrow$ &nbsp; different interval $[m_4-\varepsilon,m_4+\varepsilon]$ at same confidence level $1-\alpha$
+        """
+    )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    At the same $n$: more confidence $\Longleftrightarrow$ larger margin of error.
+def _(lk):
+    # module: confidence intervals
+    # definition: confidence interval
+    lk.definition(
+        r"""
+        Given $X_1,\dots,X_n\sim f_X$ iid with unknown parameter $\theta$,<br>a **confidence interval** for $\theta$ at level $1-\alpha$ is a pair of statistics
 
-    $z_{1-\alpha/2}$ grows with $1-\alpha$.
+        $$
+        L_n=\ell(X_1,\dots,X_n),\quad U_n=u(X_1,\dots,X_n)
+        $$
 
-    **Example.** How many voters are needed for given margin $\varepsilon$ and confidence level $1-\alpha$?
+        such that
 
-    $\hat p=$ fraction of polled voters in support of A.
-
-    $$
-    \Longrightarrow\quad\hat p\le1\quad\Longrightarrow\quad\hat p(1-\hat p)\le\underbrace{1/4}_{\mathclap{\footnotesize \text{worst case scenario}}}
-    $$
-
-    $$
-    \Longrightarrow\quad z_{1-\alpha/2}\sqrt{\frac{\hat p(1-\hat p)}{n-1}}
-    \le z_{1-\alpha/2}\frac1{2\sqrt{n-1}}\le\varepsilon
-    $$
-
-    $$
-    \Longleftrightarrow\quad n-1\ge\left(\frac{z_{1-\alpha/2}}{2\varepsilon}\right)^2
-    $$
-
-    $\leadsto$ &nbsp; $\varepsilon=3.1\%$, $1-\alpha=95\%$ &nbsp; $\Longrightarrow$ &nbsp; $n-1\ge\left(\dfrac{1.96}{2\times0.031}\right)^2\approx999.4$
-
-    $\leadsto$ &nbsp; $\varepsilon=1.55\%$, $1-\alpha=95\%$ &nbsp; $\Longrightarrow$ &nbsp; $n-1\ge\left(\dfrac{1.96}{2\times0.0155}\right)^2\approx3997.5$
-
-    $\therefore$ &nbsp; to reduce the margin by a factor $1/2$ at the same confidence level, we need about $4$ times as many polled voters!
-
-    **Remark.** We mainly considered $M_n$, which
-
-    1. is unbiased,
-    2. has simple standard error,
-    3. satisfies the CLT!
-
-    For other statistics $\hat\theta_n$, we need
-
-     a) some asymptotic behavior as $n\to\infty$,
-
-     b) some knowledge about bias and standard error.
-    """)
+        $$
+        P(L_n\le\theta\le U_n)=1-\alpha
+        $$
+        """,
+        label="def-ci",
+    )
     return
 
 
 @app.cell(hide_code=True)
-def _(definition):
-    definition(r"""
-    $\hat\theta_n$ is called **asymptotically normal** if, $\forall\,z\in\mathbb R$,
+def _(lk):
+    # module: confidence intervals
+    # example: midterm scores, L_4 and U_4
+    lk.example(
+        r"""
+        $X_1,\dots,X_4\sim\mathcal N(\mu,20^2)$
 
-    $$
-    P\Bigg(\underbrace{\frac{\hat\theta_n-E[\hat\theta_n]}{\mathrm{SE}(\hat\theta_n)}}_{\mathclap{\footnotesize \text{standard score of }\hat\theta_n}}<z\Bigg)
-    \longrightarrow\Phi(z)\quad\text{as }n\to\infty
-    $$
-    """, "Asymptotically normal estimator")
+        > $\Longrightarrow$ &nbsp; $L_4=M_4-z\,\mathrm{SE}(M_4)$, &nbsp; $U_4=M_4+z\,\overbrace{\mathrm{SE}(M_4)}^{\footnotesize\sigma/\sqrt n=20/2=10}$
+
+        > > where $\Phi(z)=1-\alpha/2$ &nbsp; $\leadsto$ &nbsp; $z=z_{1-\alpha/2}$
+        """
+    )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    Or another distribution, with its corresponding cdf.
+def _(lk):
+    # module: confidence intervals
+    # remark: known sigma, and the CLT
+    lk.remark(
+        r"""
+        For $X_1,\dots,X_n\sim\mathcal N(\mu,\sigma^2)$ iid, with known $\sigma^2>0$,<br>we can find the error threshold $\varepsilon=z_{1-\alpha/2}\,\mathrm{SE}(M_n)$ since
 
-    $\leadsto$ &nbsp; other asymptotic behaviors give rise to different relations between margins of error $\varepsilon=z\,\mathrm{SE}(\hat\theta_n)$ and confidence levels (in the normal case, $1-\alpha=\Phi(z)-\Phi(-z)$).
-    """)
+        $$
+        Z_n=\frac{M_n-\mu}{\sigma/\sqrt n}=\frac{M_n-\mu}{\mathrm{SE}(M_n)}\sim\mathcal N(0,1)
+        $$
+
+        In general, for non-normal $X$, we need the CLT!
+
+        $$
+        Z_n\longrightarrow Z\sim\mathcal N(0,1)\quad\text{for }n\to\infty
+        $$
+        """
+    )
     return
 
 
 @app.cell(hide_code=True)
-def _(theorem):
-    theorem(r"""
-    If $\hat\theta_n$ is asymptotically normal and the standard error and bias are known,
+def _(lk):
+    # module: confidence intervals
+    # remark: unknown sigma
+    lk.remark(
+        [
+            r"""
+            $\varepsilon=z\,\mathrm{SE}(M_n)=z\,\sigma/\sqrt n$ depends explicitly on $\sigma$.
 
-    $$
-    \mathrm{SE}(\hat\theta_n)=A_n,\qquad\mathrm{Bias}(\hat\theta_n)=B_n
-    $$
-
-    then
-
-    $$
-    [\hat\theta_n-B_n-z_{1-\alpha/2}A_n,\ \hat\theta_n-B_n+z_{1-\alpha/2}A_n]
-    $$
-
-    is an approximate CI for $\theta$ at level $1-\alpha$ for sufficiently large $n$.
-    """, "Confidence interval from an asymptotically normal estimator")
+            If $\sigma$ is unknown, we cannot get $\varepsilon$ from
+            """,
+            lk.aside(
+                r"$$P\big(|M_n-\mu|<\varepsilon\big)=1-\alpha$$",
+                r"even for $X\sim\mathcal N(\mu,\sigma^2)$",
+            ),
+            r"In this case, we must use $\underbrace{S_n^2}_{\footnotesize\text{consistent for }\sigma^2}$ instead of $\sigma^2$",
+        ]
+    )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    **Remark.** If $\mathrm{SE}(\hat\theta_n)$ and $\mathrm{Bias}(\hat\theta_n)$ are unknown, we must find appropriate estimators for $A_n$ and $B_n$.
+def _(lk):
+    # module: confidence intervals
+    # theorem: large-sample confidence interval for the mean
+    lk.theorem(
+        r"""
+        For any population $X$ with $E[X]=\mu$, $\mathrm{Var}(X)=\sigma^2>0$, both unknown, for large enough $n$,
 
-    $\leadsto$ &nbsp; these are not guaranteed to exist!
-    """)
+        $$
+        \left[M_n-z_{1-\alpha/2}\frac{S_n}{\sqrt n},\ M_n+z_{1-\alpha/2}\frac{S_n}{\sqrt n}\right]
+        $$
+
+        is an approximate confidence interval for $\mu$ at level $1-\alpha$
+
+        $$
+        P\left(M_n-z_{1-\alpha/2}\frac{S_n}{\sqrt n}\le\mu\le M_n+z_{1-\alpha/2}\frac{S_n}{\sqrt n}\right)\longrightarrow1-\alpha\quad\text{for }n\to\infty
+        $$
+        """,
+        label="thm-large-sample",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: poll
+    # example: poll, the confidence interval for p
+    lk.example(
+        [
+        r"""
+        $X=\begin{cases}
+        1, & \text{if supports A}\\
+        0, & \text{otherwise}
+        \end{cases}$
+        """,
+        lk.aside(
+            r"> $X_1,\dots,X_n\sim\mathrm{Binom}(1,p)$ iid with $\underbrace{\mu=\mk{p},\ \sigma^2=p(1-p)}_{\footnotesize\text{both unknown}}$",
+            [(1.1, r"$p$ = fraction of all voters who support A")],
+            rows=2,
+        ),
+        r"""
+        > $\hat p=M_n$ &nbsp; (fraction of polled voters who support A)
+
+        > $\hat p(1-\hat p)=\hat\sigma_n^2=\dfrac{n-1}{n}\,S_n^2$ &nbsp; (biased sample variance)
+
+        > > $\Longrightarrow$ &nbsp; $\left[\hat p-z_{1-\alpha/2}\sqrt{\dfrac{\hat p(1-\hat p)}{n-1}},\ \hat p+z_{1-\alpha/2}\sqrt{\dfrac{\hat p(1-\hat p)}{n-1}}\right]\ni p$ &nbsp; at level $\approx1-\alpha$
+
+        $n=1000$, with $540$ supporters
+
+        > $\Longrightarrow$ &nbsp; $\hat p=0.54$, &nbsp; $\sqrt{\dfrac{\hat p(1-\hat p)}{n-1}}\approx0.0158$
+
+        > > <span class="lk-tab" style="--lk-tab: 7em">$1-\alpha=95\%$</span>$\Longrightarrow$ &nbsp; <span class="lk-tab" style="--lk-tab: 7em">$z_{1-\alpha/2}\approx1.96$</span>$\Longrightarrow$ &nbsp; $\varepsilon\approx1.96\times0.0158\approx0.031$
+
+        > > <span class="lk-tab" style="--lk-tab: 7em">$1-\alpha=99\%$</span>$\Longrightarrow$ &nbsp; <span class="lk-tab" style="--lk-tab: 7em">$z_{1-\alpha/2}\approx2.58$</span>$\Longrightarrow$ &nbsp; $\varepsilon\approx2.58\times0.0158\approx0.04$
+
+        > > <span class="lk-tab" style="--lk-tab: 7em"></span>$\Longrightarrow$ &nbsp; <span class="lk-tab" style="--lk-tab: 14.5em">$[0.54-0.031,\,0.54+0.031]\ni p$</span>at level $0.95$
+
+        > > <span class="lk-tab" style="--lk-tab: 7em"></span><span class="lk-ghost">$\Longrightarrow$ &nbsp;</span><span class="lk-tab" style="--lk-tab: 14.5em">$[0.54-0.04,\,0.54+0.04]\ni p$</span>at level $0.99$
+
+        > $\leadsto$ &nbsp; we estimate $p$ to be $54\%$
+
+        > > <span class="lk-tab" style="--lk-tab: 9.3em">with margin of error</span><span class="lk-tab" style="--lk-tab: 3.7em">$\pm3.1\%$</span>at $95\%$ confidence
+
+        > > <span class="lk-tab" style="--lk-tab: 9.3em"></span><span class="lk-tab" style="--lk-tab: 3.7em">$\pm4\%$</span>at $99\%$ confidence
+        """,
+        ],
+        title="poll",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: poll
+    # consequence: confidence against error
+    lk.prose(
+        lk.aside(
+            r"At same $n$: more confidence &nbsp; $\Longleftrightarrow$ &nbsp; more error",
+            r"$z_{1-\alpha/2}$ grows with $1-\alpha$",
+        )
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: poll
+    # example: how many voters
+    lk.example(
+        r"""
+        How many voters are needed for given margin $\varepsilon$ and confidence level $1-\alpha$?
+
+        $\hat p=$ fraction of polled voters in support of A
+
+        > $\Longrightarrow$ &nbsp; $0\le\hat p\le1$ &nbsp; $\Longrightarrow$ &nbsp; $\hat p(1-\hat p)\le\underbrace{1/4}_{\footnotesize\text{worst case scenario}}$
+
+        > $\Longrightarrow$ &nbsp; $z_{1-\alpha/2}\sqrt{\dfrac{\hat p(1-\hat p)}{n-1}}\le z_{1-\alpha/2}\,\dfrac12\,\dfrac1{\sqrt{n-1}}\le\varepsilon$
+
+        > $\Longleftarrow$ &nbsp; $n-1\ge\left(\dfrac{z_{1-\alpha/2}}{2\varepsilon}\right)^2$
+
+        > > $\leadsto$ &nbsp; <span class="lk-tab" style="--lk-tab: 10.6em">$\varepsilon=3.1\%$, $1-\alpha=95\%$</span>$\Longrightarrow$ &nbsp; $n-1\ge\left(\dfrac{1.96}{2\times0.031}\right)^2\approx999.4$
+
+        > > $\leadsto$ &nbsp; <span class="lk-tab" style="--lk-tab: 10.6em">$\varepsilon=1.55\%$, $1-\alpha=95\%$</span>$\Longrightarrow$ &nbsp; $n-1\ge\left(\dfrac{1.96}{2\times0.0155}\right)^2\approx3997.5$
+
+        $\therefore$ &nbsp; to reduce the margin by factor $1/2$ at same confidence level we need 4 times more polled voters!
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: other estimators
+    # remark: what M_n had
+    lk.remark(
+        r"""
+        We mainly considered $M_n$ which
+
+        > 1\) &nbsp; is unbiased,
+
+        > 2\) &nbsp; has simple standard error,
+
+        > 3\) &nbsp; satisfies the CLT!
+
+        For other statistics $\hat\theta_n$, we need
+
+        > a) &nbsp; some asymptotic behavior as $n\to\infty$
+
+        > b) &nbsp; some knowledge about bias and standard error
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: other estimators
+    # definition: asymptotically normal
+    lk.definition(
+        [
+            lk.aside(
+                r"$\hat\theta_n$ is called **asymptotically <span class='lk-mark'>normal</span>** if $\forall z\in\mathbb R$",
+                "or another distribution",
+            ),
+            lk.aside(
+                r"""
+                $$
+                P\Bigg(\underbrace{\frac{\hat\theta_n-E[\hat\theta_n]}{\mathrm{SE}(\hat\theta_n)}}_{\footnotesize\text{standard score of }\hat\theta_n}<z\Bigg)\longrightarrow\mk{\Phi(z)}\quad\text{as }n\to\infty
+                $$
+                """,
+                [(1.55, "or the other corresponding cdf")],
+                rows=3,
+            ),
+        ],
+        label="def-asymptotically-normal",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: other estimators
+    # consequence: other asymptotic behaviors
+    lk.prose(
+        r"""
+        $\leadsto$ &nbsp; other asymptotic behaviors give rise to different relations between<br>margins of error $\varepsilon=z\,\mathrm{SE}(\hat\theta_n)$ and confidence levels $1-\alpha=\Phi(z)-\Phi(-z)$
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: other estimators
+    # theorem: confidence interval from an asymptotically normal estimator
+    lk.theorem(
+        r"""
+        If $\hat\theta_n$ is asymptotically normal, and the standard error and bias are known
+
+        $$
+        \mathrm{SE}(\hat\theta_n)=A_n\quad\text{and}\quad\mathrm{Bias}(\hat\theta_n)=B_n
+        $$
+
+        $$
+        \Longrightarrow\quad\left[\hat\theta_n-B_n-z_{1-\alpha/2}A_n,\ \hat\theta_n-B_n+z_{1-\alpha/2}A_n\right]
+        $$
+
+        is an approximate confidence interval for $\theta$ at level $1-\alpha$ for sufficiently large $n$
+        """,
+        label="thm-asymptotic-ci",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: other estimators
+    # remark: unknown SE and bias
+    lk.remark(
+        [
+            r"If $\mathrm{SE}(\hat\theta_n)$ and $\mathrm{Bias}(\hat\theta_n)$ are unknown,",
+            lk.aside(
+                r"we <span class='lk-mark'>must find appropriate estimators</span> for $A_n$ and $B_n$",
+                "these are not guaranteed to exist …",
+            ),
+        ]
+    )
     return
 
 

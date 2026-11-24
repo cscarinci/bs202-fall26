@@ -1,437 +1,437 @@
 import marimo
 
 __generated_with = "0.25.1"
-app = marimo.App(width="medium", app_title="BS202 · Lecture 22 · Hypothesis testing", css_file="bs202.css")
+app = marimo.App(width="medium", app_title="BS202 · Lecture 22 · Hypothesis testing", css_file="lecturekit/style.css")
+
 
 @app.cell(hide_code=True)
-def _():
+async def _():
     import math
+    import sys
 
     import marimo as mo
-    import matplotlib
     import numpy as np
     from matplotlib.figure import Figure
 
-    # Figures use the same Computer Modern typeface as the text
-    matplotlib.rcParams.update({"font.size": 14, "font.family": "serif", "font.serif": ["cmr10", "DejaVu Serif"], "mathtext.fontset": "cm", "axes.formatter.use_mathtext": True, "axes.unicode_minus": False, "savefig.format": "svg"})
+    import matplotlib  # noqa: F401  (named here so the browser fetches it while Python starts)
 
-    return Figure, math, mo, np
+    if sys.platform == "emscripten":
+        import micropip
 
-@app.cell(hide_code=True)
-def _(mo):
-    # ---- Building blocks shared by all lectures -------------------------
-    # Palette with fixed roles (figures only; text carries no colour):
-    #   BLUE   the primary object (the point, the chosen vector, the main curve)
-    #   RED    the second object it is compared with
-    #   GREEN  a derived quantity (tangent vector, gradient, mean)
-    #   GREY   reference geometry (guides, unit circle, reference curves)
-    #   LIGHT  fills and grids
-    BLUE, RED, GREEN, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#9a9a9a", "#e3ebf4"
-    # Figure widths: HALF sits beside text or in a pair
-    HALF = 3.6
-
-    def header(document, date, running=""):
-        """Course header, as on the exercise sheets and exams."""
-        return mo.Html(
-            f"""
-    <div class="bs-head">
-      <div class="bs-running">BS202 &bull; {running}</div>
-      <div class="bs-title">Introduction to Probability<br>and Mathematical Statistics</div>
-      <div class="bs-inst">Daegu Gyeongbuk Institute of Science and Technology<br>School of Undergraduate Studies</div>
-      <div class="bs-meta">
-        <b>Document</b><span>{document}</span><b>Course</b><span>BS202a</span>
-        <b>Week</b><span>{date.removeprefix('Week ')}</span><b>Instructor</b><span>Professor Scarinci</span>
-      </div>
-    </div>
-    """
-        )
-
-    def _statement(label, title, body):
-        head = f"**{label}" + (f" ({title})" if title else "") + ".**"
-        return mo.md(head + "\n\n" + body).style({"border-left": f"2px solid {BLUE}", "padding-left": "1rem"})
-
-    def definition(body, title=""):
-        return _statement("Definition", title, body)
-
-    def theorem(body, title=""):
-        return _statement("Theorem", title, body)
-
-    def table(rows):
-        """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
-        return mo.Html(f'<div class="readout">{_md.text}</div>')
-
-    def corollary(body, title=""):
-        return _statement("Corollary", title, body)
-
-    def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
-        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
-        so arrows look alike in every figure whatever its axis range."""
-        ax.annotate(
-            "",
-            xy=tip,
-            xytext=tail,
-            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
-        )
-        if label:
-            pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
-            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=13)
-
-    return corollary, LIGHT, BLUE, GREEN, GREY, HALF, RED, arrow, definition, header, table, theorem
+        await micropip.install(str(mo.notebook_location() / "public" / "lecturekit-0.1.0-py3-none-any.whl"), deps=False)
+    import lecturekit as lk
+    return Figure, lk, math, np
 
 
 @app.cell(hide_code=True)
-def _(header):
-    header("Lecture 22","Week 13","Lecture 22 • Hypothesis testing")
+def _(lk):
+    lk.lecture(22, "Hypothesis testing")
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, LIGHT, arrow, np):
+def _(Figure, lk, np):
+    def _pdf(w):
+        return np.exp(-w**2 / 2) / np.sqrt(2 * np.pi)
+
     def power_sketch(z0=1.5, delta=0.5):
+        # the density of Z - delta ~ N(0, 1); both tails beyond -z0 - delta and z0 - delta hatched: their area is K(mu)
         fig = Figure(figsize=(6.4, 2.9), layout="constrained")
         ax = fig.subplots()
         ax.axis("off")
-        pdf = lambda w: np.exp(-w**2 / 2) / np.sqrt(2 * np.pi)
-        x = np.linspace(-3.9, 3.9, 400)
+        right = 3.9
+        lk.arrow(ax, (-right - 0.2, 0), (right + 0.4, 0), "black", lw=1.0)
+        lk.arrow(ax, (0, -0.01), (0, 0.46), "black", lw=1.0)
+        ax.set_xlim(-right - 0.3, right + 0.5)
+        ax.set_ylim(-0.14, 0.48)
+        x = np.linspace(-right, right, 400)
         lo, hi = -z0 - delta, z0 - delta
-        if lo > -3.9:
-            w = np.linspace(-3.9, lo, 200)
-            ax.fill_between(w, pdf(w), facecolor=LIGHT, edgecolor=BLUE, hatch="////", lw=0)
-        if hi < 3.9:
-            w = np.linspace(hi, 3.9, 200)
-            ax.fill_between(w, pdf(w), facecolor=LIGHT, edgecolor=BLUE, hatch="////", lw=0)
-        for c, name, y in ((lo, r"$-z_0-\delta$", -0.03), (hi, r"$z_0-\delta$", -0.03 if hi - lo > 1.3 else -0.075)):
-            if -3.9 < c < 3.9:
-                ax.plot([c, c], [0, pdf(c)], color=BLUE, lw=1.2)
-                ax.plot([c, c], [-0.012, 0.012], color="black", lw=1.0)
-                ax.text(c, y, name, ha="center", va="top", fontsize=14)
-        ax.plot(x, pdf(x), color=BLUE, lw=2)
-        arrow(ax, (-4.1, 0), (4.3, 0), "black", lw=1.0)
-        ax.text(-1.55, 0.33, r"$Z-\delta\sim\mathcal{N}(0,1)$", color=BLUE, fontsize=14, ha="right")
-        if hi + lo < 0:
-            tip, text_at = min(max(hi, -3.9) + 0.35, 3.6), (2.7, 0.25)
+        for a_, b_ in ((-right, lo), (hi, right)):
+            if a_ < b_:
+                w = np.linspace(a_, b_, 200)
+                ax.fill_between(w, _pdf(w), facecolor=lk.LIGHT, edgecolor=lk.BLUE, hatch="////", lw=0)
+        close = hi - lo < 1.3
+        for c, name, y in ((lo, r"$-z_0-\delta$", -0.03), (hi, r"$z_0-\delta$", -0.085 if close else -0.03)):
+            if -right < c < right:
+                ax.plot([c, c], [0, _pdf(c)], color=lk.BLUE, lw=1.2)
+                ax.text(c, y, name, ha="center", va="top", fontsize=13)
+        ax.plot(x, _pdf(x), color=lk.BLUE, lw=2)
+        ax.text(-1.0, 0.36, r"$Z-\delta\sim\mathcal{N}(0,1)$", color=lk.BLUE, fontsize=14, ha="right")
+        if hi < right:
+            tip, text_at = min(max(hi, -right) + 0.35, 3.6), (2.9, 0.24)
         else:
-            tip, text_at = max(min(lo, 3.9) - 0.35, -3.6), (-2.9, 0.17)
-        ax.annotate(r"$\mathrm{area}=K(\mu)$", (tip, pdf(tip) / 2), xytext=text_at, color=BLUE, fontsize=14, ha="center",
-                    arrowprops={"arrowstyle": "-", "color": BLUE, "lw": 0.9})
-        ax.set_xlim(-4.2, 4.4)
-        ax.set_ylim(-0.1, 0.43)
+            tip, text_at = max(lo, -right) - 0.35, (-2.9, 0.24)
+        ax.annotate(r"$\mathrm{area}=K(\mu)$", (tip, _pdf(tip) / 2), xytext=text_at, color=lk.BLUE, fontsize=14, ha="center",
+                    arrowprops={"arrowstyle": "-", "color": lk.BLUE, "lw": 0.9})
         return fig
     return (power_sketch,)
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## So far
-
-    Estimators and confidence intervals
-
-    $\leadsto$ &nbsp; how to make an informed guess about $\theta$? &nbsp; $\hat\theta_n$
-
-    $\leadsto$ &nbsp; how to determine a plausible range for $\theta$? &nbsp; $[L_n,U_n]$
-
-    **In this lecture:** hypothesis testing
-
-    $\leadsto$ &nbsp; how plausible is a given value of $\theta$?
-
-    $\leadsto$ &nbsp; a given statement about $\theta$
-
-    **References:** WMS 10.1–10.4, 10.10
-
-    ## VI.1 &nbsp; Hypothesis testing
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(definition):
-    definition(r"""
-    Given a population $X$, a **hypothesis** about $X$ is any statement $H$ about some of its parameters.
-
-    Usually, if $\theta$ is an unknown parameter and $\theta_0\in\mathbb R$ is a given value, we call
-
-    $$
-    \begin{aligned}
-    H_0&=\text{“}\theta=\theta_0\text{”}
-    &&\underbrace{\text{the null-hypothesis}}_{\mathclap{\footnotesize \text{the default claim}}}\\[18pt]
-    H_1&=\text{“}\theta\neq\theta_0\text{”}
-    &&\underbrace{\text{the alternative hypothesis}}_{\mathclap{\footnotesize \text{usually the negative claim}}}
-    \end{aligned}
-    $$
-    """, "Hypothesis")
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    **Example (coin).** $X=$ result of one coin toss $\Longrightarrow$ $S_X=\lbrace 0,1\rbrace$.
-
-    Is the coin fair?
-
-    $$
-    \leadsto\quad
-    \begin{aligned}
-    H_0&=\text{“}p=1/2\text{”} & H_1&=\text{“}p\neq1/2\text{”}\\
-    &=\text{“the coin is fair”} & &=\text{“the coin is not fair”}
-    \end{aligned}
-    $$
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(definition):
-    definition(r"""
-    A **hypothesis test** of $H_0$ against $H_1$ consists of
-
-    - a **test statistic** $T=u(X_1,\dots,X_n)$
-
-        $\leadsto$ &nbsp; to compare data with predictions made under the assumption $H_0$ is true
-
-    - a **rejection region** $R\subseteq\mathbb R$
-
-        $\leadsto$ &nbsp; describing the values of $T$ that are unlikely under $H_0$
-    """, "Hypothesis test")
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    Given data $X_1=x_1,\dots,X_n=x_n$ (evidence), we **reject** $H_0$ if
-
-    $$
-    T=t=u(x_1,\dots,x_n)\in R
-    $$
-
-    $\leadsto$ &nbsp; $T=t\in R$ is unlikely under $H_0$
-
-    $\leadsto$ &nbsp; evidence against $H_0$
-
-    or we **do not reject** $H_0$ if
-
-    $$
-    T=t=u(x_1,\dots,x_n)\notin R
-    $$
-
-    $\leadsto$ &nbsp; $T=t\notin R$ is likely under $H_0$
-
-    $\leadsto$ &nbsp; but $T=t\notin R$ might also be likely under $H_1=H_0^c$
-
-    $\leadsto$ &nbsp; evidence does not rule out $H_0$!
-
-    $\leadsto$ &nbsp; not the same as evidence in favor of $H_0$!
-
-    **Example (presumption of innocence).** Criminal trial: $H_0=\text{“innocent”}$.
-
-    convicted (= reject $H_0$) &nbsp; $\Longleftrightarrow$ &nbsp; sufficient evidence to reduce doubt beyond a reasonable level &nbsp; $\leadsto$ &nbsp; $T\in R$
-
-    acquitted (= do not reject $H_0$) &nbsp; $\Longleftrightarrow$ &nbsp; insufficient evidence &nbsp; $\leadsto$ &nbsp; $T\notin R$
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(definition):
-    definition(r"""
-    A test can be wrong in two different ways:
-
-    - rejects $H_0$, but $H_0$ is true &nbsp; (**type I error**)
-
-        $\leadsto$ &nbsp; convicted, but innocent: wrongful conviction
-
-    - does not reject $H_0$, but $H_0$ is false &nbsp; (**type II error**)
-
-        $\leadsto$ &nbsp; acquitted, but guilty: wrongful acquittal
-
-    $\leadsto$ &nbsp; we would like our test to minimize the probability of both types of error!
-    """, "Type I and type II errors")
-    return
-
-
-@app.cell(hide_code=True)
-def _(definition):
-    definition(r"""
-    The **power** of a test $(T,R)$ is the function
-
-    $$
-    K(\theta)=P(T\in R;\theta)
-    $$
-
-    measuring the probability of rejecting $H_0=\text{“}\theta=\theta_0\text{”}$.
-    """, "Power")
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    **Remark.**
-
-    $$
-    \begin{aligned}
-    \text{If }\theta=\theta_0&\quad\Longrightarrow\quad K(\theta_0)=P(\text{type I error})\\
-    \text{If }\theta\neq\theta_0&\quad\Longrightarrow\quad K(\theta)=1-P(\text{type II error};\theta)
-    \end{aligned}
-    $$
-
-    $\leadsto$ &nbsp; ideally, we would like our test to have
-
-    $$
-    K(\theta)=
-    \begin{cases}
-    0, & \theta=\theta_0\\
-    1, & \theta\neq\theta_0
-    \end{cases}
-    $$
-
-    $\leadsto$ &nbsp; not possible if $f_X(x;\theta)$ is continuous in $\theta$
-
-    $\leadsto$ &nbsp; usually the case!
-
-    **Strategy for test design.**
-
-    ① choose a test statistic
-
-    $$
-    T=u(X_1,\dots,X_n)
-    $$
-
-    $\leadsto$ &nbsp; usually an appropriate estimator for the parameter
-
-    ② fix a **significance level** $\alpha$ (tolerance level) for type I errors, and choose a rejection region $R\subseteq\mathbb R$ such that
-
-    $$
-    K(\theta_0)=P(T\in R;\theta=\theta_0)\le\alpha
-    $$
-
-    $$
-    K(\theta)=P(T\in R;\theta\neq\theta_0)
-    $$
-
-    is the largest possible
-
-    $\leadsto$ &nbsp; at least amongst regions of a certain type
-
-    **Example ($z$-test for $\mu$).** $X\sim\mathcal N(\mu,\sigma^2)$ with known $\sigma^2>0$.
-
-    $$
-    H_0=\text{“}\mu=\mu_0\text{”},\qquad H_1=\text{“}\mu\neq\mu_0\text{”}
-    $$
-
-    ① test statistic
-
-    $$
-    Z=\frac{M_n-\mu_0}{\sigma/\sqrt n}
-    $$
-
-    $$
-    \begin{aligned}
-    &\Longrightarrow\quad\text{under }H_0:\ Z\sim\mathcal N(0,1)\\
-    &\Longrightarrow\quad\text{under }H_1:\ Z\sim\mathcal N(\delta,1)
-    \quad\text{with }\delta=\frac{\mu-\mu_0}{\sigma/\sqrt n}
-    \end{aligned}
-    $$
-
-    ② fix $\alpha\in(0,1)$, and regions
-
-    $$
-    R=\lbrace |z|\ge z_0\rbrace
-    $$
-
-    $\leadsto$ &nbsp; symmetric around $z=0$: choice of type of rejection region
-
-    If $\mu=\mu_0$,
-
-    $$
-    \begin{aligned}
-    K(\mu_0)&=P(|Z|\ge z_0;\mu=\mu_0)\\
-    &=1-\Phi(z_0)+\Phi(-z_0)=2(1-\Phi(z_0))\le\alpha\\
-    &\Longleftrightarrow\quad z_0\ge z_{1-\alpha/2}\qquad(\Phi(z_{1-\alpha/2})=1-\alpha/2)
-    \end{aligned}
-    $$
-
-    If $\mu\neq\mu_0$ &nbsp; $(\mu=\mu_0+\delta\sigma/\sqrt n)$,
-
-    $$
-    \begin{aligned}
-    K(\mu)&=P(|Z|\ge z_0;\mu)\\
-    &=1-P(-z_0-\delta<Z-\delta<z_0-\delta;\mu)\\
-    &=1-\Phi(z_0-\delta)+\Phi(-z_0-\delta)
-    \end{aligned}
-    $$
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    z0_val = mo.ui.slider(0, 3, step=0.05, value=1.5, label=r"$z_0$", show_value=True)
-    delta_val = mo.ui.slider(-2, 2, step=0.1, value=0.5, label=r"$\delta$", show_value=True)
+def _(lk):
+    # Controls of the interactive figures. They are shown inside their figures, so modules can be moved freely.
+    z0_val = lk.slider(0, 3, step=0.05, value=1.5, label=r"$z_0$")
+    delta_val = lk.slider(-2, 2, step=0.1, value=0.5, label=r"$\delta$")
     return delta_val, z0_val
 
 
 @app.cell(hide_code=True)
-def _(delta_val, math, mo, power_sketch, table, z0_val):
-    _Phi = lambda w: 0.5 * (1 + math.erf(w / math.sqrt(2)))
-    _z0, _d = z0_val.value, delta_val.value
-    mo.vstack(
+def _(lk):
+    # module: recap
+    # recap
+    lk.recap(
+        r"""
+        Estimators and confidence intervals
+
+        $\leadsto$ &nbsp; <span class="lk-tab">how to make an informed guess about $\theta$?</span> $\hat\theta_n$
+
+        $\leadsto$ &nbsp; <span class="lk-tab">how to determine a plausible range for $\theta$?</span> $[L_n,U_n]$
+        """,
+        title="So far",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: recap
+    # goals
+    lk.goals(
+        "Hypothesis testing",
+        r"""
+        $\leadsto$ &nbsp; how plausible is a given value of $\theta$?
+        """,
+        title="In this lecture",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: recap
+    # references
+    lk.references("WMS 10.1–10.4, 10.10")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: hypotheses
+    # section
+    lk.section("Hypothesis testing")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: hypotheses
+    # definition: hypothesis
+    lk.definition(
         [
-            mo.hstack([z0_val, delta_val], justify="start", gap=2, wrap=True),
-            table([(r"$K(\mu)=1-\Phi(z_0-\delta)+\Phi(-z_0-\delta)$", f"{100 * (1 - _Phi(_z0 - _d) + _Phi(-_z0 - _d)):.1f}%")]),
-            mo.hstack([power_sketch(_z0, _d)], justify="center"),
+            r"""
+            Given a population $X$, a **hypothesis** about $X$ is any statement $H$ about some of its parameters.
+
+            Usually, if $\theta$ is an unknown parameter and $\theta_0\in\mathbb R$ is a given value, we call
+            """,
+            lk.aside(
+                r"$$H_0=\text{“}\theta=\theta_0\text{”}\qquad\mk{\rlap{\text{the null-hypothesis}}\hphantom{\text{the alternative hypothesis}}}$$",
+                "the default claim",
+            ),
+            lk.aside(
+                r"$$H_1=\text{“}\theta\neq\theta_0\text{”}\qquad\mk{\text{the alternative hypothesis}}$$",
+                "usually the negative claim",
+            ),
+        ],
+        label="def-hypothesis",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: hypotheses
+    # example: coin
+    lk.example(
+        r"""
+        $X=$ result of one coin toss $\sim\mathrm{Binom}(1,p)$ &nbsp; $\Longrightarrow$ &nbsp; $S_X=\lbrace 0,1\rbrace$
+
+        Is the coin fair?
+
+        > $\leadsto$ &nbsp; <span class="lk-tab" style="--lk-tab: 7.6em">$H_0=\text{“}p=1/2\text{”}$</span>$=$ “the coin is fair”
+
+        > <span class="lk-ghost">$\leadsto$ &nbsp;</span><span class="lk-tab" style="--lk-tab: 7.6em">$H_1=\text{“}p\neq1/2\text{”}$</span>$=$ “the coin is not fair”
+        """,
+        title="coin",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: hypothesis test
+    # definition: hypothesis test
+    lk.definition(
+        [
+            r"A **hypothesis test** of $H_0$ against $H_1$ consists of",
+            lk.aside(
+                r"- a <span class='lk-mark'>**test statistic**</span> $T=u(X_1,\dots,X_n)$",
+                r"to compare data with predictions<br>made under the assumption $H_0$ is true",
+            ),
+            lk.aside(
+                r"- a <span class='lk-mark'>**rejection region**</span> $R\subseteq\mathbb R$",
+                r"describing the values of $T$<br>that are unlikely under $H_0$",
+            ),
+        ],
+        label="def-test",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: hypothesis test
+    # consequence: reject or not
+    lk.prose(
+        r"Given data $X_1=x_1,\dots,X_n=x_n$ (evidence)",
+        lk.aside(
+            r"> we <span class='lk-mark'>reject $H_0$</span><span class='lk-ghost'> do not</span> if &nbsp; $T=t=u(x_1,\dots,x_n)\in R$",
+            r"$T=t\in R$ is unlikely under $H_0$",
+        ),
+        r"""
+        > > $\leadsto$ &nbsp; evidence against $H_0$
+
+        > or
+        """,
+        lk.aside(
+            r"> we <span class='lk-mark'>do not reject $H_0$</span> if &nbsp; $T=t=u(x_1,\dots,x_n)\notin R$",
+            r"$T=t\notin R$ is likely under $H_0$, but<br>$T=t\notin R$ might also be likely under $H_1=H_0^c$",
+        ),
+        r"""
+        > > $\leadsto$ &nbsp; evidence does not rule out $H_0$
+
+        > > $\leadsto$ &nbsp; not the same as evidence in favor of $H_0$
+        """,
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: hypothesis test
+    # example: presumption of innocence
+    lk.example(
+        [
+            r"Criminal trial: &nbsp; $H_0=\text{“innocent”}$",
+            lk.aside(
+                r"<span class='lk-mark'>convicted</span> &nbsp; $\Longleftrightarrow$ &nbsp; sufficient evidence to reduce doubt beyond a reasonable level",
+                r"$=$ reject $H_0$",
+            ),
+            r"<span class='lk-ghost'>convicted &nbsp; $\Longleftrightarrow$ &nbsp;</span>$\leadsto$ &nbsp; $T\in R$",
+            lk.aside(
+                r"<span class='lk-mark'>$\mathrlap{\text{acquitted}}\hphantom{\text{convicted}}$</span> &nbsp; $\Longleftrightarrow$ &nbsp; insufficient evidence",
+                r"$=$ do not reject $H_0$",
+            ),
+            r"<span class='lk-ghost'>convicted &nbsp; $\Longleftrightarrow$ &nbsp;</span>$\leadsto$ &nbsp; $T\notin R$",
+        ],
+        title="presumption of innocence",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: errors and power
+    # definition: type I and type II errors
+    lk.definition(
+        [
+            r"""
+            A test can be wrong in two different ways
+
+            - rejects $H_0$, but $H_0$ is true &nbsp; (**type I error**)
+            """,
+            lk.aside(r"> $\leadsto$ &nbsp; <span class='lk-mark'>convicted, but innocent</span>", "wrongful conviction"),
+            r"- does not reject $H_0$, but $H_0$ is false &nbsp; (**type II error**)",
+            lk.aside(r"> $\leadsto$ &nbsp; <span class='lk-mark'>acquitted, but guilty</span>", "wrongful acquittal"),
+            r"$\leadsto$ &nbsp; we would like our test to minimize the probability of both types of error!",
+        ],
+        label="def-errors",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: errors and power
+    # definition: power
+    lk.definition(
+        r"""
+        The **power** of a test $(T,R)$ is the function
+
+        $$
+        K(\theta)=P(T\in R;\theta)
+        $$
+
+        measuring the probability of rejecting $H_0=\text{“}\theta=\theta_0\text{”}$.
+        """,
+        label="def-power",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: errors and power
+    # remark
+    lk.remark(
+        [
+            r"""
+            <span class="lk-tab" style="--lk-tab: 4.6em">If $\theta=\theta_0$</span>$\Longrightarrow$ &nbsp; $K(\theta_0)=P(\text{type I error})$
+
+            <span class="lk-tab" style="--lk-tab: 4.6em">If $\theta\neq\theta_0$</span>$\Longrightarrow$ &nbsp; $K(\theta)=1-P(\text{type II error};\theta)$
+
+            $\leadsto$ &nbsp; ideally, we would like our test to have &nbsp; $K(\theta)=\begin{cases}
+            0, & \theta=\theta_0\\
+            1, & \theta\neq\theta_0
+            \end{cases}$
+            """,
+            lk.aside(
+                r"> $\leadsto$ &nbsp; not possible if $f_X(x;\theta)$ is <span class='lk-mark'>continuous in $\theta$</span>",
+                "usually the case!",
+            ),
         ]
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    $\Longrightarrow$ &nbsp; $K(\mu)$ decreases with $z_0$
+def _(lk):
+    # module: test design
+    # lead-in: strategy for test design
+    lk.prose(
+        "Strategy for test design:",
+        lk.aside(
+            r"> 1\. &nbsp; choose a test statistic $T=u(X_1,\dots,X_n)$",
+            r"usually an appropriate<br>estimator for the parameter",
+        ),
+        lk.aside(
+            r"> 2\. &nbsp; fix a <span class='lk-mark'>significance level</span> $\alpha$ for type I errors,",
+            "tolerance level",
+        ),
+        r"> <span class='lk-ghost'>2\.&nbsp;&nbsp;&nbsp;</span>and choose a rejection region $R\subseteq\mathbb R$ such that",
+        r"> > - $K(\theta_0)=P(T\in R;\theta=\theta_0)\le\alpha$",
+        lk.aside(
+            r"> > - $K(\theta)\hphantom{_0}=P(T\in R;\theta\neq\theta_0)$ is <span class='lk-mark'>the largest possible</span>",
+            "at least amongst<br>regions of certain type",
+        ),
+    )
+    return
 
-    $$
-    \Longrightarrow\quad\left(Z=\frac{M_n-\mu_0}{\sigma/\sqrt n},\ R=\lbrace |z|\ge z_{1-\alpha/2}\rbrace\right)
-    $$
 
-    is the test with largest power at significance level $\alpha$ (with symmetric rejection region).
+@app.cell(hide_code=True)
+def _(delta_val, lk, math, power_sketch, z0_val):
+    # module: z-test
+    # example: z-test for mu
+    _z0, _d = z0_val.value, delta_val.value
+    lk.example(
+        [
+            r"""
+            $X\sim\mathcal N(\mu,\sigma^2)$ with known $\sigma^2>0$
 
-    **Remark.** If $X$ is not normal, $\mu=E[X]$ unknown and $\sigma^2=\mathrm{Var}(X)$ known
+            $H_0=\text{“}\mu=\mu_0\text{”}$, &nbsp; $H_1=\text{“}\mu\neq\mu_0\text{”}$
 
-    $$
-    \Longrightarrow\quad\left(Z=\frac{M_n-\mu_0}{\sigma/\sqrt n},\ R=\lbrace |z|\ge z_{1-\alpha/2}\rbrace\right)
-    $$
+            1\. &nbsp; $\displaystyle Z=\frac{M_n-\mu_0}{\sigma/\sqrt n}$
 
-    tests $H_0=\text{“}\mu=\mu_0\text{”}$ against $H_1=\text{“}\mu\neq\mu_0\text{”}$ with significance level $\approx\alpha$, if $n$ is sufficiently large.
+            > $\Longrightarrow$ &nbsp; under $H_0$: &nbsp; $Z\sim\mathcal N(0,1)$
 
-    If $\sigma^2$ is unknown, replace $Z$ by
+            > $\Longrightarrow$ &nbsp; under $H_1$: &nbsp; $Z\sim\mathcal N(\delta,1)$ &nbsp; with &nbsp; $\displaystyle\delta=\frac{\mu-\mu_0}{\sigma/\sqrt n}$
+            """,
+            lk.aside(
+                r"2\. &nbsp; fix $\alpha\in(0,1)$, and regions &nbsp; $R=\underbrace{\lbrace |z|\ge z_0\rbrace}_{\mathclap{\footnotesize\text{symmetric around }z=0}}$",
+                "choice of type of<br>rejection region",
+            ),
+            lk.gap(),
+            r"""
+            - if $\mu=\mu_0$
+            """,
+            lk.aside(
+                r"""
+                $$
+                \begin{aligned}
+                K(\mu_0)&=P(|Z|\ge z_0;\mu=\mu_0)\\
+                &=1-\Phi(z_0)+\Phi(-z_0)=2(1-\Phi(z_0))\le\alpha\\
+                &\Longleftrightarrow\quad z_0\ge \mk{z_{1-\alpha/2}}
+                \end{aligned}
+                $$
+                """,
+                r"$\Phi(z_{1-\alpha/2})=1-\alpha/2$",
+                at="last",
+            ),
+            lk.gap(),
+        r"- if $\mu\neq\mu_0$",
+        lk.aside(
+            r"""
+            $$
+            \begin{aligned}
+            K(\mu)&=P(|Z|\ge z_0;\mu)\\
+            &=1-P(-z_0-\delta<Z-\delta<z_0-\delta;\mu)\\
+            &=1-\Phi(z_0-\delta)+\Phi(-z_0-\delta)
+            \end{aligned}
+            $$
+            """,
+            r"$\mu=\mu_0+\delta\sigma/\sqrt n$",
+            at="middle",
+        ),
+        lk.interactive(
+            power_sketch(_z0, _d),
+            controls=[z0_val, delta_val],
+        ),
+        r"$\Longrightarrow$ &nbsp; $K(\mu)$ decreases with $z_0$",
+        lk.aside(
+            r"$\Longrightarrow$ &nbsp; $\displaystyle\left(Z=\frac{M_n-\mu_0}{\sigma/\sqrt n},\ R=\lbrace |z|\ge z_{1-\alpha/2}\rbrace\right)$<br>is the test with <span class='lk-mark'>largest power</span> at significance level $\alpha$",
+            "with symmetric rejection region",
+        ),
+        ],
+        title=r"$z$-test for $\mu$",
+    )
+    return
 
-    $$
-    \frac{M_n-\mu_0}{S_n/\sqrt n}
-    $$
 
-    **Example (coin).**
+@app.cell(hide_code=True)
+def _(lk):
+    # module: z-test
+    # remark: X not normal
+    lk.remark(
+        [
+            r"""
+            If $X$ is not normal, $\mu=E[X]$ unknown and $\sigma^2=\mathrm{Var}(X)$ known
 
-    $$
-    n=100,\quad 60\ \underbrace{\text{heads}}_{\mathclap{\footnotesize X=1}},\quad 40\ \underbrace{\text{tails}}_{\mathclap{\footnotesize X=0}}\quad\Longrightarrow\quad M_n=0.6
-    $$
+            > $\Longrightarrow$ &nbsp; $\left(Z=\dfrac{M_n-\mu_0}{\sigma/\sqrt n},\ R=\lbrace |z|\ge z_{1-\alpha/2}\rbrace\right)$ tests $H_0=\text{“}\mu=\mu_0\text{”}$ against $H_1=\text{“}\mu\neq\mu_0\text{”}$<br><span class="lk-ghost">$\Longrightarrow$ &nbsp;</span>with significance level $\approx\alpha$, if $n$ is sufficiently large.
 
-    $\leadsto$ &nbsp; test $H_0=\text{“}p=0.5\text{”}$ with $\alpha=5\%$ (or $1\%$)
+            > $\leadsto$ &nbsp; $\sigma^2=\mathrm{Var}(X)$ unknown &nbsp; $\Longrightarrow$ &nbsp; $\displaystyle Z=\frac{M_n-\mu_0}{S_n/\sqrt n}$
+            """,
+        ]
+    )
+    return
 
-    $$
-    \leadsto\quad Z=\frac{0.6-0.5}{\underbrace{0.5/10}_{\mathclap{\footnotesize \sigma^2=0.25\text{ under }H_0}}}=2\in R=\lbrace |z|\ge1.96\rbrace
-    $$
 
-    For $\alpha=1\%$: &nbsp; $R=\lbrace |z|\ge2.58\rbrace$.
+@app.cell(hide_code=True)
+def _(lk):
+    # module: z-test
+    # example: coin
+    lk.example(
+        r"""
+        $n=100$, $60$ $\underbrace{\text{heads}}_{X=1}$, $40$ $\underbrace{\text{tails}}_{X=0}$ &nbsp; $\Longrightarrow$ &nbsp; $M_n=0.6$
 
-    $\Longrightarrow$ &nbsp; we reject $H_0$ at $\alpha=5\%$
+        $\leadsto$ &nbsp; test $H_0=\text{“}p=0.5\text{”}$ with $\alpha=5\%$ and with $\alpha=1\%$
 
-    $\Longrightarrow$ &nbsp; we do not reject $H_0$ at $\alpha=1\%$!
-    """)
+        > $\leadsto$ &nbsp; $Z=\dfrac{0.6-0.5}{\underbrace{0.5/10}_{\mathclap{\footnotesize\sigma^2=0.25\text{ under }H_0}}}=2$
+
+        > $\leadsto$ &nbsp; $2\in R=\lbrace |z|\ge1.96\rbrace$ &nbsp; $\Longrightarrow$ &nbsp; we reject $H_0$ at $\alpha=5\%$
+
+        > $\leadsto$ &nbsp; $2\notin R=\lbrace |z|\ge2.58\rbrace$ &nbsp; $\Longrightarrow$ &nbsp; we do not reject $H_0$ at $\alpha=1\%$
+        """,
+        title="coin",
+    )
     return
 
 

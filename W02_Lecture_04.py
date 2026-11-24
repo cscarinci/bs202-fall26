@@ -1,107 +1,39 @@
 import marimo
 
 __generated_with = "0.25.1"
-app = marimo.App(width="medium", app_title="BS202 · Lecture 04 · Random variables", css_file="bs202.css")
+app = marimo.App(width="medium", app_title="BS202 · Lecture 4 · Random variables", css_file="lecturekit/style.css")
 
 
 @app.cell(hide_code=True)
-def _():
-    import math
+async def _():
+    import sys
 
     import marimo as mo
-    import matplotlib
-    import numpy as np
     from matplotlib.figure import Figure
-    from matplotlib.patches import Arc
 
-    # Figures use the same Computer Modern typeface as the text
-    matplotlib.rcParams.update({"font.size": 14, "font.family": "serif", "font.serif": ["cmr10", "DejaVu Serif"], "mathtext.fontset": "cm", "axes.formatter.use_mathtext": True, "axes.unicode_minus": False})
+    import matplotlib  # noqa: F401  (named here so the browser fetches it while Python starts)
 
-    return Arc, Figure, math, mo, np
+    if sys.platform == "emscripten":
+        import micropip
+
+        await micropip.install(str(mo.notebook_location() / "public" / "lecturekit-0.1.0-py3-none-any.whl"), deps=False)
+    import lecturekit as lk
+    return Figure, lk, mo
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    # ---- Building blocks shared by all lectures -------------------------
-    # Palette with fixed roles (figures only; text carries no colour):
-    #   BLUE   the primary object (the point, the chosen vector, the main curve)
-    #   RED    the second object it is compared with
-    #   GREEN  a derived quantity (tangent vector, gradient, mean)
-    #   ORANGE a third series, only when three are needed
-    #   GREY   reference geometry (guides, unit circle, reference curves)
-    #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
-    # Figure widths: FULL spans the page, HALF sits beside text or in a pair
-    FULL, HALF = 7.4, 3.6
+def _(lk):
+    lk.lecture(4, "Random variables")
+    return
 
-    def header(document, date, running=""):
-        """Course header, as on the exercise sheets and exams."""
-        return mo.Html(
-            f"""
-    <div class="bs-head">
-      <div class="bs-running">BS202 &bull; {running}</div>
-      <div class="bs-title">Introduction to Probability<br>and Mathematical Statistics</div>
-      <div class="bs-inst">Daegu Gyeongbuk Institute of Science and Technology<br>School of Undergraduate Studies</div>
-      <div class="bs-meta">
-        <b>Document</b><span>{document}</span><b>Course</b><span>BS202a</span>
-        <b>Week</b><span>{date.removeprefix('Week ')}</span><b>Instructor</b><span>Professor Scarinci</span>
-      </div>
-    </div>
-    """
-        )
 
-    def _statement(label, title, body):
-        head = f"**{label}" + (f" ({title})" if title else "") + ".**"
-        return mo.md(head + "\n\n" + body).style({"border-left": f"2px solid {BLUE}", "padding-left": "1rem"})
-
-    def definition(body, title=""):
-        return _statement("Definition", title, body)
-
-    def theorem(body, title=""):
-        return _statement("Theorem", title, body)
-
-    def proposition(body, title=""):
-        return _statement("Proposition", title, body)
-
-    def corollary(body, title=""):
-        return _statement("Corollary", title, body)
-
-    def postulate(body, title=""):
-        return _statement("Postulate", title, body)
-
-    def note(body):
-        """Editorial note of the notebook (not part of the lecture)."""
-        return mo.md("**Note.** " + body.strip())
-
-    def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
-        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
-        so arrows look alike in every figure whatever its axis range."""
-        ax.annotate(
-            "",
-            xy=tip,
-            xytext=tail,
-            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
-        )
-        if label:
-            pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
-            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=13)
-
-    def plane(ax, lim):
-        """Style a 2D axis as a coordinate plane with range [-lim, lim]."""
-        ax.set_xlim(-lim, lim)
-        ax.set_ylim(-lim, lim)
-        ax.set_aspect("equal")
-        ax.axhline(0, color="black", lw=0.8)
-        ax.axvline(0, color="black", lw=0.8)
-        ax.grid(True, color=LIGHT, lw=0.6)
-        ax.set_axisbelow(True)
+@app.cell(hide_code=True)
+def _(Figure):
+    # Helpers of this lecture: bare sketches, plain axes
 
     def blank(w, h, xlim, ylim):
         """A figure with one bare axis (no frame) for sketches."""
-        from matplotlib.figure import Figure as _Figure
-
-        fig = _Figure(figsize=(w, h), layout="constrained")
+        fig = Figure(figsize=(w, h), layout="constrained")
         ax = fig.subplots()
         ax.set_xlim(*xlim)
         ax.set_ylim(*ylim)
@@ -109,101 +41,198 @@ def _(mo):
         ax.axis("off")
         return fig, ax
 
-    def blob(cx, cy, rx, ry, wobble=0.07, seed=0, n=400):
-        """Closed organic curve around (cx, cy): an ellipse with a few low harmonics."""
-        import numpy as _np
+    def plain(ax):
+        """No top/right spines, plain numbers on the y axis."""
+        ax.yaxis.set_major_formatter(lambda v, _: f"${v:g}$")
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
 
-        rng = _np.random.default_rng(seed)
-        t = _np.linspace(0, 2 * _np.pi, n)
-        r = 1 + sum(wobble / k * rng.uniform(0.4, 1.0) * _np.cos(k * t + rng.uniform(0, 2 * _np.pi)) for k in (2, 3, 4, 5))
-        return cx + rx * r * _np.cos(t), cy + ry * r * _np.sin(t)
-
-    def table(rows):
-        """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
-        return mo.Html(f'<div class="readout">{_md.text}</div>')
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+    return blank, plain
 
 
 @app.cell(hide_code=True)
-def _(header):
-    header("Lecture 04", "Week 02", "Lecture 04 • Random variables")
-    return
+def _(mo):
+    # Controls of the interactive figures. They are shown inside their figures, so modules can be moved freely.
+    rv_choice = mo.ui.dropdown(["X = largest face", "Y = sum of faces"], value="X = largest face", label="random variable")
+    return (rv_choice,)
 
 
 @app.cell(hide_code=True)
-def _(arrow, math):
-    def vector(ax, tail, tip, color, label=None, turn=0, r=15, **kw):
-        """Arrow from `tail` to `tip` (a dot when it has zero length), labelled beyond its tip on a white box;
-        `turn` (degrees) rotates the label about the tip so that coinciding vectors keep separate labels."""
-        dx, dy = tip[0] - tail[0], tip[1] - tail[1]
-        if dx == 0 and dy == 0:
-            ax.plot(*tip, "o", color=color, ms=4, zorder=4)
-            d = math.radians(45 + turn)
-        else:
-            arrow(ax, tail, tip, color, **kw)
-            d = math.atan2(dy, dx) + math.radians(turn)
-        if label:
-            ax.annotate(label, tip, textcoords="offset points", xytext=(r * math.cos(d), r * math.sin(d)), ha="center", va="center", color=color, fontsize=13, zorder=5, bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
-
-    return (vector,)
+def _(lk, rv_choice):
+    # Controls (continued): the range of a and b follows the state space of the chosen random variable
+    _lo, _hi = (1, 4) if rv_choice.value.startswith("X") else (2, 8)
+    range_a = lk.slider(_lo, _hi, step=1, value=min(max(3, _lo), _hi), label="$a$")
+    range_b = lk.slider(_lo, _hi, step=1, value=min(max(3, _lo), _hi), label="$b$")
+    return range_a, range_b
 
 
 @app.cell(hide_code=True)
-def _(BLUE, HALF, LIGHT, blank, mo):
-    _fig, _ax = blank(HALF, 1.9, (-0.25, 3.15), (-0.1, 1.55))
-    _ax.fill([0.3, 2.7, 2.7, 0.3], [0.35, 0.35, 0.95, 0.95], color=LIGHT, lw=0)
+def _(blank, lk):
+    # module: recap
+    # recap: conditional probability, independence, Bayes' rule, with the sketch of S split into B_1, B_2, B_3 and the event
+    # A across them
+    _fig, _ax = blank(3.2, 1.9, (-0.25, 3.15), (-0.1, 1.55))
+    _ax.fill([0.3, 2.7, 2.7, 0.3], [0.35, 0.35, 0.95, 0.95], color=lk.LIGHT, lw=0)
     _ax.plot([0, 3, 3, 0, 0], [0, 0, 1.3, 1.3, 0], color="black", lw=1.0)
     for _x in (1, 2):
         _ax.plot([_x, _x], [0, 1.3], color="black", lw=1.0)
-    _ax.plot([0.3, 2.7, 2.7, 0.3, 0.3], [0.35, 0.35, 0.95, 0.95, 0.35], color=BLUE, lw=1.4)
+    _ax.plot([0.3, 2.7, 2.7, 0.3, 0.3], [0.35, 0.35, 0.95, 0.95, 0.35], color=lk.BLUE, lw=1.4)
     for _k, _x in enumerate((0.65, 1.5, 2.35)):
         _ax.text(_x, 0.65, rf"$A \cap B_{_k + 1}$", fontsize=12, ha="center", va="center")
         _ax.text(_k + 0.5, 0.16, rf"$B_{_k + 1}$", fontsize=12, ha="center", va="center")
-    _ax.text(2.72, 1.0, "$A$", color=BLUE, fontsize=13, ha="left", va="bottom")
+    _ax.text(2.72, 1.0, "$A$", color=lk.BLUE, fontsize=13, ha="left", va="bottom")
     _ax.text(-0.06, 1.34, "$S$", fontsize=13, ha="right", va="bottom")
 
-    mo.vstack(
+    lk.recap(
+        lk.aside(
+            r"$\mk{P(A \mid B)} = \dfrac{P(A \cap B)}{P(B)}$",
+            r"$P(A \mid B)$ = probability of $A$ given $B$ has occurred<br>= probability of $A$ and $B$ relative to probability of $B$",
+        ),
+        r"""
+        > $\leadsto$ &nbsp; $P(A \cap B) = P(A \mid B) \, P(B)$
+
+        if knowledge about $B$ does not change our belief about $A$, then $A$ and $B$ are **independent**!
+        """,
+        lk.aside(r"> $\leadsto$ &nbsp; $P(A \mid B) = P(A) \iff P(A \cap B) = P(A) \, P(B)$", "(for $P(B) > 0$)"),
+        lk.gap(),
+        r"Bayes' rule: &nbsp; $P(B \mid A) = \dfrac{P(A \cap B)}{P(A)} = \dfrac{P(A \mid B) \, P(B)}{P(A \mid B) \, P(B) + P(A \mid B^c) \, P(B^c)}$ $\rule[-1em]{0pt}{2.6em}$",
+        r"$\leadsto$ &nbsp; more generally: &nbsp; $P(B_j \mid A) = \dfrac{P(A \cap B_j)}{P(A)} = \dfrac{P(A \mid B_j) \, P(B_j)}{\sum_{i=1}^{k} P(A \mid B_i) \, P(B_i)}$ $\rule[-1em]{0pt}{2.6em}$",
+        lk.figure(_fig),
+        lk.aside(r"$B_1 \cup B_2 \cup \dots \cup B_k = S$", "exhaustive"),
+        lk.aside(r"$B_i \cap B_j = \emptyset \quad \forall \, i \neq j \in \{1, 2, \dots, k\}$", "mutually disjoint"),
+        lk.gap(),
+        lk.aside(r"$P(B_i)$ = prior level of belief", "probability of having a disease before testing"),
+        lk.aside(r"$P(B_i \mid A)$ = posterior level of belief", "probability of having a disease after testing"),
+        lk.aside(r"$P(A \mid B_i)$ = likelihoods", "true positive rates and false positive rates"),
+        lk.gap(),
+        r"law of total probability: &nbsp; $P(A) = \displaystyle\sum_{i=1}^{k} P(A \mid B_i) \, P(B_i)$",
+        topic="knowledge about an event can change our belief about other events",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: recap
+    # references
+    lk.references("WMS 2.11, 3.1–3.2, 4.2")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: random variables
+    # section
+    lk.section("Random variables")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: random variables
+    # motivation: measurements instead of the full probability space
+    lk.prose(
+        r"""
+        random experiment &nbsp; $\leftrightsquigarrow$ &nbsp; probability space $(S, \mathcal{E}, P)$
+
+        > $\leadsto$ &nbsp; so far we considered “simple” examples
+
+        > > $\leadsto$ &nbsp; equally likely outcomes
+
+        > > $\leadsto$ &nbsp; easy algebra of finite sets
+
+        > > $\leadsto$ &nbsp; probability = counting
+
+        > $\leadsto$ &nbsp; in general, $(S, \mathcal{E}, P)$ too complicated
+
+        > > $\leadsto$ &nbsp; no direct description
+
+        > > $\leadsto$ &nbsp; messy algebra of events
+
+        > > $\leadsto$ &nbsp; hard to compute probability
+        """,
+        lk.gap(),
+        r"""
+        measurements on random experiments &nbsp; $\leftrightsquigarrow$ &nbsp; real valued functions on the sample space
+
+        > $\leadsto$ &nbsp; associates real numbers to each outcome (measurements)
+
+        > $\leadsto$ &nbsp; simplify the model by only focusing on those numbers
+        """,
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: random variables
+    # definition: random variable and state space
+    lk.definition(
         [
-            mo.md(
-                r"""
-    ## Last time
+            r"""
+            Given a probability space $(S, \mathcal{E}, P)$, a **random variable** on $S$ is a function &nbsp; $X : S \longrightarrow \mathbb{R}$, &nbsp; $o \longmapsto X(o)$
 
-    - knowledge about an event can change our belief about other events
+            The image of $X$
 
-        <span class="chain">$\displaystyle \underbrace{P(A \mid B)}_{\footnotesize \begin{matrix}\text{probability of } A \\ \text{given } B \text{ has occurred}\end{matrix}} = \underbrace{\frac{P(A \cap B)}{P(B)}}_{\footnotesize \begin{matrix}\text{probability of } A \text{ and } B \\ \text{relative to probability of } B\end{matrix}}$ $\displaystyle \qquad \leadsto \qquad P(A \cap B) = P(A \mid B)\, P(B)$</span>
-
-    - if knowledge about $B$ does not change our belief about $A$, then $A$ and $B$ are **independent**!
-
-        $$
-        \leadsto \qquad P(A \mid B) = P(A) \qquad \Longleftrightarrow \qquad P(A \cap B) = P(A)\, P(B)
-        $$
-    - Bayes' rule:
-
-        $$
-        P(B \mid A) = \frac{P(A \cap B)}{P(A)} = \frac{P(A \mid B)\, P(B)}{P(A \mid B)\, P(B) + P(A \mid B^c)\, P(B^c)}
-        $$
-
-    - $\leadsto$ &nbsp; more generally, for $B_1 \cup B_2 \cup \cdots \cup B_k = S$ (exhaustive) and $B_i \cap B_j = \emptyset \ \ \forall\, i \neq j \in \{1, 2, \dots, k\}$ (mutually disjoint):
-
-        $$
-        P(B_j \mid A) = \frac{P(A \cap B_j)}{P(A)} = \frac{P(A \mid B_j)\, P(B_j)}{\displaystyle\sum_{i=1}^{k} P(A \mid B_i)\, P(B_i)}
-        $$
-    """
+            $$
+            S_X = \mathrm{Im}(X) = \{ x \in \mathbb{R} \mid X(o) = x \text{ for some } o \in S \} \subseteq \mathbb{R}
+            $$
+            """,
+            lk.aside(
+                r"is called the <span class='lk-mark'>**state space** of $X$</span>",
+                r"it will serve as a simplified version<br>of the true sample space $S$",
             ),
-            _fig,
-            mo.md(
-                r"""
-    - $P(B_i)$ = prior level of belief &nbsp; <span class="nw">$\leadsto$ &nbsp; probability</span> of having a disease before testing
-    - $P(B_i \mid A)$ = posterior level of belief &nbsp; <span class="nw">$\leadsto$ &nbsp; probability</span> of having a disease after testing
-    - $P(A \mid B_i)$ = likelihoods &nbsp; <span class="nw">$\leadsto$ &nbsp; true</span> positive rates and false positive rates
-    - law of total probability: &nbsp; $P(A) = \displaystyle\sum_{i=1}^{k} P(A \mid B_i)\, P(B_i)$
+        ],
+        label="def-rv",
+    )
+    return
 
-    **In this lecture:** random variables and their probability distributions: pmf and cdf
 
-    **References:** WMS 2.11, 3.1–3.2, 4.2
-    """
+@app.cell(hide_code=True)
+def _(lk):
+    # module: random variables
+    # example: a DGIST student at random
+    lk.example(
+        r"""
+        Choose a DGIST student at random
+
+        $S = \{ \text{3000 individual human beings} \}$
+
+        > $\leadsto$ &nbsp; how can we describe events?
+
+        > > $A = \{\text{male}\}$, $B = \{\text{female}\}$, $C = \{\text{non-binary}\}$, $D = \{\text{Korean}\}$, $E = \{\text{plays football}\}$, …
+
+        > $\leadsto$ &nbsp; we can come up with a huge number of events
+
+        > $\leadsto$ &nbsp; hopeless to try to find a “complete” model
+
+        > $\leadsto$ &nbsp; instead, we can collect measurements of aspects we are interested in and focus on modeling those measurements only!
+
+        $X$ = year in DGIST &nbsp; $\leadsto$ &nbsp; $S_X = \{2011, 2012, \dots, 2026\}$
+
+        $Y$ = current GPA &nbsp;&nbsp; $\leadsto$ &nbsp; $S_Y \subseteq [0, 4]$
+        """,
+        label="ex-dgist",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: random variables
+    # remark: state space, algebra and distribution of X as simplified versions of S, E and P
+    lk.remark(
+        [
+            r"Given $X : S \longrightarrow \mathbb{R}$",
+            r"> **state space** &nbsp; $S_X = \mathrm{Im}(X) \subseteq \mathbb{R}$ &nbsp; simplified version of $S$",
+            lk.aside(
+                r"> **algebra of subsets** of $S_X$ &nbsp; $\mk{\mathcal{E}_X} = \{ A \subseteq S_X \subseteq \mathbb{R} \}$ &nbsp; simplified version of $\mathcal{E}$",
+                r"collection of subsets in $\mathbb{R}$<br>(intervals and points)",
+            ),
+            r"> **probability distribution** of $X : S \longrightarrow \mathbb{R}$ &nbsp; $P_X : \mathcal{E}_X \longrightarrow \mathbb{R}$ &nbsp; simplified version of $P : \mathcal{E} \longrightarrow \mathbb{R}$",
+            lk.aside(
+                r"> > $P_X(A) = P(\mk{\{ o \in S \mid X(o) \in A \}}) = P(X \in A)$",
+                r"outcomes whose value of $X$ belongs to $A$",
             ),
         ]
     )
@@ -211,428 +240,375 @@ def _(BLUE, HALF, LIGHT, blank, mo):
 
 
 @app.cell(hide_code=True)
-def _(definition, mo):
-    mo.vstack(
-        [
-            mo.md(
-                r"""
-    ## II.1 &nbsp; Random variables
-
-    random experiment &nbsp; $\leftrightsquigarrow$ &nbsp; probability space $(S, \mathcal{E}, P)$
-
-    $\leadsto$ &nbsp; so far we considered “simple” examples
-
-    - equally likely outcomes
-    - easy algebra of finite sets
-    - probability = counting
-
-    $\leadsto$ &nbsp; in general, $(S, \mathcal{E}, P)$ too complicated
-
-    - no direct description
-    - messy algebra of events
-    - hard to compute probability
-
-    measurements on random experiments &nbsp; $\leftrightsquigarrow$ &nbsp; real valued functions on the sample space
-
-    - associates real numbers to each outcome (measurements)
-    - simplify the model by only focusing on those numbers
-
-    ### Random variables and their state space
-    """
-            ),
-            definition(
-                r"""
-    Given a probability space $(S, \mathcal{E}, P)$, a **random variable** on $S$ is a function
-
-    $$
-    \begin{aligned}
-    X : S &\longrightarrow \mathbb{R} \\
-    o &\longmapsto X(o)
-    \end{aligned}
-    $$
-
-    The image of $X$
-
-    $$
-    S_X = \mathrm{Im}(X) = \{\, x \in \mathbb{R} \mid X(o) = x \text{ for some } o \in S \,\} \subseteq \mathbb{R}
-    $$
-
-    is called the **state space** of $X$.
-    """,
-                "Random variable and state space",
-            ),
-            mo.md(
-                r"""
-    $\leadsto$ &nbsp; it will serve as a simplified version of the true sample space $S$
-
-    **Example.** Choose a DGIST student at random
-
-    $$
-    S = \{\text{3000 individual human beings}\}
-    $$
-
-    $\leadsto$ &nbsp; how can we describe events?
-
-    <span class="chain">$\displaystyle A = \{\text{male}\},$ $\displaystyle \quad B = \{\text{female}\},$ $\displaystyle \quad C = \{\text{non-binary}\},$ $\displaystyle \quad D = \{\text{Korean}\},$ $\displaystyle \quad E = \{\text{plays football}\}, \ \dots$</span>
-
-    $\leadsto$ &nbsp; we can come up with an enormous number of events
-
-    $\leadsto$ &nbsp; hopeless to try to find a “complete” model
-
-    $\leadsto$ &nbsp; instead, we can collect measurements of aspects we are interested in and focus on modeling those measurements only!
-
-    $$
-    \begin{aligned}
-    X &= \text{year in DGIST} && \leadsto \qquad S_X = \{2011, 2012, \dots, 2026\} \\
-    Y &= \text{current GPA} && \leadsto \qquad S_Y \subset [0, 4] \\[2pt]
-    & && \phantom{\leadsto \qquad} (\text{is actually discrete,} \\
-    & && \phantom{\leadsto \qquad} \phantom{(}\text{since the sample space is finite})
-    \end{aligned}
-    $$
-
-    **Remark.** Given $X : S \longrightarrow \mathbb{R}$
-
-    | | | |
-    |:--|:--|:--|
-    | **state space** | $S_X = \mathrm{Im}(X) \subseteq \mathbb{R}$ | simplified version of $S$ |
-    | **algebra of subsets** of $S_X$ | $\mathcal{E}_X = \{\, A \subseteq S_X \subseteq \mathbb{R} \,\}$ &nbsp; (collection of subsets in $\mathbb{R}$: intervals and points) | simplified version of $\mathcal{E}$ |
-    | **probability distribution** of $X : S \longrightarrow \mathbb{R}$ | $P_X : \mathcal{E}_X \longrightarrow \mathbb{R}$ | simplified version of $P : \mathcal{E} \longrightarrow \mathbb{R}$ |
-
-    $$
-    P_X(A) = P\big( \underbrace{\{\, o \in S \mid X(o) \in A \,\}}_{\mathclap{\footnotesize \text{outcomes whose value of } X \text{ belongs to } A}\vphantom{\footnotesize \text{outcomes whose value of } X \text{ belongs to } A}} \big) = P(X \in A)
-    $$
-    """
-            ),
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(BLUE, GREY, arrow, blank, definition, mo):
+def _(blank, lk):
+    # module: random variables
+    # example: the year in DGIST, with the sketch of y = P_X({x})
     _fig, _ax = blank(5.6, 2.6, (-1.0, 18.4), (-2.3, 6.6))
-    arrow(_ax, (-0.5, 0), (17.8, 0), "black", lw=0.9)
-    arrow(_ax, (0, -0.4), (0, 6.4), "black", lw=0.9)
+    lk.arrow(_ax, (-0.5, 0), (17.8, 0), "black", lw=0.9)
+    lk.arrow(_ax, (0, -0.4), (0, 6.4), "black", lw=0.9)
     _vals = [0, 0, 0, 0, 0, 0, 0, 0.3, 0.6, 1.5, 2.6, 3.6, 4.3, 4.9, 5.2, 5.6]
     for _k, _v in enumerate(_vals):
         _ax.plot([_k + 1, _k + 1], [-0.1, 0.1], color="black", lw=0.9)
-        _ax.plot(_k + 1, _v, "o", color=BLUE, ms=4, zorder=4)
+        _ax.plot(_k + 1, _v, "o", color=lk.BLUE, ms=4, zorder=4)
         _ax.text(_k + 1, -0.3, f"${11 + _k}$", fontsize=12, ha="center", va="top")
     _ax.text(17.9, -0.3, "$x$", fontsize=13, ha="center", va="top")
     _ax.text(0.35, 6.3, "$y$", fontsize=13, ha="left", va="top")
-    _ax.text(11.5, 4.4, r"$y = P_X(\{x\})$", color=BLUE, fontsize=13, ha="right", va="center")
-    _ax.plot([0.7, 0.7, 7.3, 7.3], [-1.15, -1.4, -1.4, -1.15], color=GREY, lw=1.0)
+    _ax.text(11.5, 4.4, r"$y = P_X(\{x\})$", color=lk.BLUE, fontsize=13, ha="right", va="center")
+    _ax.plot([0.7, 0.7, 7.3, 7.3], [-1.15, -1.4, -1.4, -1.15], color=lk.GREY, lw=1.0)
     _ax.text(4, -1.55, "graduated", fontsize=12, ha="center", va="top")
 
-    mo.vstack(
+    _ub = lambda body, *rows: r"\underbrace{" + body + r"}_{\begin{array}{c} " + r" \\ ".join(r"\scriptstyle \text{" + r + "}" for r in rows) + r" \end{array}}"
+    lk.example(
         [
-            mo.md(
-                r"""
-    **Example.** &nbsp; $S = \{\text{all students}\}$, &nbsp; $X$ = year in DGIST &nbsp; <span class="nw">$\leadsto$ &nbsp; $S_X = \{2011, \dots, 2025, 2026\}$</span>
+            r"""
+            $S = \{ \text{all students} \}$
 
-    $$
-    \underbrace{P_X(\{2026\})}_{\footnotesize \begin{matrix}\{2026\}\colon\ \text{subset of } \mathbb{R} \\ \text{easy to characterize} \\ \text{with a census of DGIST}\end{matrix}} = \underbrace{P(\{\text{is freshman}\})}_{\footnotesize \begin{matrix}\text{subset of humans} \\ \text{impossible to model} \\ \text{“completely”}\end{matrix}} = P(\{X = 2026\})
-    $$
-    """
-            ),
-            _fig,
-            mo.md(
-                r"""
-    In probability theory, we are more interested in modeling random variables and their distributions, than in the full probability spaces!
-
-    ### Discrete and continuous random variables
-    """
-            ),
-            definition(
-                r"""
-    A random variable $X : S \longrightarrow \mathbb{R}$ is called
-
-    - **discrete** if $S_X = \mathrm{Im}(X)$ consists of *countably many points* (we can count them: 1st, 2nd, 3rd, …)
-    - **continuous** if $S_X = \mathrm{Im}(X)$ is uncountable + extra conditions (later)
-    """,
-                "Discrete and continuous random variables",
-            ),
-            mo.md(
-                r"""
-    **Example** (Roll two fair 4-sided dice). &nbsp; <span class="nw">$\leadsto$ &nbsp; $S = \{\, (i, j) \mid i, j \in \{1, 2, 3, 4\} \,\}$</span>
-
-    $$
-    X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} \ = \text{largest face} \quad \leadsto \quad S_X = \{1, 2, 3, 4\}
-    $$
-
-    $$
-    Y(i, j) = i + j = \text{sum of faces} \qquad \leadsto \qquad S_Y = \{2, 3, \dots, 7, 8\}
-    $$
-    """
-            ),
-        ]
+            $X$ = year in DGIST &nbsp; $\leadsto$ &nbsp; $S_X = \{2011, \dots, 2025, 2026\}$
+            """,
+            r"$$ "
+            + _ub(r"P_X(\{2026\})", r"\{2026\}: subset of } \mathbb{R} \text{", "easy to characterize", "with a census of DGIST")
+            + r" \quad = \quad "
+            + _ub(r"P(\{\text{is freshman}\})", "subset of humans", "impossible to model", "“completely”")
+            + r" \quad = \quad P(\{X = 2026\}) \rule[-3.2em]{0pt}{0pt} $$",
+            lk.figure(_fig),
+            r"In probability theory, we are more interested in modeling random variables and their distributions, than in the full probability spaces!",
+        ],
+        label="ex-year",
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, GREEN, GREY, HALF, arrow, definition, mo):
-    # pmf of X = largest face of two fair 4-sided dice
-    _fig1 = Figure(figsize=(HALF, 2.5), layout="constrained")
-    _ax = _fig1.subplots()
+def _(lk):
+    # module: random variables
+    # definition: discrete and continuous random variables
+    lk.definition(
+        [
+            r"A random variable $X : S \longrightarrow \mathbb{R}$ is called",
+            lk.aside(
+                r"> • &nbsp; **discrete** if $S_X = \mathrm{Im}(X)$ consists of <span class='lk-mark'>countably many</span> points",
+                "we can count them 1st, 2nd, 3rd, …",
+            ),
+            r"> • &nbsp; **continuous** if $S_X = \mathrm{Im}(X)$ is uncountable + extra conditions (later)",
+        ],
+        label="def-discrete-continuous",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: random variables
+    # example: two dice, largest face and sum of faces
+    lk.example(
+        r"""
+        > $\leadsto$ &nbsp; $S = \{ (i, j) \mid i, j \in \{1, 2, 3, 4\} \}$
+
+        $X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} \ = \text{largest face} \quad \leadsto \quad S_X = \{1, 2, 3, 4\}$
+
+        $Y(i, j) = i + j = \text{sum of faces} \quad \leadsto \quad S_Y = \{2, 3, \dots, 7, 8\}$
+        """,
+        title="rolling two fair 4-sided dice",
+        label="ex-dice",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: pmf
+    # section
+    lk.section("Probability mass function")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: pmf
+    # definition: pmf and its properties
+    lk.definition(
+        [
+            r"Given $X : S \longrightarrow \mathbb{R}$ discrete random variable, the **probability mass function** (pmf) of $X$ is",
+            lk.aside(
+                r"$$ f_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto f_X(x) = \mk{P(X = x)} $$",
+                r"probability of $X$ having value $x$",
+            ),
+            r"""
+            $f_X$ satisfies
+
+            > • &nbsp; $f_X(x) \geq 0 \quad \forall \, x \in S_X$
+
+            > • &nbsp; $f_X(x) = 0 \quad \forall \, x \notin S_X$
+
+            > • &nbsp; $\displaystyle\sum_{x \in S_X} f_X(x) = 1$
+
+            > • &nbsp; $\displaystyle\sum_{x \in A} f_X(x) = P(X \in A)$
+            """,
+        ],
+        label="def-pmf",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(Figure, lk):
+    # module: pmf
+    # illustration: the pmf of the largest face, with its graph
+    _fig = Figure(figsize=(3.4, 2.4), layout="constrained")
+    _ax = _fig.subplots()
     _pmf = [0, 1 / 16, 3 / 16, 5 / 16, 7 / 16, 0, 0]
     for _x, _p in enumerate(_pmf):
-        _ax.plot([_x, _x], [0, _p], color=BLUE, lw=1.0)
-        _ax.plot(_x, _p, "o", color=BLUE, ms=4.5, zorder=4, clip_on=False)
+        _ax.plot([_x, _x], [0, _p], color=lk.BLUE, lw=1.0)
+        _ax.plot(_x, _p, "o", color=lk.BLUE, ms=4.5, zorder=4, clip_on=False)
     _ax.set_xlim(-0.5, 6.5)
     _ax.set_ylim(0, 0.5)
     _ax.set_xticks(range(7))
     _ax.set_yticks([_k / 16 for _k in (1, 3, 5, 7)], [rf"${_k}/16$" for _k in (1, 3, 5, 7)])
     _ax.set_xlabel("$x$")
     _ax.set_ylabel("$f_X(x)$")
+    for _s in ("top", "right"):
+        _ax.spines[_s].set_visible(False)
 
-    # cdf of X: a step function, closed dot where the value is attained
-    _fig2 = Figure(figsize=(HALF, 2.7), layout="constrained")
-    _bx = _fig2.subplots()
+    lk.prose(
+        r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j \in \{1, 2, 3, 4\} \\ i, & i = j \in \{1, 2, 3, 4\} \end{cases} $$",
+        lk.side(
+            r"""
+            $$
+            \begin{aligned}
+            f_X(1) &= P(X = 1) = P(\{(1, 1)\}) = \tfrac{1}{16}\\[8pt]
+            f_X(2) &= P(X = 2) = P(\{(2, 1), (2, 2), (1, 2)\}) = \tfrac{3}{16}\\[8pt]
+            f_X(3) &= P(\{(3, 1), (3, 2), (3, 3), (2, 3), (1, 3)\}) = \tfrac{5}{16}\\[8pt]
+            f_X(4) &= \tfrac{7}{16}, \quad f_X(5) = 0, \quad f_X(6) = 0
+            \end{aligned}
+            $$
+            """,
+            lk.figure(_fig),
+        ),
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: cdf
+    # section
+    lk.section("Cumulative distribution function")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: cdf
+    # definition: cdf
+    lk.definition(
+        [
+            r"Given $X : S \longrightarrow \mathbb{R}$ discrete random variable, the **cumulative distribution function** (cdf) of $X$ is",
+            lk.aside(
+                r"$$ F_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto F_X(x) = \mk{P(X \leq x)} $$",
+                r"probability of $X$ having value at most $x$",
+            ),
+        ],
+        label="def-cdf",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(Figure, lk):
+    # module: cdf
+    # illustration: the cdf of the largest face, its jumps, with its graph
+    _fig = Figure(figsize=(3.6, 2.6), layout="constrained")
+    _bx = _fig.subplots()
     _edges = [-1, 1, 2, 3, 4, 6.4]
     _levels = [0, 1 / 16, 1 / 4, 9 / 16, 1]
     for _k, _lev in enumerate(_levels):
-        _bx.plot([_edges[_k], _edges[_k + 1]], [_lev, _lev], color=BLUE, lw=1.6)
+        _bx.plot([_edges[_k], _edges[_k + 1]], [_lev, _lev], color=lk.BLUE, lw=1.6)
         if _k > 0:
             if _k < 3:
-                _bx.plot([_edges[_k], _edges[_k]], [_levels[_k - 1], _lev], color=GREY, lw=0.9, ls=(0, (1, 2)))
-            _bx.plot(_edges[_k], _levels[_k - 1], "o", color=BLUE, ms=4.5, mfc="white", zorder=4)
-            _bx.plot(_edges[_k], _lev, "o", color=BLUE, ms=4.5, zorder=4)
+                _bx.plot([_edges[_k], _edges[_k]], [_levels[_k - 1], _lev], color=lk.GREY, lw=0.9, ls=(0, (1, 2)))
+            _bx.plot(_edges[_k], _levels[_k - 1], "o", color=lk.BLUE, ms=4.5, mfc="white", zorder=4)
+            _bx.plot(_edges[_k], _lev, "o", color=lk.BLUE, ms=4.5, zorder=4)
     for _x, _lo, _hi, _name in ((3, 1 / 4, 9 / 16, r"$f_X(3) = \dfrac{5}{16}$"), (4, 9 / 16, 1, r"$f_X(4) = \dfrac{7}{16}$")):
         _mid = (_lo + _hi) / 2
-        arrow(_bx, (_x, _mid), (_x, _hi), GREEN, shrinkB=3)
-        arrow(_bx, (_x, _mid), (_x, _lo), GREEN, shrinkB=3)
-        _bx.text(_x + 0.22, _mid, _name, color=GREEN, fontsize=12, ha="left", va="center")
+        lk.arrow(_bx, (_x, _mid), (_x, _hi), lk.GREEN, shrinkB=3)
+        lk.arrow(_bx, (_x, _mid), (_x, _lo), lk.GREEN, shrinkB=3)
+        _bx.text(_x + 0.22, _mid, _name, color=lk.GREEN, fontsize=12, ha="left", va="center")
     _bx.set_xlim(-1, 6.4)
     _bx.set_ylim(-0.06, 1.12)
     _bx.set_xticks(range(7))
     _bx.set_yticks([0.25, 0.5, 0.75, 1], [r"$1/4$", r"$1/2$", r"$3/4$", "$1$"])
     _bx.set_xlabel("$x$")
     _bx.set_ylabel("$F_X(x)$")
-    for _a in (_ax, _bx):
-        for _s in ("top", "right"):
-            _a.spines[_s].set_visible(False)
+    for _s in ("top", "right"):
+        _bx.spines[_s].set_visible(False)
 
-    mo.vstack(
-        [
-            mo.md(r"""### The probability mass function"""),
-            definition(
-                r"""
-    Given $X : S \longrightarrow \mathbb{R}$ discrete random variable, the **probability mass function** (pmf) of $X$ is
-
-    $$
-    f_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto f_X(x) = \underbrace{P(X = x)}_{\mathclap{\footnotesize \begin{matrix}\text{probability of } X \\ \text{having value } x\end{matrix}}\vphantom{\footnotesize \begin{matrix}\text{probability of } X \\ \text{having value } x\end{matrix}}}
-    $$
-
-    $f_X$ satisfies
-
-    - $f_X(x) \geq 0 \quad \forall\, x \in S_X$
-    - $f_X(x) = 0 \quad \forall\, x \notin S_X$
-    - $\displaystyle\sum_{x \in S_X} f_X(x) = 1$
-    - $\displaystyle\sum_{x \in A} f_X(x) = P(X \in A)$
-    """,
-                "Probability mass function",
-            ),
-            mo.md(
-                r"""
-    $$
-    X(i, j) = \begin{cases} \max(i, j), & i \neq j \in \{1, 2, 3, 4\} \\ i, & i = j \in \{1, 2, 3, 4\} \end{cases}
-    $$
-
-    $$
-    \begin{aligned}
-    f_X(1) &= P(X = 1) = P(\{(1, 1)\}) = \frac{1}{16} \\[14pt]
-    f_X(2) &= P(X = 2) = P(\{(2, 1), (2, 2), (1, 2)\}) = \frac{3}{16} \\[14pt]
-    f_X(3) &= P(\{(3, 1), (3, 2), (3, 3), (2, 3), (1, 3)\}) = \frac{5}{16} \\[14pt]
-    f_X(4) &= \frac{7}{16}, \qquad f_X(5) = 0, \qquad f_X(6) = 0
-    \end{aligned}
-    $$
-    """
-            ),
-            _fig1,
-            mo.md(r"""### The cumulative distribution function"""),
-            definition(
-                r"""
-    Given $X : S \longrightarrow \mathbb{R}$ discrete random variable, the **cumulative distribution function** (cdf) of $X$ is
-
-    $$
-    F_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto F_X(x) = \underbrace{P(X \leq x)}_{\mathclap{\footnotesize \begin{matrix}\text{probability of } X \\ \text{having value at most } x\end{matrix}}\vphantom{\footnotesize \begin{matrix}\text{probability of } X \\ \text{having value at most } x\end{matrix}}}
-    $$
-    """,
-                "Cumulative distribution function",
-            ),
-            mo.md(
-                r"""
-    $$
-    X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases}
-    $$
-
-    $$
-    \begin{aligned}
-    F_X(1) &= P(X \leq 1) = P(X = 1) = \frac{1}{16} \\[14pt]
-    F_X(2) &= P(X \leq 2) = P(X \leq 1) + P(X = 2) = \frac{1}{16} + \frac{3}{16} = \frac{1}{4} \\[14pt]
-    F_X(3) &= P(X \leq 3) = P(X \leq 2) + P(X = 3) = \frac{1}{4} + \frac{5}{16} = \frac{9}{16} \\[14pt]
-    F_X(4) &= \frac{9}{16} + \frac{7}{16} = 1, \qquad F_X(5) = 1, \qquad F_X(6) = 1
-    \end{aligned}
-    $$
-
-    $$
-    \leadsto \qquad
-    \begin{aligned}
-    F_X(4) - F_X(3) &= f_X(4) \\
-    F_X(3) - F_X(2) &= f_X(3) \\
-    F_X(2) - F_X(1) &= f_X(2) \\
-    F_X(1) - F_X(0) &= f_X(1)
-    \end{aligned}
-    $$
-    """
-            ),
-            _fig2,
-        ]
+    lk.prose(
+        r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} $$",
+        r"""
+        $$
+        \begin{aligned}
+        F_X(1) &= P(X \leq 1) = P(X = 1) = \tfrac{1}{16}\\[8pt]
+        F_X(2) &= P(X \leq 2) = P(X \leq 1) + P(X = 2) = \tfrac{1}{16} + \tfrac{3}{16} = \tfrac{1}{4}\\[8pt]
+        F_X(3) &= P(X \leq 3) = P(X \leq 2) + P(X = 3) = \tfrac{1}{4} + \tfrac{5}{16} = \tfrac{9}{16}\\[8pt]
+        F_X(4) &= \tfrac{9}{16} + \tfrac{7}{16} = 1, \quad F_X(5) = 1, \quad F_X(6) = 1
+        \end{aligned}
+        $$
+        """,
+        lk.side(
+            r"""
+            $$
+            \leadsto \quad
+            \begin{aligned}
+            F_X(4) - F_X(3) &= f_X(4)\\
+            F_X(3) - F_X(2) &= f_X(3)\\
+            F_X(2) - F_X(1) &= f_X(2)\\
+            F_X(1) - F_X(0) &= f_X(1)
+            \end{aligned}
+            $$
+            """,
+            lk.figure(_fig),
+        ),
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    rv_choice = mo.ui.dropdown(["X = largest face", "Y = sum of faces"], value="X = largest face", label="random variable")
-    return (rv_choice,)
-
-
-@app.cell(hide_code=True)
-def _(mo, rv_choice):
-    _n = 4
-    _lo, _hi = (1, _n) if rv_choice.value.startswith("X") else (2, 2 * _n)
-    range_a = mo.ui.slider(_lo, _hi, 1, value=min(max(3, _lo), _hi), label="$a$", show_value=True)
-    range_b = mo.ui.slider(_lo, _hi, 1, value=min(max(3, _lo), _hi), label="$b$", show_value=True)
-    return range_a, range_b
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, GREEN, GREY, LIGHT, mo, range_a, range_b, rv_choice, table):
-    from fractions import Fraction as _Fr
-
-    _n = 4
+def _(Figure, lk, plain, range_a, range_b, rv_choice):
+    # module: cdf
+    # interactive figure: pmf and cdf of X = largest face or Y = sum of faces, with P(a <= X <= b) read off both
     _is_max = rv_choice.value.startswith("X")
     _rv = "X" if _is_max else "Y"
     _counts = {}
-    for _i in range(1, _n + 1):
-        for _j in range(1, _n + 1):
+    for _i in range(1, 5):
+        for _j in range(1, 5):
             _v = max(_i, _j) if _is_max else _i + _j
             _counts[_v] = _counts.get(_v, 0) + 1
     _xs = sorted(_counts)
-    _pmf = [_counts[_x] / _n**2 for _x in _xs]
+    _pmf = [_counts[_x] / 16 for _x in _xs]
     _a, _b = range_a.value, range_b.value
 
     def _F(x):
-        """Number of outcomes (out of n^2) with value at most x."""
         return sum(_counts[_v] for _v in _xs if _v <= x)
 
-    def _tex(q):
-        return f"{q.numerator}" if q.denominator == 1 else rf"\dfrac{{{q.numerator}}}{{{q.denominator}}}"
-
     _lo, _hi = _xs[0] - 1, _xs[-1] + 1
-    _ticks = _xs if len(_xs) <= 9 else _xs[::2]
-
-    _fig = Figure(figsize=(FULL, 3.0), layout="constrained")
+    _fig = Figure(figsize=(lk.FULL, 3.0), layout="constrained")
     _left, _right = _fig.subplots(1, 2)
     if _a <= _b:
-        _left.axvspan(_a - 0.5, _b + 0.5, color=LIGHT, lw=0)
+        _left.axvspan(_a - 0.5, _b + 0.5, color=lk.LIGHT, lw=0)
         for _v in (_a - 0.5, _b + 0.5):
-            _left.axvline(_v, color=GREY, lw=1.0, ls=(0, (4, 3)))
-    _left.vlines(_xs, 0, _pmf, color=BLUE, lw=1.0)
-    _left.plot(_xs, _pmf, "o", color=BLUE, ms=4.5, zorder=4)
+            _left.axvline(_v, color=lk.GREY, lw=1.0, ls=(0, (4, 3)))
+    _left.vlines(_xs, 0, _pmf, color=lk.BLUE, lw=1.0)
+    _left.plot(_xs, _pmf, "o", color=lk.BLUE, ms=4.5, zorder=4)
     _left.set_xlim(_lo, _hi)
     _left.set_ylim(0, max(_pmf) * 1.25)
-    _left.set_xticks(_ticks)
+    _left.set_xticks(_xs)
     _left.set_xlabel("$x$")
     _left.set_ylabel(f"$f_{_rv}(x)$")
 
     _edges = [_lo] + _xs + [_hi]
-    _levels = [0] + [_F(_x) / _n**2 for _x in _xs]
+    _levels = [0] + [_F(_x) / 16 for _x in _xs]
     for _k, _lev in enumerate(_levels):
-        _right.plot([_edges[_k], _edges[_k + 1]], [_lev, _lev], color=BLUE, lw=1.6)
+        _right.plot([_edges[_k], _edges[_k + 1]], [_lev, _lev], color=lk.BLUE, lw=1.6)
         if _k > 0:
-            _right.plot([_edges[_k], _edges[_k]], [_levels[_k - 1], _lev], color=GREY, lw=0.9, ls=(0, (1, 2)))
-            _right.plot(_edges[_k], _levels[_k - 1], "o", color=BLUE, ms=4.5, mfc="white", zorder=4)
-            _right.plot(_edges[_k], _lev, "o", color=BLUE, ms=4.5, zorder=4)
+            _right.plot([_edges[_k], _edges[_k]], [_levels[_k - 1], _lev], color=lk.GREY, lw=0.9, ls=(0, (1, 2)))
+            _right.plot(_edges[_k], _levels[_k - 1], "o", color=lk.BLUE, ms=4.5, mfc="white", zorder=4)
+            _right.plot(_edges[_k], _lev, "o", color=lk.BLUE, ms=4.5, zorder=4)
     _span = _hi - _lo
     _xg = _hi + 0.09 * _span  # the difference F(b) - F(a - 1) is read off on the right of the plot
     if _a <= _b:
-        _y0, _y1 = _F(_a - 1) / _n**2, _F(_b) / _n**2
-        _right.plot([_a, _xg], [_y0, _y0], color=GREY, lw=1.0, ls=(0, (4, 3)))
-        _right.plot([_b, _xg], [_y1, _y1], color=GREY, lw=1.0, ls=(0, (4, 3)))
+        _y0, _y1 = _F(_a - 1) / 16, _F(_b) / 16
+        _right.plot([_a, _xg], [_y0, _y0], color=lk.GREY, lw=1.0, ls=(0, (4, 3)))
+        _right.plot([_b, _xg], [_y1, _y1], color=lk.GREY, lw=1.0, ls=(0, (4, 3)))
         _cap = 0.02 * _span
-        _right.plot([_xg - _cap, _xg + _cap, _xg, _xg, _xg - _cap, _xg + _cap], [_y0, _y0, _y0, _y1, _y1, _y1], color=GREEN, lw=1.6, zorder=3)
-        _right.text(_xg + _cap, 1.1, f"$F_{_rv}(b) - F_{_rv}(a - 1)$", color=GREEN, fontsize=12, ha="right", va="bottom")
+        _right.plot([_xg - _cap, _xg + _cap, _xg, _xg, _xg - _cap, _xg + _cap], [_y0, _y0, _y0, _y1, _y1, _y1], color=lk.GREEN, lw=1.6, zorder=3)
+        _right.text(_xg + _cap, 1.1, f"$F_{_rv}(b) - F_{_rv}(a - 1)$", color=lk.GREEN, fontsize=12, ha="right", va="bottom")
     _right.set_xlim(_lo, _hi + 0.16 * _span)
     _right.set_ylim(-0.06, 1.12)
-    _right.set_xticks(_ticks)
+    _right.set_xticks(_xs)
     _right.set_xlabel("$x$")
     _right.set_ylabel(f"$F_{_rv}(x)$")
-    from matplotlib.ticker import FuncFormatter as _FF
+    plain(_left)
+    plain(_right)
 
-    for _ax in (_left, _right):
-        _ax.yaxis.set_major_formatter(_FF(lambda v, _pos: f"${v:g}$"))
-        for _s in ("top", "right"):
-            _ax.spines[_s].set_visible(False)
+    lk.interactive(_fig, controls=[rv_choice, range_a, range_b])
+    return
 
-    if _a <= _b:
-        _p = f"${_tex(_Fr(_F(_b) - _F(_a - 1), _n**2))}$"
-    else:
-        _p = r"need $a \leq b$"
-    mo.vstack(
-        [
-            mo.hstack([rv_choice], justify="start", gap=2, wrap=True),
-            mo.hstack([range_a, range_b], justify="start", gap=2, wrap=True),
-            table([(rf"$P(a \leq {_rv} \leq b) = \displaystyle\sum_{{x = a}}^{{b}} f_{_rv}(x) = F_{_rv}(b) - F_{_rv}(a - 1)$", _p)]),
-            _fig,
-        ]
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: cdf
+    # consequences: pmf and cdf encode the distribution
+    lk.prose(
+        r"""
+        $\leadsto$ &nbsp; pmf and cdf are different ways to encode the probability distribution of a random variable $X$
+
+        $\leadsto$ &nbsp; we will spend the next several lectures studying properties and examples of such functions!
+        """
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    pmf and cdf are different ways to encode the probability distribution of a random variable $X$.
-
-    We will spend the next several lectures studying properties and examples of such functions!
-
-    ## Practice
-
-    ### Question 1
-
-    A lab uses chemical kits from three suppliers
-
-    $$
-    P(S_1) = 50\%, \qquad P(S_2) = 30\%, \qquad P(S_3) = 20\%
-    $$
-
-    Contamination rate of kits from each supplier is
-
-    $$
-    P(C \mid S_1) = 1\%, \qquad P(C \mid S_2) = 2\%, \qquad P(C \mid S_3) = 5\%
-    $$
-
-    (a) What is the probability that a kit is contaminated?
-
-    (b) Given a contaminated kit, what is the probability it came from supplier 3?
-
-    ### Question 2
-
-    A box has 5 red, 4 blue and 3 green balls. Choose 3 without replacement. Find the probability that no ball is red.
-
-    ### Question 3
-
-    Suppose $X$ has state space $S_X = \{0, 1, 2, 3, 4\}$ with cdf
-
-    $$
-    F_X(0) = 0.1, \ F_X(1) = 0.35, \ F_X(2) = 0.65, \ F_X(3) = 0.9, \ F_X(4) = 1.
-    $$
-
-    (a) Find $f_X$ (pmf).
-
-    (b) Compute $P(X > 2)$ and $P(1 \leq X \leq 3)$.
-    """)
+def _(lk):
+    # module: practice
+    # section
+    lk.section("Practice")
     return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: practice
+    # exercise: contaminated kits
+    lk.exercise(
+        r"""
+        A lab uses chemical kits from three suppliers
+
+        > $P(S_1) = 50\%$, $P(S_2) = 30\%$, $P(S_3) = 20\%$
+
+        Contamination rate of kits from each supplier is
+
+        > $P(C \mid S_1) = 1\%$, $P(C \mid S_2) = 2\%$, $P(C \mid S_3) = 5\%$
+
+        a) what is the probability that a kit is contaminated?
+
+        b) given a contaminated kit, what is the probability it came from supplier 3?
+        """,
+        label="ex-practice-1",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: practice
+    # exercise: balls without replacement
+    lk.exercise(
+        r"""
+        A box has 5 red, 4 blue and 3 green balls
+
+        Choose 3 without replacement. Find the probability that no ball is red
+        """,
+        label="ex-practice-2",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: practice
+    # exercise: pmf from a cdf
+    lk.exercise(
+        [
+            r"Suppose $X$ has state space $S_X = \{0, 1, 2, 3, 4\}$",
+            lk.aside(r"with &nbsp; $F_X(0) = 0.1$, $F_X(1) = 0.35$, $F_X(2) = 0.65$, $F_X(3) = 0.9$, $F_X(4) = 1$", "cdf"),
+            r"a) Find $f_X$ (pmf)",
+            r"b) Compute $P(X > 2)$ and $P(1 \leq X \leq 3)$",
+        ],
+        label="ex-practice-3",
+    )
+    return
+
+
+if __name__ == "__main__":
+    app.run()

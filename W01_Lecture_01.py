@@ -1,157 +1,38 @@
 import marimo
 
 __generated_with = "0.25.1"
-app = marimo.App(width="medium", app_title="BS202 · Lecture 01 · Probability basics", css_file="bs202.css")
+app = marimo.App(width="medium", app_title="BS202 · Lecture 1 · Probability basics", css_file="lecturekit/style.css")
 
 
 @app.cell(hide_code=True)
-def _():
+async def _():
     import math
+    import sys
 
     import marimo as mo
-    import matplotlib
     import numpy as np
     from matplotlib.figure import Figure
-    from matplotlib.patches import Arc
 
-    # Figures use the same Computer Modern typeface as the text
-    matplotlib.rcParams.update({"font.size": 14, "font.family": "serif", "font.serif": ["cmr10", "DejaVu Serif"], "mathtext.fontset": "cm", "axes.formatter.use_mathtext": True, "axes.unicode_minus": False})
+    import matplotlib  # noqa: F401  (named here so the browser fetches it while Python starts)
 
-    return Arc, Figure, math, mo, np
+    if sys.platform == "emscripten":
+        import micropip
 
-
-@app.cell(hide_code=True)
-def _(mo):
-    # ---- Building blocks shared by all lectures -------------------------
-    # Palette with fixed roles (figures only; text carries no colour):
-    #   BLUE   the primary object (the point, the chosen vector, the main curve)
-    #   RED    the second object it is compared with
-    #   GREEN  a derived quantity (tangent vector, gradient, mean)
-    #   ORANGE a third series, only when three are needed
-    #   GREY   reference geometry (guides, unit circle, reference curves)
-    #   LIGHT  fills and grids
-    BLUE, RED, GREEN, ORANGE, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#b9853f", "#9a9a9a", "#e3ebf4"
-    # Figure widths: FULL spans the page, HALF sits beside text or in a pair
-    FULL, HALF = 7.4, 3.6
-
-    def header(document, date, running=""):
-        """Course header, as on the exercise sheets and exams."""
-        return mo.Html(
-            f"""
-    <div class="bs-head">
-      <div class="bs-running">BS202 &bull; {running}</div>
-      <div class="bs-title">Introduction to Probability<br>and Mathematical Statistics</div>
-      <div class="bs-inst">Daegu Gyeongbuk Institute of Science and Technology<br>School of Undergraduate Studies</div>
-      <div class="bs-meta">
-        <b>Document</b><span>{document}</span><b>Course</b><span>BS202a</span>
-        <b>Week</b><span>{date.removeprefix('Week ')}</span><b>Instructor</b><span>Professor Scarinci</span>
-      </div>
-    </div>
-    """
-        )
-
-    def _statement(label, title, body):
-        head = f"**{label}" + (f" ({title})" if title else "") + ".**"
-        return mo.md(head + "\n\n" + body).style({"border-left": f"2px solid {BLUE}", "padding-left": "1rem"})
-
-    def definition(body, title=""):
-        return _statement("Definition", title, body)
-
-    def theorem(body, title=""):
-        return _statement("Theorem", title, body)
-
-    def proposition(body, title=""):
-        return _statement("Proposition", title, body)
-
-    def corollary(body, title=""):
-        return _statement("Corollary", title, body)
-
-    def postulate(body, title=""):
-        return _statement("Postulate", title, body)
-
-    def note(body):
-        """Editorial note of the notebook (not part of the lecture)."""
-        return mo.md("**Note.** " + body.strip())
-
-    def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
-        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
-        so arrows look alike in every figure whatever its axis range."""
-        ax.annotate(
-            "",
-            xy=tip,
-            xytext=tail,
-            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
-        )
-        if label:
-            pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
-            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=13)
-
-    def plane(ax, lim):
-        """Style a 2D axis as a coordinate plane with range [-lim, lim]."""
-        ax.set_xlim(-lim, lim)
-        ax.set_ylim(-lim, lim)
-        ax.set_aspect("equal")
-        ax.axhline(0, color="black", lw=0.8)
-        ax.axvline(0, color="black", lw=0.8)
-        ax.grid(True, color=LIGHT, lw=0.6)
-        ax.set_axisbelow(True)
-
-    def blank(w, h, xlim, ylim):
-        """A figure with one bare axis (no frame) for sketches."""
-        from matplotlib.figure import Figure as _Figure
-
-        fig = _Figure(figsize=(w, h), layout="constrained")
-        ax = fig.subplots()
-        ax.set_xlim(*xlim)
-        ax.set_ylim(*ylim)
-        ax.set_aspect("equal")
-        ax.axis("off")
-        return fig, ax
-
-    def blob(cx, cy, rx, ry, wobble=0.07, seed=0, n=400):
-        """Closed organic curve around (cx, cy): an ellipse with a few low harmonics."""
-        import numpy as _np
-
-        rng = _np.random.default_rng(seed)
-        t = _np.linspace(0, 2 * _np.pi, n)
-        r = 1 + sum(wobble / k * rng.uniform(0.4, 1.0) * _np.cos(k * t + rng.uniform(0, 2 * _np.pi)) for k in (2, 3, 4, 5))
-        return cx + rx * r * _np.cos(t), cy + ry * r * _np.sin(t)
-
-    def table(rows):
-        """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
-        return mo.Html(f'<div class="readout">{_md.text}</div>')
-
-    return BLUE, FULL, GREEN, GREY, HALF, LIGHT, ORANGE, RED, arrow, blank, blob, corollary, definition, header, note, plane, postulate, proposition, table, theorem
+        await micropip.install(str(mo.notebook_location() / "public" / "lecturekit-0.1.0-py3-none-any.whl"), deps=False)
+    import lecturekit as lk
+    return Figure, lk, math, mo, np
 
 
 @app.cell(hide_code=True)
-def _(header):
-    header("Lecture 01", "Week 01", "Lecture 01 • Probability basics")
+def _(lk):
+    lk.lecture(1, "Probability basics")
     return
 
 
 @app.cell(hide_code=True)
-def _(arrow, math):
-    def vector(ax, tail, tip, color, label=None, turn=0, r=15, **kw):
-        """Arrow from `tail` to `tip` (a dot when it has zero length), labelled beyond its tip on a white box;
-        `turn` (degrees) rotates the label about the tip so that coinciding vectors keep separate labels."""
-        dx, dy = tip[0] - tail[0], tip[1] - tail[1]
-        if dx == 0 and dy == 0:
-            ax.plot(*tip, "o", color=color, ms=4, zorder=4)
-            d = math.radians(45 + turn)
-        else:
-            arrow(ax, tail, tip, color, **kw)
-            d = math.atan2(dy, dx) + math.radians(turn)
-        if label:
-            ax.annotate(label, tip, textcoords="offset points", xytext=(r * math.cos(d), r * math.sin(d)), ha="center", va="center", color=color, fontsize=13, zorder=5, bbox={"boxstyle": "round,pad=0.1", "facecolor": "white", "edgecolor": "none"})
+def _(Figure):
+    # Helpers of this lecture: die faces inside text, bare sketches
 
-    return (vector,)
-
-
-@app.cell(hide_code=True)
-def _():
     _PIPS = {
         1: [(2, 2)],
         2: [(1, 1), (3, 3)],
@@ -170,140 +51,198 @@ def _():
         )
 
     def dice(faces):
+        """Several die faces separated by commas."""
         return ", ".join(die(n) for n in faces)
 
-    return dice, die
+    def blank(w, h, xlim, ylim):
+        """A figure with one bare axis (no frame) for sketches."""
+        fig = Figure(figsize=(w, h), layout="constrained")
+        ax = fig.subplots()
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        return fig, ax
+
+    return blank, dice
 
 
 @app.cell(hide_code=True)
-def _(definition, dice, mo):
-    mo.vstack(
-        [
-            mo.md(
-                r"""
-    ## I.1 &nbsp; Probability Basics
-
-    **References:** WMS 2.1–2.4
-
-    $\leadsto$ &nbsp; mathematical language used to describe unpredictable phenomena
-    """
-            ),
-            definition(
-                r"""
-    A **random experiment** is a *repeatable process* whose *outcomes cannot be predicted with certainty* (on any individual trial of the experiment) but whose *set of possible outcomes is specified in advance* (all that can happen is known).
-    """,
-                "Random experiment",
-            ),
-            mo.md(r"$\leadsto$ &nbsp; this is the type of phenomena we will deal with"),
-            definition(
-                r"""
-    The **sample space** of a random experiment is the set of all possible outcomes &nbsp; <span class="nw">$\leadsto$ &nbsp; denoted</span> by $S$
-
-    An **event** of a random experiment is a subset of outcomes satisfying some interesting property &nbsp; <span class="nw">$\leadsto$ &nbsp; $A \subseteq S$</span>
-    """,
-                "Sample space and events",
-            ),
-            mo.md(
-                r"""
-    When we deal with probability (to be defined soon) we should not focus on individual outcomes… rather, we focus on *properties that we wish to see*
-
-    $\leadsto$ &nbsp; if the outcome of the experiment has a given property, we say “the property has occurred” &nbsp; <span class="nw">$\leadsto$ &nbsp; hence</span> the term “event”!
-
-    The **event space** is the collection of all relevant events &nbsp; <span class="nw">$\leadsto$ &nbsp; denoted</span> $\mathcal{E}$
-    """
-            ),
-            mo.md(
-                rf"""
-    **Example** (Rolling one die).
-
-    - repeatable
-    - uncertain outcome
-    - pre-determined set of outcomes
-
-    $\Longrightarrow$ &nbsp; rolling a die is a random experiment!
-
-    $S = \{{$ {dice(range(1, 7))} $\}}$ &nbsp;&nbsp; (sample space)
-
-    $A = \{{$ {dice((2, 4, 6))} $\}}$ &nbsp;&nbsp; (event “even faces”)
-
-    $B = \{{$ {dice((2,))} $\}}$ &nbsp;&nbsp; (event “face = two”: a simple event; a set with one element $\neq$ the element itself)
-
-    <span style="white-space:nowrap">$\mathcal{{E}} = \big\{{\, \emptyset,\ \{{$ {dice((1,))} $\}},\ \{{$ {dice((2,))} $\}} = B,\ \dots,$</span> <span style="white-space:nowrap">$\{{$ {dice((2, 4, 6))} $\}} = A,\ \dots,$</span> <span style="white-space:nowrap">$\{{$ {dice((1,))}$, \dots,$ {dice((6,))} $\}} \,\big\}}$</span> &nbsp;&nbsp; (all&nbsp;subsets&nbsp;of&nbsp;outcomes)
-    """
-            ),
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(definition, mo, theorem):
-    mo.vstack(
-        [
-            mo.md(r"""### Algebra of events (basic operations of set theory)"""),
-            definition(
-                r"""
-    Given $A, B \subseteq S$
-
-    - $A \cup B$ = outcomes in $A$ <u>or</u> in $B$ &nbsp; (**union**)
-    - $A \cap B$ = outcomes in $A$ <u>and</u> in $B$ &nbsp; (**intersection**)
-    - $A^c$ = outcomes <u>not</u> in $A$ &nbsp; (**complement**)
-    """,
-                "Union, intersection and complement",
-            ),
-            mo.md(
-                r"""
-    $\leadsto$ &nbsp; $A$ and $B$ are **disjoint** (mutually exclusive) when $A \cap B = \emptyset$ (the empty set)
-
-    $\leadsto$ &nbsp; $A$ and $B$ are **exhaustive** (cover all outcomes) when $A \cup B = S$
-    """
-            ),
-            theorem(
-                r"""
-    $$
-    \begin{aligned}
-    &\begin{cases} A \cup B = B \cup A \\ A \cap B = B \cap A \end{cases} && (\text{commutativity}) \\[6pt]
-    &\begin{cases} (A \cup B) \cup C = A \cup (B \cup C) \\ (A \cap B) \cap C = A \cap (B \cap C) \end{cases} && (\text{associativity}) \\[6pt]
-    &\begin{cases} A \cap (B \cup C) = (A \cap B) \cup (A \cap C) \\ A \cup (B \cap C) = (A \cup B) \cap (A \cup C) \end{cases} && (\text{distributivity}) \\[6pt]
-    &\begin{cases} (A \cup B)^c = A^c \cap B^c \\ (A \cap B)^c = A^c \cup B^c \end{cases} && (\text{De Morgan's Law})
-    \end{aligned}
-    $$
-    """,
-                "Laws of set theory",
-            ),
-            mo.md(r"$\leadsto$ &nbsp; exercise: convince yourself using diagrams"),
-        ]
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
+def _(lk, mo):
+    # Controls of the interactive figures. They are shown inside their figures, so modules can be moved freely.
     venn_set = mo.ui.dropdown(
-        [
-            "A ∪ B",
-            "A ∩ B",
-            "Aᶜ",
-            "A ∪ B ∪ C",
-            "A ∩ B ∩ C",
-            "A ∩ (B ∪ C)",
-            "(A ∩ B) ∪ (A ∩ C)",
-            "A ∪ (B ∩ C)",
-            "(A ∪ B) ∩ (A ∪ C)",
-            "(A ∪ B)ᶜ",
-            "Aᶜ ∩ Bᶜ",
-            "(A ∩ B)ᶜ",
-            "Aᶜ ∪ Bᶜ",
-        ],
+        ["A ∪ B", "A ∩ B", "Aᶜ", "A ∪ B ∪ C", "A ∩ B ∩ C", "A ∩ (B ∪ C)", "(A ∩ B) ∪ (A ∩ C)", "A ∪ (B ∩ C)", "(A ∪ B) ∩ (A ∪ C)",
+         "(A ∪ B)ᶜ", "Aᶜ ∩ Bᶜ", "(A ∩ B)ᶜ", "Aᶜ ∪ Bᶜ"],
         value="A ∪ B",
         label="set",
         allow_select_none=False,
     )
-    return (venn_set,)
+    total = lk.slider(2, 12, step=1, value=7, label="$A$: faces add to")
+    face = lk.slider(1, 6, step=1, value=5, label="$B$: at least one face is")
+    die_preset = mo.ui.dropdown({"fair": (1, 1, 1, 1, 1, 1), "not fair": (0, 0, 0, 0, 0, 1)}, value="fair", label="die", allow_select_none=False)
+    n_rolls = lk.slider(10, 5000, step=10, value=500, label="number of rolls")
+    reroll = mo.ui.button(value=0, on_click=lambda v: v + 1, label="Roll again")
+    return die_preset, face, n_rolls, reroll, total, venn_set
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, LIGHT, ORANGE, RED, mo, np, venn_set):
+def _(die_preset, lk, mo):
+    # the weights of the six faces, starting from the chosen die
+    weights = mo.ui.array([mo.ui.slider(0, 10, step=1, value=w, label=f"${i + 1}$", show_value=True, orientation="vertical") for i, w in enumerate(die_preset.value)])
+    return (weights,)
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: basics
+    # motivation
+    lk.prose(r"$\leadsto$ &nbsp; mathematical language used to describe unpredictable phenomena")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: basics
+    # references
+    lk.references("WMS 2.1–2.4")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: basics
+    # definition: random experiment
+    lk.definition(
+        [
+            r"A **random experiment** is a *repeatable process*",
+            lk.aside(r"whose <span class='lk-mark'>*outcomes cannot be predicted with certainty*</span>", "on any individual trial of the experiment"),
+            lk.aside(r"but whose <span class='lk-mark'>*set of possible outcomes is specified in advance*</span>", "all that can happen is known"),
+        ],
+        label="def-random-experiment",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: basics
+    # remark
+    lk.prose(r"$\leadsto$ &nbsp; this is the type of phenomena we will deal with")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: basics
+    # definition: sample space, events, event space
+    lk.definition(
+        [
+            r"The **sample space** of a random experiment is the set of all possible outcomes &nbsp; $\leadsto$ &nbsp; denoted by $S$",
+            r"An **event** of a random experiment is a subset of outcomes satisfying some interesting property &nbsp; $\leadsto$ &nbsp; $A \subseteq S$",
+            r"> when we deal with probability (to be defined soon) we should not focus on individual outcomes…",
+            lk.aside(
+                r"> rather, we focus on <span class='lk-mark'>properties that we wish to see</span>",
+                r"if the outcome of the experiment has a given property,<br>we say “the property has occurred”<br>$\leadsto$ hence the term “event”!",
+            ),
+            r"The **event space** is the collection of all relevant events &nbsp; $\leadsto$ &nbsp; denoted $\mathcal{E}$",
+        ],
+        title="sample space and events",
+        label="def-sample-space",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(dice, lk):
+    # module: basics
+    # example: rolling one die
+    lk.example(
+        [
+            r"- repeatable",
+            r"- uncertain outcome",
+            r"- pre-determined set of outcomes",
+            r"> $\Longrightarrow$ &nbsp; rolling a die is a random experiment!",
+            lk.gap(),
+            rf"$S = \{{$ {dice(range(1, 7))} $\}}$ &nbsp; (sample space)",
+            rf"$A = \{{$ {dice((2, 4, 6))} $\}}$ &nbsp; (event “even faces”)",
+            lk.aside(rf"$B = \{{$ {dice((2,))} $\}}$ &nbsp; (event “face = two”)", "simple event<br>set with one element ≠ the element itself"),
+            lk.aside(
+                rf"$\mathcal{{E}} = \big\{{ \emptyset, \{{$ {dice((1,))} $\}}, \{{$ {dice((2,))} $\}} = B, \dots, \{{$ {dice((2, 4, 6))} $\}} = A, \dots, \{{$ {dice((1,))}$, \dots,$ {dice((6,))} $\}} \big\}}$",
+                "all subsets of outcomes",
+            ),
+        ],
+        title="rolling one die",
+        label="ex-one-die",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: algebra of events
+    # section
+    lk.section("Algebra of events (basic operations of set theory)")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: algebra of events
+    # definition: union, intersection, complement
+    lk.definition(
+        [
+            r"Given $A, B \subseteq S$",
+            r"""
+            $$
+            \begin{aligned}
+            &\bullet \ \ A \cup B = \text{outcomes in } A \ \textit{or} \text{ in } B && (\text{union})\\
+            &\bullet \ \ A \cap B = \text{outcomes in } A \ \textit{and} \text{ in } B \qquad && (\text{intersection})\\
+            &\bullet \ \ A^c = \text{outcomes } \textit{not} \text{ in } A && (\text{complement})
+            \end{aligned}
+            $$
+            """,
+        ],
+        label="def-set-operations",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: algebra of events
+    # consequences: disjoint and exhaustive events
+    lk.prose(
+        lk.aside(r"$\leadsto$ &nbsp; $A$ and $B$ are **disjoint** (mutually exclusive) when $A \cap B = \mk{\emptyset}$", r"$\emptyset$ = empty set"),
+        r"$\leadsto$ &nbsp; $A$ and $B$ are **exhaustive** (cover all outcomes) when $A \cup B = S$",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: algebra of events
+    # theorem: laws of set theory
+    lk.theorem(
+        r"""
+        $$
+        \begin{aligned}
+        &\begin{cases} A \cup B = B \cup A \\ A \cap B = B \cap A \end{cases} && (\text{commutativity})\\[6pt]
+        &\begin{cases} (A \cup B) \cup C = A \cup (B \cup C) \\ (A \cap B) \cap C = A \cap (B \cap C) \end{cases} && (\text{associativity})\\[6pt]
+        &\begin{cases} A \cap (B \cup C) = (A \cap B) \cup (A \cap C) \\ A \cup (B \cap C) = (A \cup B) \cap (A \cup C) \end{cases} \qquad && (\text{distributivity})\\[6pt]
+        &\begin{cases} (A \cup B)^c = A^c \cap B^c \\ (A \cap B)^c = A^c \cup B^c \end{cases} && (\text{De Morgan's Law})
+        \end{aligned}
+        $$
+        """,
+        title="laws of set theory",
+        label="thm-set-laws",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(Figure, lk, np, venn_set):
+    # module: algebra of events
+    # exercise hint, with the sketch of S, A, B, C: the chosen set is shaded
     _g = np.linspace(0, 1, 600)
     _X, _Y = np.meshgrid(_g * 3.2, _g * 2.1)
     _circles = {"A": (1.25, 1.2, 0.48), "B": (1.95, 1.2, 0.54), "C": (1.6, 0.78, 0.44)}
@@ -324,50 +263,33 @@ def _(BLUE, Figure, LIGHT, ORANGE, RED, mo, np, venn_set):
         "Aᶜ ∪ Bᶜ": ~_A | ~_B,
     }
     _choice = venn_set.value
-    _fig = Figure(figsize=(4.6, 3.3), layout="constrained")
+    _fig = Figure(figsize=(3.6, 2.6), layout="constrained")
     _ax = _fig.subplots()
     _th = np.linspace(0, 2 * np.pi, 200)
-    _ax.set_title("$" + _choice.replace("∪", r"\cup").replace("∩", r"\cap").replace("ᶜ", "^c") + "$", fontsize=15)
-    _ax.contourf(_X, _Y, _sets[_choice].astype(float), levels=[0.5, 1.5], colors=[LIGHT])
-    for _name, _col, _lx, _ly in (("A", BLUE, 0.72, 1.72), ("B", RED, 2.45, 1.72), ("C", ORANGE, 2.08, 0.3)):
+    _ax.set_title("$" + _choice.replace("∪", r"\cup").replace("∩", r"\cap").replace("ᶜ", "^c") + "$", fontsize=14)
+    _ax.contourf(_X, _Y, _sets[_choice].astype(float), levels=[0.5, 1.5], colors=[lk.LIGHT])
+    for _name, _col, _lx, _ly in (("A", lk.BLUE, 0.72, 1.72), ("B", lk.RED, 2.45, 1.72), ("C", lk.ORANGE, 2.08, 0.3)):
         _cx, _cy, _r = _circles[_name]
         _ax.plot(_cx + _r * np.cos(_th), _cy + _r * np.sin(_th), color=_col, lw=1.4)
-        _ax.text(_lx, _ly, f"${_name}$", color=_col, fontsize=15, ha="center", va="center")
+        _ax.text(_lx, _ly, f"${_name}$", color=_col, fontsize=13, ha="center", va="center")
     _ax.plot([0, 3.2, 3.2, 0, 0], [0, 0, 2.1, 2.1, 0], color="black", lw=1.0)
-    _ax.text(0.2, 0.2, "$S$", fontsize=15, ha="center", va="center")
+    _ax.text(0.2, 0.2, "$S$", fontsize=13, ha="center", va="center")
     _ax.set_xlim(-0.05, 3.25)
     _ax.set_ylim(-0.05, 2.15)
     _ax.set_aspect("equal")
     _ax.axis("off")
-    mo.vstack([venn_set, _fig])
-    return
-
-
-@app.cell(hide_code=True)
-def _(dice, mo):
-    mo.md(
-        rf"""
-    **Example** (Rolling two dice).
-
-    $S = \{{$ {dice(range(1, 7))} $\}} \times \{{$ {dice(range(1, 7))} $\}}$
-
-    $A = \{{\text{{faces add to 7}}\}}, \qquad B = \{{\text{{at least one face is 5}}\}}$
-
-    $A \cap B = \{{\, ($ {dice((2,))}$,$ {dice((5,))} $),\ ($ {dice((5,))}$,$ {dice((2,))} $) \,\}}$
-    """
+    lk.prose(
+        r"$\leadsto$ &nbsp; exercise: convince yourself using diagrams",
+        lk.interactive(_fig, controls=[venn_set]),
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    total = mo.ui.slider(2, 12, 1, value=7, label="$A$: faces add to", show_value=True)
-    face = mo.ui.slider(1, 6, 1, value=5, label="$B$: at least one face is", show_value=True)
-    return face, total
-
-
-@app.cell(hide_code=True)
-def _(BLUE, HALF, LIGHT, RED, arrow, blank, face, math, mo, np, total):
+def _(blank, dice, face, lk, math, np, total):
+    # module: algebra of events
+    # example: two dice, A = faces add to 7, B = at least one face is 5, with the grid of outcomes; the sliders
+    # change the sum and the face
     _t, _k = total.value, face.value
 
     def _loop(ax, p, q, r, color):
@@ -378,167 +300,172 @@ def _(BLUE, HALF, LIGHT, RED, arrow, blank, face, math, mo, np, total):
         ys = np.concatenate([q[1] + r * np.sin(a + s), p[1] + r * np.sin(a + np.pi + s)])
         ax.plot(np.append(xs, xs[0]), np.append(ys, ys[0]), color=color, lw=1.4)
 
-    _fig, _ax = blank(HALF, HALF, (-1.35, 7.55), (-1.35, 7.55))
-    arrow(_ax, (-0.4, 0), (7.3, 0), "black", lw=0.9)
-    arrow(_ax, (0, -0.4), (0, 7.3), "black", lw=0.9)
+    _fig, _ax = blank(3.2, 3.2, (-1.35, 7.55), (-1.35, 7.55))
+    lk.arrow(_ax, (-0.4, 0), (7.3, 0), "black", lw=0.9)
+    lk.arrow(_ax, (0, -0.4), (0, 7.3), "black", lw=0.9)
     for _i in range(1, 7):
         _ax.plot([_i, _i], [-0.07, 0.07], color="black", lw=0.9)
         _ax.plot([-0.07, 0.07], [_i, _i], color="black", lw=0.9)
         _ax.text(_i, -0.2, f"${_i}$", fontsize=12, ha="center", va="top")
         _ax.text(-0.2, _i, f"${_i}$", fontsize=12, ha="right", va="center")
-    _ax.text(3.5, -0.85, "first die", fontsize=12, ha="center", va="top")
-    _ax.text(-0.85, 3.5, "second die", fontsize=12, ha="right", va="center", rotation=90)
-
+    _ax.text(3.5, -0.85, "1st die", fontsize=12, ha="center", va="top")
+    _ax.text(-0.85, 3.5, "2nd die", fontsize=12, ha="right", va="center", rotation=90)
     _inA = [(_i, _t - _i) for _i in range(max(1, _t - 6), min(6, _t - 1) + 1)]
-    _both = [(_i, _j) for _i, _j in _inA if _k in (_i, _j)]
-    for _p in _both:
-        _ax.fill(_p[0] + 0.3 * np.cos(np.linspace(0, 2 * np.pi, 60)), _p[1] + 0.3 * np.sin(np.linspace(0, 2 * np.pi, 60)), color=LIGHT, lw=0)
+    for _p in [(_i, _j) for _i, _j in _inA if _k in (_i, _j)]:
+        _ax.fill(_p[0] + 0.3 * np.cos(np.linspace(0, 2 * np.pi, 60)), _p[1] + 0.3 * np.sin(np.linspace(0, 2 * np.pi, 60)), color=lk.LIGHT, lw=0)
     for _i in range(1, 7):
         for _j in range(1, 7):
             _ax.plot(_i, _j, "o", ms=2.5, color="black")
-    _loop(_ax, _inA[0], _inA[-1], 0.36, BLUE)
-    _loop(_ax, (1, _k), (6, _k), 0.3, RED)
-    _loop(_ax, (_k, 1), (_k, 6), 0.3, RED)
+    _loop(_ax, _inA[0], _inA[-1], 0.36, lk.BLUE)
+    _loop(_ax, (1, _k), (6, _k), 0.3, lk.RED)
+    _loop(_ax, (_k, 1), (_k, 6), 0.3, lk.RED)
     # the label of A goes beyond the upper-left end of its loop: above the grid when that end is in the top row
     _la = (_inA[0][0] - 0.6, 6.85) if _t >= 7 else (0.36, _inA[0][1] + 0.55)
-    _ax.text(*_la, "$A$", color=BLUE, fontsize=13, ha="center", va="center")
-    _ax.text(6.75, _k, "$B$", color=RED, fontsize=13, ha="center", va="center")
+    _ax.text(*_la, "$A$", color=lk.BLUE, fontsize=13, ha="center", va="center")
+    _ax.text(6.75, _k, "$B$", color=lk.RED, fontsize=13, ha="center", va="center")
     _ax.text(7.1, 7.1, "$S$", fontsize=13, ha="center", va="center")
 
-    mo.vstack(
+    lk.example(
         [
-            mo.hstack([total, face], justify="start", gap=2, wrap=True),
-            _fig,
-        ]
+            rf"$S = \{{$ {dice(range(1, 7))} $\}} \times \{{$ {dice(range(1, 7))} $\}}$",
+            r"$A = \{\text{faces add to } 7\}, \quad B = \{\text{at least one face is } 5\}$",
+            rf"$A \cap B = \{{ ($ {dice((2,))}$,$ {dice((5,))} $), ($ {dice((5,))}$,$ {dice((2,))} $) \}}$",
+            lk.interactive(_fig, controls=[total, face]),
+        ],
+        title="rolling two dice",
+        label="ex-two-dice",
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, HALF, ORANGE, RED, blank, definition, mo, np):
-    _fig, _ax = blank(HALF, 2.2, (-0.05, 3.4), (-0.05, 2.05))
+def _(lk):
+    # module: axioms
+    # section
+    lk.section("Axioms of probability")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: axioms
+    # definition: probability measure
+    lk.definition(
+        [
+            r"Given a random experiment, we define probability as a measure of events relative to the sample space.",
+            r"Precisely: Given $(S, \mathcal{E})$, a **probability measure** is",
+            r"$P : \mathcal{E} \longrightarrow \mathbb{R}$ &nbsp; such that",
+            r"""
+            $$
+            \begin{aligned}
+            &\bullet \ \ P(S) = 1\\
+            &\bullet \ \ P(A) \geq 0 \quad \text{for every event } A \in \mathcal{E}\\
+            &\bullet \ \ P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots
+            \end{aligned}
+            $$
+            """,
+            lk.aside(
+                r"> > for every countable sequence of <span class='lk-mark'>pairwise disjoint</span> events $A_1, A_2, \dots$",
+                r"pairwise disjoint: $A_i \cap A_j = \emptyset \ \ \forall\, i \neq j$",
+            ),
+        ],
+        label="def-probability-measure",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(blank, lk, np):
+    # module: axioms
+    # illustration: three disjoint events, with a sketch
+    _fig, _ax = blank(3.2, 2.1, (-0.05, 3.4), (-0.05, 2.05))
     _th = np.linspace(0, 2 * np.pi, 200)
-    for (_cx, _cy, _r), _col, _name in (((0.75, 1.3, 0.52), BLUE, "$A_1$"), ((2.3, 1.5, 0.38), RED, "$A_2$"), ((1.7, 0.65, 0.52), ORANGE, "$A_3$")):
+    for (_cx, _cy, _r), _col, _name in (((0.75, 1.3, 0.52), lk.BLUE, "$A_1$"), ((2.3, 1.5, 0.38), lk.RED, "$A_2$"), ((1.7, 0.65, 0.52), lk.ORANGE, "$A_3$")):
         _ax.plot(_cx + _r * np.cos(_th), _cy + _r * np.sin(_th), color=_col, lw=1.4)
         _ax.text(_cx, _cy, _name, color=_col, fontsize=13, ha="center", va="center")
     _ax.plot([0, 3, 3, 0, 0], [0, 0, 2, 2, 0], color="black", lw=1.0)
     _ax.text(3.2, 0.12, "$S$", fontsize=13, ha="center", va="center")
-
-    mo.vstack(
-        [
-            mo.md(r"""### Axioms of Probability"""),
-            definition(
-                r"""
-    Given a random experiment, we define probability as a measure of events relative to the sample space.
-
-    Precisely: given $(S, \mathcal{E})$, a **probability measure** is $P : \mathcal{E} \longrightarrow \mathbb{R}$ such that
-
-    - $P(S) = 1$
-    - $P(A) \geq 0$ for every event $A \in \mathcal{E}$
-    - for every countable sequence of *pairwise disjoint* events $A_1, A_2, \dots$ &nbsp; $(A_i \cap A_j = \emptyset \ \ \forall\, i \neq j)$
-
-        $$
-        P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots
-        $$
-    """,
-                "Probability measure",
-            ),
-            _fig,
-            mo.md(
-                r"""
-    $$
-    P(A_1 \cup A_2 \cup A_3) = P(A_1) + P(A_2) + P(A_3)
-    $$
-
-    $\leadsto$ &nbsp; probability is an additive notion of size of events relative to the full sample space
-
-    $\leadsto$ &nbsp; it can be interpreted as the relative frequency of event occurrences in infinite independent trials
-    """
-            ),
-            definition(
-                r"""
-    We call a triple $(S, \mathcal{E}, P)$ a **probability space** (abstract model of a random experiment).
-    """,
-                "Probability space",
-            ),
-            mo.md(
-                r"""
-    $\leadsto$ &nbsp; first goal of probability theory is to study properties and give examples of such spaces!
-
-    **Example** (Rolling one die).
-
-    $$
-    S = \{1, 2, 3, 4, 5, 6\}
-    $$
-
-    $$
-    \begin{aligned}
-    \mathcal{E} = \big\{\, & \underbrace{\{1\}}_{\mathclap{\footnotesize \text{“face is 1”}}\vphantom{\footnotesize \text{“face is 1”}}}, \dots, \{6\},\ \underbrace{\{1, 2\}}_{\mathclap{\footnotesize \begin{matrix} \text{“1 or 2”} \\ =\, \{1\} \cup \{2\} \end{matrix}}\vphantom{\footnotesize \begin{matrix} \text{“1 or 2”} \\ =\, \{1\} \cup \{2\} \end{matrix}}}, \dots, \{5, 6\}, \\[3.5em]
-    & \dots,\ \underbrace{\{1, 2, 3, 4, 5, 6\}}_{\mathclap{\footnotesize \text{“1 or 2 or … or 6”}}\vphantom{\footnotesize \text{“1 or 2 or … or 6”}}},\ \underbrace{\emptyset}_{\mathrlap{\footnotesize \text{“not (1 or … or 6)”}}\vphantom{\footnotesize \text{“not (1 or … or 6)”}}} \,\big\}
-    \end{aligned}
-    $$
-
-    $P = \,?$
-
-    Fair die: &nbsp; $P(\{i\}) = \dfrac{1}{6} \quad \forall\, i = 1, \dots, 6$
-
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad & P(\{i, j\}) = P(\{i\}) + P(\{j\}) = \frac{2}{6} && \forall\, i \neq j \\
-    \Longrightarrow \qquad & P(\{i, j, k\}) = \frac{3}{6} && \forall\, i \neq j \neq k \\
-    & \ \vdots
-    \end{aligned}
-    $$
-
-    In particular: &nbsp; $P(\{\text{even faces}\}) = \dfrac{3}{6}$
-
-    Not fair die (one example): &nbsp; $P(\{6\}) = 1$, &nbsp; $P(\{i\}) = 0$ for $i \neq 6$
-
-    $$
-    \begin{aligned}
-    \Longrightarrow \qquad & P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases} \\[6pt]
-    \Longrightarrow \qquad & P(\{\text{even faces}\}) = 1
-    \end{aligned}
-    $$
-
-    $\leadsto$ &nbsp; there can be many distinct probability measures on the same sample space / event space
-    """
-            ),
-        ]
+    lk.prose(
+        lk.figure(_fig),
+        r"$$ P(A_1 \cup A_2 \cup A_3) = P(A_1) + P(A_2) + P(A_3) $$",
+        r"$\leadsto$ &nbsp; probability is an additive notion of size of events relative to the full sample space",
+        r"$\leadsto$ &nbsp; it can be interpreted as the relative frequency of event occurrences in infinite independent trials",
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    die_preset = mo.ui.dropdown(
-        {"fair": (1, 1, 1, 1, 1, 1), "not fair": (0, 0, 0, 0, 0, 1)},
-        value="fair",
-        label="preset",
+def _(lk):
+    # module: axioms
+    # definition: probability space
+    lk.definition(
+        lk.aside(r"We call a triple $(S, \mathcal{E}, P)$ a <span class='lk-mark'>**probability space**</span>", "abstract model of a random experiment"),
+        label="def-probability-space",
     )
-    return (die_preset,)
+    return
 
 
 @app.cell(hide_code=True)
-def _(die_preset, mo):
-    weights = mo.ui.array([mo.ui.slider(0, 10, 1, value=w, label=f"weight of face {i + 1}", show_value=True) for i, w in enumerate(die_preset.value)])
-    weight_controls = mo.hstack([die_preset] + list(weights), justify="start", gap=2, wrap=True)
-    return weight_controls, weights
+def _(lk):
+    # module: axioms
+    # remark
+    lk.prose(r"$\leadsto$ &nbsp; first goal of probability theory is to study properties and give examples of such spaces!")
+    return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, HALF, mo, np, table, weight_controls, weights):
+def _(lk):
+    # module: axioms
+    # example: probability measures on one die
+    _ub = lambda body, label: r"\underbrace{" + body + r"}_{\scriptstyle " + label + "}"
+    lk.example(
+        [
+            r"$S = \{1, 2, 3, 4, 5, 6\}$",
+            r"$$ \mathcal{E} = \big\{ "
+            + _ub(r"\{1\}", r"\text{“face is 1”}")
+            + r", \dots, \{6\}, "
+            + _ub(r"\{1, 2\}", r"\substack{\text{“1 or 2”} \\ = \{1\} \cup \{2\}}")
+            + r", \dots, \{5, 6\}, \dots, "
+            + _ub(r"\{1, 2, 3, 4, 5, 6\}", r"\text{“1 or 2 or … or 6”}")
+            + ", "
+            + _ub(r"\emptyset", r"\text{“not (1 or … or 6)”}")
+            + r" \big\} $$",
+            r"$P = \ ?$",
+            r"fair die: &nbsp; $P(\{i\}) = \dfrac{1}{6} \quad \forall\, i = 1, \dots, 6$",
+            r"""
+            $$
+            \begin{aligned}
+            \Longrightarrow \quad & P(\{i, j\}) = P(\{i\}) + P(\{j\}) = \frac{2}{6} && \forall\, i \neq j\\[4pt]
+            \Longrightarrow \quad & P(\{i, j, k\}) = \frac{3}{6} && \forall\, i \neq j \neq k\\
+            & \ \ \vdots
+            \end{aligned}
+            $$
+            """,
+            r"> in particular: &nbsp; $P(\{\text{even faces}\}) = \dfrac{3}{6}$",
+            lk.gap(),
+            r"not fair die (one example): &nbsp; $P(\{6\}) = 1$, &nbsp; $P(\{i\}) = 0$ for $i \neq 6$",
+            r"$$ \Longrightarrow \quad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases} $$",
+            r"> $P(\{\text{even faces}\}) = 1$",
+        ],
+        title="rolling one die",
+        label="ex-die-measures",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(Figure, die_preset, lk, mo, np, weights):
+    # module: axioms
+    # remark: many probability measures, with the weighted die
     _w = np.array(weights.value, dtype=float)
-    _total = int(_w.sum())
-    # the weights define a probability measure only when their total is positive
-    pmf = _w / _total if _total > 0 else None
-
-    _fig = Figure(figsize=(HALF, 2.5), layout="constrained")
+    _total = _w.sum()
+    pmf = _w / _total if _total > 0 else None  # the weights define a probability measure only when their total is positive
+    _fig = Figure(figsize=(3.4, 2.4), layout="constrained")
     _ax = _fig.subplots()
     if pmf is not None:
-        _ax.vlines(range(1, 7), 0, pmf, color=BLUE, lw=1.4)
-        _ax.plot(range(1, 7), pmf, "o", color=BLUE, ms=5, clip_on=False, zorder=4)
-    _ax.set_xticks(range(1, 7))
+        _ax.vlines(range(1, 7), 0, pmf, color=lk.BLUE, lw=1.4)
+        _ax.plot(range(1, 7), pmf, "o", color=lk.BLUE, ms=5, clip_on=False, zorder=4)
+    _ax.set_xticks(range(1, 7), [f"${k}$" for k in range(1, 7)])
     _ax.set_xlim(0.4, 6.6)
     _ax.set_ylim(0, 1.05)
     _ax.set_yticks([0, 0.5, 1], ["$0$", "$0.5$", "$1$"])
@@ -546,70 +473,38 @@ def _(BLUE, Figure, HALF, mo, np, table, weight_controls, weights):
     _ax.set_ylabel(r"$P(\{i\})$")
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
-
-    def _value(k):
-        """P of an event of total weight k: 0 or 1; k/6 when the total is 6, as the page writes it (a stacked fraction crowds the rows); 1/2; otherwise two decimals."""
-        if k in (0, _total):
-            return f"${k // _total}$"
-        if _total == 6:
-            return f"${k}/6$"
-        if 2 * k == _total:
-            return "$1/2$"
-        return f"${k / _total:.2f}$"
-
-    if pmf is not None:
-        _pe, _p2 = _value(int(_w[1::2].sum())), _value(int(_w[0] + _w[1]))
-
-    mo.vstack(
-        [
-            weight_controls,
-            table(
-                [
-                    (r"$P(\{\text{even faces}\})$", _pe),
-                    (r"$P(\{1, 2\})$", _p2),
-                ]
-            )
-            if pmf is not None
-            else mo.md("at least one weight must be positive"),
-            _fig,
-        ]
+    lk.prose(
+        r"$\leadsto$ &nbsp; there can be many distinct probability measures on the same sample space / event space",
+        lk.interactive(_fig, controls=[die_preset, *weights]),
     )
     return (pmf,)
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    n_rolls = mo.ui.slider(10, 5000, 10, value=500, label="number of rolls", show_value=True)
-    reroll = mo.ui.button(value=0, on_click=lambda v: v + 1, label="Roll again")
-    return n_rolls, reroll
-
-
-@app.cell(hide_code=True)
-def _(BLUE, FULL, Figure, RED, mo, n_rolls, np, pmf, reroll):
+def _(Figure, lk, n_rolls, np, pmf, reroll):
+    # module: axioms
+    # illustration: relative frequency of even faces in repeated rolls of the die above
     _rng = np.random.default_rng(202 + reroll.value)
     _n = n_rolls.value
-
-    _fig = Figure(figsize=(FULL, 2.8), layout="constrained")
+    _fig = Figure(figsize=(lk.FULL, 2.6), layout="constrained")
     _ax = _fig.subplots()
     if pmf is not None:
         _p = float(pmf[1::2].sum())
         _even = _rng.choice(np.arange(1, 7), size=_n, p=pmf) % 2 == 0
         _freq = np.cumsum(_even) / np.arange(1, _n + 1)
-        _ax.plot(np.arange(1, _n + 1), _freq, color=BLUE, lw=1.4, zorder=4)
-        _ax.axhline(_p, color=RED, lw=1.0, zorder=3)
-        _ax.text(1.01, _p, r"$P(\{\mathrm{even\ faces}\})$", transform=_ax.get_yaxis_transform(), color=RED, fontsize=13, ha="left", va="center")
+        _ax.plot(np.arange(1, _n + 1), _freq, color=lk.BLUE, lw=1.4, zorder=4)
+        _ax.axhline(_p, color=lk.RED, lw=1.0, zorder=3)
+        _ax.text(1.01, _p, r"$P(\{\mathrm{even\ faces}\})$", transform=_ax.get_yaxis_transform(), color=lk.RED, fontsize=13, ha="left", va="center")
     _ax.set_ylim(-0.05, 1.05)
     _ax.set_xlim(1, _n)
     _ax.set_yticks([0, 0.5, 1], ["$0$", "$0.5$", "$1$"])
     _ax.set_xlabel("number of rolls")
-    _ax.set_title("relative frequency of even faces", loc="left", color=BLUE, fontsize=13)
+    _ax.set_ylabel("relative frequency\nof even faces")
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
-
-    mo.vstack(
-        [
-            mo.hstack([n_rolls, reroll], justify="start", gap=2, wrap=True),
-            _fig,
-        ]
-    )
+    lk.prose(lk.interactive(_fig, controls=[n_rolls, reroll]))
     return
+
+
+if __name__ == "__main__":
+    app.run()

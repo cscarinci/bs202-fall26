@@ -1,94 +1,36 @@
 import marimo
 
 __generated_with = "0.25.1"
-app = marimo.App(width="medium", app_title="BS202 · Lecture 23 · p-values and t-tests", css_file="bs202.css")
+app = marimo.App(width="medium", app_title="BS202 · Lecture 23 · p-values and t-tests", css_file="lecturekit/style.css")
+
 
 @app.cell(hide_code=True)
-def _():
+async def _():
     import math
+    import sys
 
     import marimo as mo
-    import matplotlib
     import numpy as np
     from matplotlib.figure import Figure
 
-    # Figures use the same Computer Modern typeface as the text
-    matplotlib.rcParams.update({"font.size": 14, "font.family": "serif", "font.serif": ["cmr10", "DejaVu Serif"], "mathtext.fontset": "cm", "axes.formatter.use_mathtext": True, "axes.unicode_minus": False, "savefig.format": "svg"})
+    import matplotlib  # noqa: F401  (named here so the browser fetches it while Python starts)
 
-    return Figure, math, mo, np
+    if sys.platform == "emscripten":
+        import micropip
 
-@app.cell(hide_code=True)
-def _(mo):
-    # ---- Building blocks shared by all lectures -------------------------
-    # Palette with fixed roles (figures only; text carries no colour):
-    #   BLUE   the primary object (the point, the chosen vector, the main curve)
-    #   RED    the second object it is compared with
-    #   GREEN  a derived quantity (tangent vector, gradient, mean)
-    #   GREY   reference geometry (guides, unit circle, reference curves)
-    #   LIGHT  fills and grids
-    BLUE, RED, GREEN, GREY, LIGHT = "#3f5f8f", "#a8554c", "#4f7f5c", "#9a9a9a", "#e3ebf4"
-    # Figure widths: HALF sits beside text or in a pair
-    HALF = 3.6
-
-    def header(document, date, running=""):
-        """Course header, as on the exercise sheets and exams."""
-        return mo.Html(
-            f"""
-    <div class="bs-head">
-      <div class="bs-running">BS202 &bull; {running}</div>
-      <div class="bs-title">Introduction to Probability<br>and Mathematical Statistics</div>
-      <div class="bs-inst">Daegu Gyeongbuk Institute of Science and Technology<br>School of Undergraduate Studies</div>
-      <div class="bs-meta">
-        <b>Document</b><span>{document}</span><b>Course</b><span>BS202a</span>
-        <b>Week</b><span>{date.removeprefix('Week ')}</span><b>Instructor</b><span>Professor Scarinci</span>
-      </div>
-    </div>
-    """
-        )
-
-    def _statement(label, title, body):
-        head = f"**{label}" + (f" ({title})" if title else "") + ".**"
-        return mo.md(head + "\n\n" + body).style({"border-left": f"2px solid {BLUE}", "padding-left": "1rem"})
-
-    def definition(body, title=""):
-        return _statement("Definition", title, body)
-
-    def theorem(body, title=""):
-        return _statement("Theorem", title, body)
-
-    def table(rows):
-        """Fixed-label readout table: rows are (label, value) pairs of markdown strings."""
-        _md = mo.md("\n".join(["| | |", "|:--|:--|"] + [f"| {k} | {v} |" for k, v in rows]))
-        return mo.Html(f'<div class="readout">{_md.text}</div>')
-
-    def corollary(body, title=""):
-        return _statement("Corollary", title, body)
-
-    def arrow(ax, tail, tip, color, label=None, at_tip=False, lw=1.4, **kw):
-        """Draw the vector from `tail` to `tip` on a 2D axis, labelled at its middle or its tip.
-        The head is sized in points from the line width (length 4 lw, full width 2.5 lw), never in data units,
-        so arrows look alike in every figure whatever its axis range."""
-        ax.annotate(
-            "",
-            xy=tip,
-            xytext=tail,
-            arrowprops={"arrowstyle": f"-|>,head_length={4 * lw:g},head_width={1.25 * lw:g}", "mutation_scale": 1, "color": color, "lw": lw, "shrinkA": 0, "shrinkB": 0, **kw},
-        )
-        if label:
-            pos = tip if at_tip else ((tail[0] + tip[0]) / 2, (tail[1] + tip[1]) / 2)
-            ax.annotate(label, pos, textcoords="offset points", xytext=(6, 6), color=color, fontsize=13)
-
-    return corollary, LIGHT, BLUE, GREEN, GREY, HALF, RED, arrow, definition, header, table, theorem
+        await micropip.install(str(mo.notebook_location() / "public" / "lecturekit-0.1.0-py3-none-any.whl"), deps=False)
+    import lecturekit as lk
+    return Figure, lk, math, np
 
 
 @app.cell(hide_code=True)
-def _(header):
-    header("Lecture 23","Week 13","Lecture 23 • p-values and t-tests")
+def _(lk):
+    lk.lecture(23, "p-values and t-tests")
     return
 
 
 @app.cell(hide_code=True)
-def _(BLUE, Figure, LIGHT, RED, arrow, math, np):
+def _(Figure, lk, math, np):
     def _pdf(w, nu=None):
         if nu is None:
             return np.exp(-w**2 / 2) / np.sqrt(2 * np.pi)
@@ -97,8 +39,8 @@ def _(BLUE, Figure, LIGHT, RED, arrow, math, np):
     def _axes(fig, right):
         ax = fig.subplots()
         ax.axis("off")
-        arrow(ax, (-right - 0.2, 0), (right + 0.4, 0), "black", lw=1.0)
-        arrow(ax, (0, -0.01), (0, 0.46), "black", lw=1.0)
+        lk.arrow(ax, (-right - 0.2, 0), (right + 0.4, 0), "black", lw=1.0)
+        lk.arrow(ax, (0, -0.01), (0, 0.46), "black", lw=1.0)
         ax.set_xlim(-right - 0.3, right + 0.5)
         ax.set_ylim(-0.14, 0.48)
         return ax
@@ -110,15 +52,13 @@ def _(BLUE, Figure, LIGHT, RED, arrow, math, np):
         if z < 3.9:
             for a_, b_ in ((-3.9, -z), (z, 3.9)):
                 w = np.linspace(a_, b_, 200)
-                ax.fill_between(w, _pdf(w), facecolor=LIGHT, edgecolor=BLUE, hatch="////", lw=0)
+                ax.fill_between(w, _pdf(w), facecolor=lk.LIGHT, edgecolor=lk.BLUE, hatch="////", lw=0)
             for c in (-z, z):
-                ax.plot([c, c], [0, _pdf(c)], color=BLUE, lw=1.2)
+                ax.plot([c, c], [0, _pdf(c)], color=lk.BLUE, lw=1.2)
                 ax.text(c, -0.03, r"$-|z|$" if c < 0 else r"$|z|$", ha="center", va="top", fontsize=14)
-        ax.plot(x, _pdf(x), color=BLUE, lw=2)
-        ax.text(-0.9, 0.36, r"$Z\sim\mathcal{N}(0,1)$", color=BLUE, fontsize=14, ha="right")
-        tip = min(z + 0.35, 3.6)
-        ax.annotate(r"$\mathrm{area}=p$", (tip, _pdf(tip) / 2), xytext=(2.9, 0.24), color=BLUE, fontsize=14, ha="center",
-                    arrowprops={"arrowstyle": "-", "color": BLUE, "lw": 0.9})
+        ax.plot(x, _pdf(x), color=lk.BLUE, lw=2)
+        ax.text(-0.9, 0.36, r"$Z\sim\mathcal{N}(0,1)$", color=lk.BLUE, fontsize=14, ha="right")
+        ax.text(0, -0.085, r"$\mathrm{total\ area}=p$", color=lk.BLUE, fontsize=14, ha="center", va="top")
         return fig
 
     def t_cdf(x, nu):
@@ -137,120 +77,120 @@ def _(BLUE, Figure, LIGHT, RED, arrow, math, np):
         fig = Figure(figsize=(6.4, 2.9), layout="constrained")
         ax = _axes(fig, 4.6)
         x = np.linspace(-4.6, 4.6, 500)
-        ax.plot(x, _pdf(x), color=BLUE, lw=2)
-        ax.plot(x, _pdf(x, n), color=RED, lw=2)
-        ax.text(-1.0, 0.36, r"$\mathcal{N}(0,1)$", color=BLUE, fontsize=14, ha="right")
-        ax.text(3.0, _pdf(3.0, n) + 0.04, f"$t_{{{n}}}$", color=RED, fontsize=14, ha="center")
+        ax.plot(x, _pdf(x), color=lk.BLUE, lw=2)
+        ax.plot(x, _pdf(x, n), color=lk.RED, lw=2)
+        ax.text(-1.0, 0.36, r"$\mathcal{N}(0,1)$", color=lk.BLUE, fontsize=14, ha="right")
+        ax.text(3.0, _pdf(3.0, n) + 0.04, f"$t_{{{n}}}$", color=lk.RED, fontsize=14, ha="center")
         z, q = 1.959964, t_quantile(0.975, n)
-        ax.plot([z, z], [0, _pdf(z)], color=BLUE, lw=1.2, ls=(0, (4, 3)))
-        ax.text(z, -0.03, r"$z_{0.975}$", color=BLUE, ha="center", va="top", fontsize=13)
+        ax.plot([z, z], [0, _pdf(z)], color=lk.BLUE, lw=1.2, ls=(0, (4, 3)))
+        ax.text(z, -0.03, r"$z_{0.975}$", color=lk.BLUE, ha="center", va="top", fontsize=13)
         y = -0.03 if q - z > 0.9 else -0.085
         if q < 4.5:
-            ax.plot([q, q], [0, _pdf(q, n)], color=RED, lw=1.2, ls=(0, (4, 3)))
-            ax.text(q, y, f"$t_{{{n},0.975}}$", color=RED, ha="center", va="top", fontsize=13)
+            ax.plot([q, q], [0, _pdf(q, n)], color=lk.RED, lw=1.2, ls=(0, (4, 3)))
+            ax.text(q, y, f"$t_{{{n},0.975}}$", color=lk.RED, ha="center", va="top", fontsize=13)
         else:
-            ax.annotate(f"$t_{{{n},0.975}}={q:.2f}$", (4.6, 0.005), xytext=(3.4, 0.17), color=RED, ha="center", fontsize=13,
-                        arrowprops={"arrowstyle": "-|>", "color": RED, "lw": 1.0})
+            ax.annotate(f"$t_{{{n},0.975}}={q:.2f}$", (4.6, 0.005), xytext=(3.4, 0.17), color=lk.RED, ha="center", fontsize=13,
+                        arrowprops={"arrowstyle": "-|>", "color": lk.RED, "lw": 1.0})
         return fig
     return p_value_sketch, t_quantile, t_sketch
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Last time
+def _(lk):
+    # Controls of the interactive figures. They are shown inside their figures, so modules can be moved freely.
+    z_abs = lk.slider(0, 3.5, step=0.05, value=2, label=r"$|z|$")
+    t_df = lk.slider(1, 30, step=1, value=2, label=r"$k$")
+    return t_df, z_abs
 
-    Hypothesis testing.
 
-    $X\sim f_X(x;\theta)$ population, $\theta$ unknown.
+@app.cell(hide_code=True)
+def _(lk):
+    # module: recap
+    # recap
+    lk.recap(
+        r"""
+        Hypothesis testing
 
-    $\leadsto$ &nbsp; hypothesis = statement about $\theta$
+        $X\sim f_X(x;\theta)$ population, $\theta$ unknown
 
-    $$
-    \begin{aligned}
-    H_0&=\text{“}\theta=\theta_0\text{”}&&\text{null-hypothesis}\\
-    H_1&=\text{“}\theta\neq\theta_0\text{”}&&\text{alternative hypothesis}
-    \end{aligned}
-    $$
+        $\leadsto$ &nbsp; hypothesis = statement about $\theta$
+        """,
+        lk.aside(r"> $\mk{H_0}=\text{“}\theta=\theta_0\text{”}$", "null-hypothesis"),
+        lk.aside(r"> $\mk{H_1}=\text{“}\theta\neq\theta_0\text{”}$", "alternative hypothesis"),
+        r"""
+        $\leadsto$ &nbsp; test for $H_0$ against $H_1$
 
-    $\leadsto$ &nbsp; test for $H_0$ against $H_1$
+        > $\begin{cases}
+        T=u(X_1,\dots,X_n) & \text{statistic}\\
+        R\subseteq\mathbb R & \text{rejection region}
+        \end{cases}$
 
-    $$
-    =\begin{cases}
-    T=u(X_1,\dots,X_n) & \text{statistic}\\
-    R\subseteq\mathbb R & \text{rejection region}
-    \end{cases}
-    $$
+        given data $X_1=x_1,\dots,X_n=x_n$
 
-    Given data $X_1=x_1,\dots,X_n=x_n$,
+        > <span class="lk-tab" style="--lk-tab: 10.6em">$t=u(x_1,\dots,x_n)\in R$</span>$\Longrightarrow$ &nbsp; reject $H_0$
 
-    $$
-    \begin{aligned}
-    t=u(x_1,\dots,x_n)\in R&\quad\Longrightarrow\quad\text{reject }H_0\\
-    t=u(x_1,\dots,x_n)\notin R&\quad\Longrightarrow\quad\text{do not reject }H_0
-    \end{aligned}
-    $$
+        > <span class="lk-tab" style="--lk-tab: 10.6em">$t=u(x_1,\dots,x_n)\notin R$</span>$\Longrightarrow$ &nbsp; do not reject $H_0$
 
-    $\leadsto$ &nbsp; test design:
+        $\leadsto$ &nbsp; test design:
+        """,
+        r"> fix $\alpha$ significance level (tolerance level)",
+        r"> choose the region $R_\alpha\subset\mathbb R$",
+        lk.aside(r"> > - $\mk{P(T\in R_\alpha;\theta=\theta_0)}\le\alpha$", "probability of type I error"),
+        lk.aside(r"> > - $\mk{P(T\in R_\alpha;\theta\neq\theta_0)}$ is as large as possible", "1 − probability of type II error"),
+        lk.example(
+            r"""
+            $X\sim\mathrm{Binom}(1,p)$, $p$ unknown
 
-    fix $\alpha$ significance level (tolerance level)
+            $H_0=\text{“}p=1/2\text{”}$, &nbsp; $H_1=\text{“}p\neq1/2\text{”}$
 
-    choose the region $R_\alpha\subset\mathbb R$
+            > $\leadsto$ &nbsp; $Z=\dfrac{M_n-\overbrace{1/2}^{\mathclap{\footnotesize p\text{ under }H_0}}}{\underbrace{1/2}_{\mathclap{\footnotesize \text{standard deviation under }H_0}}/\sqrt n}$, &nbsp; $R_\alpha=\lbrace |z|\ge z_{1-\alpha/2}\rbrace$
 
-    $$
-    P(T\in R_\alpha;\theta=\theta_0)\le\alpha
-    $$
+            $n=100$, $60$ heads, $40$ tails &nbsp; $\Longrightarrow$ &nbsp; $M_n=0.6$
 
-    $\leadsto$ &nbsp; probability of type I error
+            > $\Longrightarrow$ &nbsp; $Z=2$ &nbsp; $\leadsto$ &nbsp; $2\in R_{5\%}=\lbrace |z|\ge1.96\rbrace$ &nbsp; $\Longrightarrow$ &nbsp; reject at $\alpha=5\%$
 
-    $$
-    P(T\in R_\alpha;\theta\neq\theta_0)
-    $$
+            > <span class="lk-ghost">$\Longrightarrow$ &nbsp; $Z=2$ &nbsp;</span>$\leadsto$ &nbsp; $2\notin R_{1\%}=\lbrace |z|\ge2.58\rbrace$ &nbsp; $\Longrightarrow$ &nbsp; do not reject at $\alpha=1\%$
+            """,
+            title="coin",
+        ),
+        lk.aside("What is the right <span class='lk-mark'>significance level</span>?", "somewhat arbitrary choice"),
+    )
+    return
 
-    is as large as possible
 
-    $\leadsto$ &nbsp; 1 − probability of type II error
+@app.cell(hide_code=True)
+def _(lk):
+    # module: recap
+    # goals
+    lk.goals(
+        "p-values = measure of how strong the evidence is against $H_0$",
+        lk.aside(r"<span class='lk-mark'>$t$-tests</span> = another type of hypothesis test", r"used when $E[X]$ and $\mathrm{Var}(X)$ are both unknown parameters"),
+        title="In this lecture",
+    )
+    return
 
-    **Example (coin).** $X\sim\mathrm{Binom}(1,p)$, $p$ unknown.
 
-    $$
-    H_0=\text{“}p=1/2\text{”},\qquad H_1=\text{“}p\neq1/2\text{”}
-    $$
+@app.cell(hide_code=True)
+def _(lk):
+    # module: recap
+    # references
+    lk.references("WMS 7.2, 10.6, 10.8")
+    return
 
-    $$
-    \leadsto\quad
-    Z=\frac{M_n-\overbrace{1/2}^{\mathclap{\footnotesize p\text{ under }H_0}}}{\underbrace{1/2}_{\mathclap{\footnotesize \text{std deviation under }H_0}}/\sqrt n},
-    \qquad R_\alpha=\lbrace |z|\ge z_{1-\alpha/2}\rbrace
-    $$
 
-    $n=100$, $60$ heads, $40$ tails &nbsp; $\Longrightarrow$ &nbsp; $M_n=0.6$
+@app.cell(hide_code=True)
+def _(lk):
+    # module: p-value
+    # section
+    lk.section("p-values")
+    return
 
-    $$
-    \Longrightarrow\quad Z=2
-    $$
 
-    $\leadsto$ &nbsp; $2\in R_{5\%}=\lbrace |z|\ge1.96\rbrace$ &nbsp; $\Longrightarrow$ &nbsp; reject at $\alpha=5\%$
-
-    $\leadsto$ &nbsp; $2\notin R_{1\%}=\lbrace |z|\ge2.58\rbrace$ &nbsp; $\Longrightarrow$ &nbsp; do not reject at $\alpha=1\%$
-
-    What is the right significance level?
-
-    $\leadsto$ &nbsp; somewhat arbitrary choice
-
-    **In this lecture:**
-
-    $\leadsto$ &nbsp; p-values = measure of how strong the evidence is against $H_0$
-
-    $\leadsto$ &nbsp; $t$-tests = another type of hypothesis test
-
-    $\leadsto$ &nbsp; used when $E[X]$ and $\mathrm{Var}(X)$ are both unknown parameters
-
-    **References:** WMS 7.2, 10.6, 10.8
-
-    ## VI.2 &nbsp; p-values and t-tests
-
-    ### ① p-values
-
+@app.cell(hide_code=True)
+def _(lk):
+    # module: p-value
+    # lead-in
+    lk.prose(r"""
     Instead of fixing the significance level $\alpha$, we ask: if $H_0$ is true, how surprising is a given observed value of $T$?
 
     $\leadsto$ &nbsp; very surprising = strong evidence against $H_0$
@@ -259,213 +199,244 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(definition):
-    definition(r"""
-    Given a test statistic $T=u(X_1,\dots,X_n)$ and rejection regions $R_\alpha$, for each $\alpha\in(0,1)$, define the **p-value** of a data set $X_1=x_1,\dots,X_n=x_n$ as
+def _(lk):
+    # module: p-value
+    # definition: p-value
+    lk.definition(
+        r"""
+        Given a test statistic $T=u(X_1,\dots,X_n)$ and rejection regions $R_\alpha$, for each $\alpha\in(0,1)$, define the **p-value** of a data set $X_1=x_1,\dots,X_n=x_n$ as
 
-    $$
-    p=\min\lbrace \alpha\in(0,1)\mid u(x_1,\dots,x_n)\in R_\alpha\rbrace
-    $$
-
-    $\leadsto$ &nbsp; a data set rejects $H_0$ at level $\alpha$ if and only if
-
-    $$
-    p\le\alpha
-    $$
-
-    $\leadsto$ &nbsp; $p$ computed from data! &nbsp; $\Longrightarrow$ &nbsp; no choices involved!
-    """, "p-value")
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    $\leadsto$ &nbsp; data with small p-value reject $H_0$ even at small significance levels!
-
-    $\Longrightarrow$ &nbsp; strong evidence against $H_0$!
-
-    **Example ($z$-test for $\mu$).** A data set with $Z=z$ rejects $H_0$ at level $\alpha$
-
-    $$
-    \begin{aligned}
-    &\Longleftrightarrow\quad|z|\ge z_{1-\alpha/2}\\
-    &\Longleftrightarrow\quad\Phi(|z|)\ge1-\alpha/2\\
-    &\Longleftrightarrow\quad\alpha\ge2(1-\Phi(|z|))
-    \end{aligned}
-    $$
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    z_abs = mo.ui.slider(0, 3.5, step=0.05, value=2, label=r"$|z|$", show_value=True)
-    return (z_abs,)
-
-
-@app.cell(hide_code=True)
-def _(math, mo, p_value_sketch, table, z_abs):
-    _Phi = lambda w: 0.5 * (1 + math.erf(w / math.sqrt(2)))
-    mo.vstack(
-        [
-            mo.hstack([z_abs], justify="start", gap=2, wrap=True),
-            table([(r"$p=2(1-\Phi(\lvert z\rvert))$", f"{100 * 2 * (1 - _Phi(z_abs.value)):.2f}%")]),
-            mo.hstack([p_value_sketch(z_abs.value)], justify="center"),
-        ]
+        $$
+        p=\min\lbrace \alpha\in(0,1)\mid u(x_1,\dots,x_n)\in R_\alpha\rbrace
+        $$
+        """,
+        label="def-p-value",
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    $$
-    \Longrightarrow\quad p=2(1-\Phi(|z|))=P(|Z|\ge|z|;\mu=\mu_0)
-    $$
+def _(lk):
+    # module: p-value
+    # consequence
+    lk.prose(
+        lk.aside(r"$\leadsto$ &nbsp; a data set rejects $H_0$ at level $\alpha$ if and only if $\mk{p}\le\alpha$", r"$p$ computed from data!<br>$\Longrightarrow$ no choices involved!"),
+        r"""
+        $\leadsto$ &nbsp; data with small p-value reject $H_0$ even at small significance levels!
 
-    $\leadsto$ &nbsp; probability under $H_0$ of observing data sets with at least as extreme statistic
-
-    **Example (coin).** $n=100$, $60$ heads, $40$ tails.
-
-    $$
-    \leadsto\quad z=2\quad\Longrightarrow\quad p=2(1-\Phi(2))\approx4.6\%
-    $$
-
-    $$
-    \Longrightarrow\quad
-    \begin{cases}
-    \text{reject “coin is fair” at }\alpha\ge4.6\%\\
-    \text{do not reject at }\alpha<4.6\%
-    \end{cases}
-    $$
-
-    $\Longrightarrow$ &nbsp; if the coin were fair only $4.6\%$ of outcomes of $n=100$ coin flips would give $|Z|\ge2$
-
-    $\Longrightarrow$ &nbsp; if the coin were fair only $4.6\%$ of outcomes of $n=100$ coin flips would speak against “coin is fair” as strongly as this outcome!
-
-    $\leadsto$ &nbsp; our outcome is in the top $4.6\%$ against $H_0$!
-
-    **Remark (important!).** The p-value of a data set is **not** the probability that $H_0$ is true!
-
-    $\leadsto$ &nbsp; $H_0$ is either true or false! This is unknown, not random!
-
-    $\leadsto$ &nbsp; there is no meaning to “probability of $H_0$ is true”!
-
-    ### ② t-tests
-
-    $X$ with both $E[X]=\mu$ and $\mathrm{Var}(X)=\sigma^2$ unknown.
-
-    $$
-    H_0=\text{“}\mu=\mu_0\text{”}\quad\text{vs}\quad H_1=\text{“}\mu\neq\mu_0\text{”}
-    $$
-
-    $$
-    \leadsto\quad Z=\frac{M_n-\mu_0}{\sigma/\sqrt n}
-    $$
-
-    depends on $\sigma$ and we have no hypothesis on $\sigma$…
-
-    $\Longrightarrow$ &nbsp; cannot use $Z$ as a test statistic…
-
-    $$
-    \leadsto\quad T=\frac{M_n-\mu_0}{S_n/\sqrt n}
-    $$
-
-    obtained by replacing $\sigma^2$ by $S_n^2$
-    """)
+        > $\Longrightarrow$ &nbsp; strong evidence against $H_0$
+        """,
+    )
     return
 
 
 @app.cell(hide_code=True)
-def _(theorem):
-    theorem(r"""
-    If $X_1,\dots,X_n\sim\mathcal N(\mu,\sigma^2)$ iid, then
-
-    $$
-    T_n=\frac{M_n-\mu}{S_n/\sqrt n}\qquad\text{(Studentized mean)}
-    $$
-
-    has distribution $t_{n-1}$ ($t$-distribution with $n-1$ degrees of freedom), independent of $\mu$ and $\sigma^2$.
-
-    $\leadsto$ &nbsp; this has a tabulated cdf similar to the standard normal distribution
-    """, "Studentized mean")
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    t_df = mo.ui.slider(1, 30, step=1, value=2, label=r"$n$", show_value=True)
-    return (t_df,)
-
-
-@app.cell(hide_code=True)
-def _(mo, t_df, t_quantile, t_sketch, table):
-    mo.vstack(
+def _(lk, math, p_value_sketch, z_abs):
+    # module: p-value of the z-test
+    # example: z-test for mu
+    lk.example(
         [
-            mo.hstack([t_df], justify="start", gap=2, wrap=True),
-            table(
-                [
-                    (r"$t_{n,0.975}$", f"{t_quantile(0.975, t_df.value):.2f}"),
-                    (r"$z_{0.975}$", "1.96"),
-                ]
+            r"""
+            a data set with $Z=z$ rejects $H_0$ at level $\alpha$
+
+            > $\Longleftrightarrow$ &nbsp; $|z|\ge z_{1-\alpha/2}$
+
+            > $\Longleftrightarrow$ &nbsp; $\Phi(|z|)\ge1-\alpha/2$
+
+            > $\Longleftrightarrow$ &nbsp; $\alpha\ge2(1-\Phi(|z|))$
+            """,
+            lk.interactive(
+                p_value_sketch(z_abs.value),
+                controls=[z_abs],
             ),
-            mo.hstack([t_sketch(t_df.value)], justify="center"),
-        ]
+            r"""
+            > $\Longrightarrow$ &nbsp; $p=2(1-\Phi(|z|))=\underbrace{P(|Z|\ge|z|;\mu=\mu_0)}_{\mathrlap{\footnotesize\begin{gathered}\text{probability under } H_0 \text{ of observing data sets}\\ \text{with more extreme statistic}\end{gathered}}}$
+            """,
+        ],
+        title=r"$z$-test for $\mu$",
     )
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    $t_n$ has heavier tails than $\mathcal N(0,1)$ and $t_n\to\mathcal N(0,1)$ as $n\to+\infty$.
+def _(lk):
+    # module: p-value of the z-test
+    # example: coin
+    lk.example(
+        r"""
+        $n=100$, $60$ heads, $40$ tails
 
-    **Example.** For $Z\sim\mathcal N(0,1)$ and $T\sim t_{n-1}$,
+        > $\leadsto$ &nbsp; $z=2$ &nbsp; $\Longrightarrow$ &nbsp; $p=2(1-\Phi(2))\approx4.6\%$
 
-    $$
-    P(Z<z_{1-\alpha/2})=1-\alpha/2=P(T<t_{n-1,1-\alpha/2})
-    $$
+        > <span class="lk-ghost">$\leadsto$ &nbsp; $z=2$ &nbsp;</span>$\Longrightarrow$ &nbsp; $\begin{cases}
+        \text{reject “coin is fair” at }\alpha\ge4.6\%\\
+        \text{do not reject at }\alpha<4.6\%
+        \end{cases}$
 
-    | $\alpha$ | $z_{1-\alpha/2}$ | $t_{30-1,1-\alpha/2}$ | $t_{10-1,1-\alpha/2}$ | $t_{5-1,1-\alpha/2}$ |
-    |:--:|:--:|:--:|:--:|:--:|
-    | $5\%$ | $1.96$ | $2.05$ | $2.26$ | $2.78$ |
-    | $1\%$ | $2.58$ | $2.76$ | $3.25$ | $4.60$ |
+        > <span class="lk-ghost">$\leadsto$ &nbsp; $z=2$ &nbsp;</span>$\Longrightarrow$ &nbsp; if the coin were fair, only $4.6\%$ of outcomes of $n=100$ coin flips<br>would give $|Z|\ge2$
 
-    $\leadsto$ &nbsp; $t_{n-1,1-\alpha/2}>z_{1-\alpha/2}$
+        > <span class="lk-ghost">$\leadsto$ &nbsp; $z=2$ &nbsp;</span>$\Longrightarrow$ &nbsp; if the coin were fair, only $4.6\%$ of outcomes of $n=100$ coin flips<br>would speak against “coin is fair” as strongly as this outcome!
 
-    $\leadsto$ &nbsp; $t_{n-1,1-\alpha/2}\to z_{1-\alpha/2}$ for $n\to\infty$
+        > > <span class="lk-ghost">$\leadsto$ &nbsp; $z=2$ &nbsp;</span>$\leadsto$ &nbsp; our outcome is in the top $4.6\%$ against $H_0$
+        """,
+        title="coin",
+    )
+    return
 
-    **Example ($t$-test for $\mu$).** $E[X]=\mu$ and $\mathrm{Var}(X)=\sigma^2$ unknown.
 
-    $$
-    H_0=\text{“}\mu=\mu_0\text{”}\quad\text{vs}\quad H_1=\text{“}\mu\neq\mu_0\text{”}
-    $$
+@app.cell(hide_code=True)
+def _(lk):
+    # module: p-value of the z-test
+    # remark: important!
+    lk.remark(
+        [
+            r"The p-value of a data set is **not** the probability that $H_0$ is true!",
+            lk.aside(
+                r"$\leadsto$ &nbsp; $H_0$ is either true or false! This is unknown, <span class='lk-mark'>not random</span>!",
+                r"there is no meaning to “probability of $H_0$ is true”!",
+            ),
+        ],
+        title="important!",
+    )
+    return
 
-    $$
-    T=\frac{M_n-\mu_0}{S_n/\sqrt n},\qquad R_\alpha=\lbrace |t|\ge t_{n-1,1-\alpha/2}\rbrace
-    $$
 
-    $\leadsto$ &nbsp; needs stronger evidence than the $z$-test in order to reject $H_0$
+@app.cell(hide_code=True)
+def _(lk):
+    # module: t-distribution
+    # section
+    lk.section("t-tests")
+    return
 
-    $\leadsto$ &nbsp; doesn't need knowledge about $\sigma^2$!
 
-    ### Practice
+@app.cell(hide_code=True)
+def _(lk):
+    # module: t-distribution
+    # lead-in
+    lk.prose(r"""
+    $X$ with both $E[X]=\mu$ and $\mathrm{Var}(X)=\sigma^2$ unknown
 
-    $X=$ lifetime of a battery (in hours) $\sim\mathcal N(\mu,\sigma^2)$. We tested $n=16$ batteries and found
+    $H_0=\text{“}\mu=\mu_0\text{”}$ &nbsp; against &nbsp; $H_1=\text{“}\mu\neq\mu_0\text{”}$
 
-    $$
-    M_{16}=38\qquad\text{and}\qquad S_{16}^2=(3.2)^2
-    $$
+    $\leadsto$ &nbsp; $\displaystyle Z=\frac{M_n-\mu_0}{\sigma/\sqrt n}$ &nbsp; depends on $\sigma$ and we have no hypothesis on $\sigma$…
 
-     a) Test $H_0=\text{“}\mu=40\text{”}$ against $H_1=\text{“}\mu\neq40\text{”}$ at significance level $\alpha=5\%$.
+    > $\Longrightarrow$ &nbsp; cannot use $Z$ as a test statistic…
 
-     b) Find p-value of the data set. Do you reject $H_0$ at $\alpha=1\%$?
-
-     c) Find a confidence interval for $\mu$ with confidence level $1-\alpha=95\%$.
-
-    **Hint:** $t_{15,0.975}=2.13$ for $\alpha=5\%$; &nbsp; $P(T<2.5)=0.988$ for $T\sim t_{15}$.
+    $\leadsto$ &nbsp; $\displaystyle T=\frac{M_n-\mu_0}{S_n/\sqrt n}$ &nbsp; obtained by replacing $\sigma^2$ by $S_n^2$
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: t-distribution
+    # theorem
+    lk.theorem(
+        [
+            r"If $X_1,\dots,X_n\sim\mathcal N(\mu,\sigma^2)$ iid then",
+            lk.aside(r"$$\mk{T_n}=\frac{M_n-\mu}{S_n/\sqrt n}$$", "Studentized mean"),
+            lk.aside(
+                r"has distribution $\mk{t_{n-1}}$ independent of $\mu$ and $\sigma^2$.",
+                r"$t$-distribution with $n-1$ degrees of freedom",
+            ),
+        ],
+        label="thm-studentized",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk, t_df, t_quantile, t_sketch):
+    # module: t-distribution
+    # consequence
+    lk.prose(
+        r"$\leadsto$ &nbsp; this has a tabulated cdf similar to the standard normal distribution",
+        lk.interactive(
+            t_sketch(t_df.value),
+            controls=[t_df],
+            readout=lk.table([(r"$t_{k,0.975}$", f"{t_quantile(0.975, t_df.value):.2f}"), (r"$z_{0.975}$", "1.96")]),
+        ),
+        r"$t_k$ has heavier tails than $\mathcal N(0,1)$ and $t_k\to\mathcal N(0,1)$ as $k\to+\infty$",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: t-distribution
+    # example: z vs t quantiles
+    lk.example(
+        r"""
+        For $Z\sim\mathcal N(0,1)$ and $T\sim t_{n-1}$
+
+        > $P(Z<z_{1-\alpha/2})=1-\alpha/2=P(T<t_{n-1,1-\alpha/2})$
+
+        | $\alpha$ | $z_{1-\alpha/2}$ | $t_{29,1-\alpha/2}$ | $t_{9,1-\alpha/2}$ | $t_{4,1-\alpha/2}$ |
+        |:--:|:--:|:--:|:--:|:--:|
+        | $5\%$ | $1.96$ | $2.05$ | $2.26$ | $2.78$ |
+        | $1\%$ | $2.58$ | $2.76$ | $3.25$ | $4.60$ |
+
+        $\leadsto$ &nbsp; $t_{n-1,1-\alpha/2}>z_{1-\alpha/2}$
+
+        $\leadsto$ &nbsp; $t_{n-1,1-\alpha/2}\to z_{1-\alpha/2}$ for $n\to\infty$
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: t-test
+    # example: t-test for mu
+    lk.example(
+        r"""
+        $E[X]=\mu$ and $\mathrm{Var}(X)=\sigma^2$ unknown
+
+        $H_0=\text{“}\mu=\mu_0\text{”}$ &nbsp; against &nbsp; $H_1=\text{“}\mu\neq\mu_0\text{”}$
+
+        $T=\dfrac{M_n-\mu_0}{S_n/\sqrt n}$, &nbsp; $R_\alpha=\lbrace |t|\ge t_{n-1,1-\alpha/2}\rbrace$
+
+        $\leadsto$ &nbsp; needs stronger evidence than the $z$-test in order to reject $H_0$
+
+        $\leadsto$ &nbsp; doesn't need knowledge about $\sigma^2$
+        """,
+        title=r"$t$-test for $\mu$",
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: practice
+    # section
+    lk.section("Practice")
+    return
+
+
+@app.cell(hide_code=True)
+def _(lk):
+    # module: practice
+    # exercise: battery
+    lk.exercise(
+        r"""
+        $X=$ lifetime of a battery (in hours) $\sim\mathcal N(\mu,\sigma^2)$
+
+        we tested $n=16$ batteries and found
+
+        $$
+        M_{16}=38\qquad\text{and}\qquad S_{16}^2=(3.2)^2
+        $$
+
+        a) test $H_0=\text{“}\mu=40\text{”}$ against $H_1=\text{“}\mu\neq40\text{”}$ at significance level $\alpha=5\%$
+
+        b) find p-value of the data set. Do you reject $H_0$ at $\alpha=1\%$?
+
+        c) find a confidence interval for $\mu$ with confidence level $1-\alpha=95\%$
+
+        **Hint:** $t_{15,0.975}=2.13$ for $\alpha=5\%$; &nbsp; $P(T<2.5)=0.988$ for $T\sim t_{15}$
+        """,
+        label="ex-battery",
+    )
     return
 
 
