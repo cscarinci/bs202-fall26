@@ -211,7 +211,7 @@ def _(Figure, lk, steps):
         """,
         lk.aside(
             r"> • &nbsp; $F_X(x) - F_X(\mk{x^-}) = f_X(x) \quad \leadsto \quad F_X(x) = \displaystyle\sum_{t \leq x} f_X(t)$",
-            r"$x^-$ = 1st element of $S_X$ smaller than $x$",
+            r"$x^-$ = largest element of $S_X$ smaller than $x$",
         ),
         lk.figure(_sketch),
     )
@@ -230,7 +230,7 @@ def _(Figure, lk, stems, steps):
     _l.set_ylabel("$f_X(x)$")
     steps(_r, [1, 2, 3, 4], [0, 1 / 16, 4 / 16, 9 / 16, 1])
     _r.set_xticks([1, 2, 3, 4])
-    _r.set_yticks([1 / 16, 1 / 4, 9 / 16, 1], [r"$1/16$", r"$1/4$", r"$9/16$", "$1$"])
+    _r.set_yticks([1 / 16, 4 / 16, 9 / 16, 1], [r"$1/16$", r"$4/16$", r"$9/16$", "$1$"])
     _r.set_xlabel("$x$")
     _r.set_ylabel("$F_X(x)$")
 

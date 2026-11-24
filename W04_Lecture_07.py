@@ -254,7 +254,7 @@ def _(lk):
 
         > Probability of 7 defective objects in the sample?
 
-        $X = \#\dbinom{\text{of defective objects}}{\text{in a sample of } 100}$
+        $X = \#\dbinom{\text{defective objects}}{\text{in a sample of } 100}$
 
         > $\leadsto$ &nbsp; $HG(1000, 50, 100)(x) = \dfrac{\dbinom{50}{x} \dbinom{1000 - 50}{100 - x}}{\dbinom{1000}{100}} = f_X(x)$
 

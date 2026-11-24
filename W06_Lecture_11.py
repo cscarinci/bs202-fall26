@@ -196,7 +196,8 @@ def _(Figure, gp_r, lk, math, np):
     # figure: the pdf of Gamma(r, 1), its mean and the band mu +- sigma; r chosen with the slider
     _r, _lam = gp_r.value, 1
     _mu, _sd = _r / _lam, math.sqrt(_r) / _lam
-    _lo, _hi, _end = max(0.0, _mu - _sd), _mu + _sd, 24
+    _lo, _hi = max(0.0, _mu - _sd), _mu + _sd
+    _end = 2 * math.ceil((_mu + 3.5 * _sd) / 2)  # the frame follows r
 
     def _f(x):
         return _lam**_r * x ** (_r - 1) / math.factorial(_r - 1) * np.exp(-_lam * x)
@@ -215,7 +216,6 @@ def _(Figure, gp_r, lk, math, np):
     _ax.annotate(r"$\mu_X \pm \sigma_X$", (_hi, 1.05 * _top), textcoords="offset points", xytext=(4, 0), color=lk.GREY, fontsize=12, ha="left", va="center")
     _ax.text(0.98, 0.96, r"$\mathrm{Gamma}(r, 1)$", color=lk.BLUE, fontsize=12, ha="right", va="top", transform=_ax.transAxes)
     _ax.set_xlim(0, _end)
-    _ax.set_xticks([0, 5, 10, 15, 20])
     _ax.set_ylim(0, 1.3 * _top)
     _ax.set_xlabel("$x$")
     _ax.yaxis.set_major_formatter(lambda _v, _p: f"${_v:g}$")
@@ -245,7 +245,7 @@ def _(lk):
     lk.proof(
         [
             lk.aside(
-                r"$\displaystyle\begin{aligned} \text{1.} \quad \int_{-\infty}^{\infty} f_X(x) \, dx &= \int_0^{\infty} \frac{\lambda^r x^{r - 1}}{(r - 1)!} \, e^{-\lambda x} \, dx \overset{?}{=} 1\\[4pt] &= \frac{1}{(r - 1)!} \underbrace{\int_0^{\infty} (\lambda x)^{r - 1} e^{-\lambda x} \, d(\lambda x)}_{\begin{array}{l} \scriptstyle -e^{-\lambda x} (\lambda x)^{r - 1} \big|_0^{\infty} + \int_0^{\infty} (r - 1) (\lambda x)^{r - 2} e^{-\lambda x} \, d(\lambda x)\\[2pt] \scriptstyle = (r - 1) \int_0^{\infty} (\lambda x)^{r - 2} e^{-\lambda x} \, d(\lambda x) \end{array}}\\[34pt] &= \frac{1}{(r - 2)!} \int_0^{\infty} \lambda^{r - 1} x^{r - 2} e^{-\lambda x} \, dx\\[4pt] &= \frac{1}{(r - 3)!} \int_0^{\infty} \lambda^{r - 2} x^{r - 3} e^{-\lambda x} \, dx\\[-2pt] &\ \ \vdots\\[-2pt] &= \frac{1}{0!} \int_0^{\infty} \lambda^1 x^0 e^{-\lambda x} \, dx = -e^{-\lambda x} \Big|_0^{\infty} = 0 - (-1) \end{aligned}$",
+                r"$\displaystyle\begin{aligned} \text{1.} \quad \int_{-\infty}^{\infty} f_X(x) \, dx &= \int_0^{\infty} \frac{\lambda^r x^{r - 1}}{(r - 1)!} \, e^{-\lambda x} \, dx \overset{?}{=} 1\\[4pt] &= \frac{1}{(r - 1)!} \underbrace{\int_0^{\infty} (\lambda x)^{r - 1} e^{-\lambda x} \, d(\lambda x)}_{\begin{array}{l} \scriptstyle -e^{-\lambda x} (\lambda x)^{r - 1} \big|_0^{\infty} + \int_0^{\infty} (r - 1) (\lambda x)^{r - 2} e^{-\lambda x} \, d(\lambda x)\\[2pt] \scriptstyle = (r - 1) \int_0^{\infty} (\lambda x)^{r - 2} e^{-\lambda x} \, d(\lambda x) \end{array}}\\[34pt] &= \frac{1}{(r - 2)!} \int_0^{\infty} \lambda^{r - 1} x^{r - 2} e^{-\lambda x} \, dx\\[4pt] &= \frac{1}{(r - 3)!} \int_0^{\infty} \lambda^{r - 2} x^{r - 3} e^{-\lambda x} \, dx\\[-2pt] &\ \ \vdots\\[-2pt] &= \frac{1}{0!} \int_0^{\infty} \lambda^1 x^0 e^{-\lambda x} \, dx = -e^{-\lambda x} \Big|_0^{\infty} = 0 - (-1) = 1 \end{aligned}$",
                 r"$u = (\lambda x)^{r - 1}$, $dv = e^{-\lambda x} \, d(\lambda x)$",
                 rows=7,
                 at=2,
@@ -461,8 +461,8 @@ def _(Figure, lk, mg_bn, mg_bp, mg_dist, mg_gl, mg_gr, mg_pl, np):
     _left, _right = _fig.subplots(1, 2)
     for _ax, _name in ((_left, "$m_X(t)$"), (_right, r"$K_X(t) = \ln m_X(t)$")):
         _ax.axvline(0, color="black", lw=0.8)
-        _ax.grid(True, color=lk.LIGHT, lw=0.6)
-        _ax.set_axisbelow(True)
+        for _sp in ("top", "right"):
+            _ax.spines[_sp].set_visible(False)
         _ax.set_xlim(-1, _tmax)
         _ax.set_xlabel("$t$")
         _ax.set_ylabel(_name)
@@ -499,7 +499,7 @@ def _(Figure, lk, mg_bn, mg_bp, mg_dist, mg_gl, mg_gr, mg_pl, np):
             $$
             \begin{array}{lll}
             K_X'(t) = \lambda e^t \qquad\qquad & K_X''(t) = \lambda e^t \qquad\qquad & K_X'''(t) = \lambda e^t\\[6pt]
-            \mu_X = \lambda & \sigma_X^2 = \lambda & \gamma_X = \dfrac{\lambda}{(\lambda)^{3/2}} = 1 / \sqrt{\lambda}
+            \mu_X = \lambda & \sigma_X^2 = \lambda & \gamma_X = \dfrac{\lambda}{\lambda^{3/2}} = 1 / \sqrt{\lambda}
             \end{array}
             $$
             """,

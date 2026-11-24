@@ -141,10 +141,19 @@ def _(lk):
     lk.proof(
         [
             lk.aside(
-                r"$\sum_x \sum_y u(x) \, v(y) \, f_{X,Y}(x, y) \mathrel{\mk{=}} \sum_x \sum_y u(x) \, v(y) \, f_X(x) \, f_Y(y)$",
+                r"""
+                $$
+                \begin{aligned}
+                E[u(X) \, v(Y)] &= \sum_x \sum_y u(x) \, v(y) \, f_{X,Y}(x, y)\\
+                &\mathrel{\mk{=}} \sum_x \sum_y u(x) \, v(y) \, f_X(x) \, f_Y(y)\\
+                &= \sum_x u(x) \, f_X(x) \sum_y v(y) \, f_Y(y) = E[u(X)] \, E[v(Y)]
+                \end{aligned}
+                $$
+                """,
                 "independence",
+                rows=3,
+                at=2,
             ),
-            r"<span class='lk-ghost'>$\sum_x \sum_y u(x) \, v(y) \, f_{X,Y}(x, y)$ </span>$= \sum_x u(x) \, f_X(x) \sum_y v(y) \, f_Y(y)$",
         ],
         title="of the second property",
     )
@@ -600,21 +609,29 @@ def _(Figure, g_a, g_b, g_xy, lk, math, np, v_rho, v_sx, v_sy):
     _as.set_xlabel("$x$")
     _as.set_ylabel("$z$", rotation=0, labelpad=10)
     _as.tick_params(labelsize=12)
-    _as.set_title("400 simulated values of $(X, Z)$, $Z = aX + bY$,\nwith $X, Y \\sim \\mathcal{N}(0, 1)$ independent", fontsize=11)
     _vz = _a**2 + _b**2
     lk.theorem(
         [
+            r"Given $X, Y$ random variables on $(S, \mathcal{E}, P)$ with $\sigma_X, \sigma_Y > 0$",
             lk.aside(r"$$\rho_{X,Y} \in [-1, 1]$$", "cosine of the “angle”<br>between $X$, $Y$"),
             "and",
-            r"""
-            $$
-            \rho_{X,Y} = \pm 1 \quad \Longleftrightarrow \quad \underbrace{Y = aX + b}_{\text{linear relation!}} \quad \text{with } \pm a > 0
-            $$
-            """,
+            lk.aside(
+                r"""
+                $$
+                \begin{aligned}
+                \rho_{X,Y} = 1 \quad &\Longleftrightarrow \quad Y = aX + b \ \text{ with } a > 0\\[2pt]
+                \rho_{X,Y} = -1 \quad &\Longleftrightarrow \quad Y = aX + b \ \text{ with } a < 0
+                \end{aligned}
+                $$
+                """,
+                "linear relation",
+            ),
             lk.interactive(
                 _fv,
                 controls=[v_sx, v_sy, v_rho],
             ),
+            lk.gap(),
+            r"400 simulated values of $(X, Z)$, &nbsp; $Z = aX + bY$ &nbsp; with $X, Y \sim \mathcal{N}(0, 1)$ independent",
             lk.interactive(
                 _fs,
                 controls=[g_a, g_b],

@@ -52,13 +52,13 @@ def _(Figure, lk, math, np):
         if z < 3.9:
             for a_, b_ in ((-3.9, -z), (z, 3.9)):
                 w = np.linspace(a_, b_, 200)
-                ax.fill_between(w, _pdf(w), facecolor=lk.LIGHT, edgecolor=lk.BLUE, hatch="////", lw=0)
+                ax.fill_between(w, _pdf(w), color=lk.LIGHT, lw=0)
             for c in (-z, z):
                 ax.plot([c, c], [0, _pdf(c)], color=lk.BLUE, lw=1.2)
                 ax.text(c, -0.03, r"$-|z|$" if c < 0 else r"$|z|$", ha="center", va="top", fontsize=14)
         ax.plot(x, _pdf(x), color=lk.BLUE, lw=2)
         ax.text(-0.9, 0.36, r"$Z\sim\mathcal{N}(0,1)$", color=lk.BLUE, fontsize=14, ha="right")
-        ax.text(0, -0.085, r"$\mathrm{total\ area}=p$", color=lk.BLUE, fontsize=14, ha="center", va="top")
+        ax.text(2.9, 0.24, r"$\mathrm{total\ area}=p$", color=lk.BLUE, fontsize=14, ha="center", va="center")
         return fig
 
     def t_cdf(x, nu):
@@ -429,7 +429,7 @@ def _(lk):
 
         a) test $H_0=\text{“}\mu=40\text{”}$ against $H_1=\text{“}\mu\neq40\text{”}$ at significance level $\alpha=5\%$
 
-        b) find p-value of the data set. Do you reject $H_0$ at $\alpha=1\%$?
+        b) find the p-value of the data set. Do you reject $H_0$ at $\alpha=1\%$?
 
         c) find a confidence interval for $\mu$ with confidence level $1-\alpha=95\%$
 

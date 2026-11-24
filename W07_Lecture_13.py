@@ -66,7 +66,7 @@ def _(lk):
     lk.recap(
         lk.aside(
             r"• &nbsp; $\mk{\mathrm{Unif}(a, b)}$ &nbsp; $\leadsto$ &nbsp; measures position of occurrence in $(a, b)$,",
-            r"$\mathrm{Unif}(a, b) = \dfrac{1}{b - a}$",
+            r"$\mathrm{Unif}(a, b) = \dfrac{1}{b - a}$ on $(a, b)$",
         ),
         r"<span class='lk-ghost'>• &nbsp; $\mathrm{Unif}(a, b)$ &nbsp; $\leadsto$ &nbsp; </span>assuming probability $P((c, d)) = {\large\tfrac{d - c}{b - a}}$ for $(c, d) \subseteq (a, b)$",
         lk.gap(),
@@ -264,11 +264,11 @@ def _(lk):
     # theorem: mgf and moments of Y = aX + b
     lk.theorem(
         r"""
-        $Y = aX + b$, $\pm a > 0$
+        Given $X$ a random variable and $a, b \in \mathbb{R}$, $a \neq 0$, &nbsp; $Y = aX + b$
 
         > $\Longrightarrow$ &nbsp; $m_Y(t) = E[e^{tY}] = E[e^{t(aX + b)}] = E[e^{taX} e^{tb}] = e^{tb} \, m_X(ta)$
 
-        > $\Longrightarrow$ &nbsp; $E[Y] = a E[X] + b$, &nbsp; $\mathrm{Var}(Y) = a^2 \, \mathrm{Var}(X)$, &nbsp; $\mathrm{Skew}(Y) = \pm \, \mathrm{Skew}(X)$
+        > $\Longrightarrow$ &nbsp; $E[Y] = a E[X] + b$, &nbsp; $\mathrm{Var}(Y) = a^2 \, \mathrm{Var}(X)$, &nbsp; $\mathrm{Skew}(Y) = \begin{cases} \mathrm{Skew}(X), & a > 0\\ -\mathrm{Skew}(X), & a < 0 \end{cases}$
         """,
         label="thm-linear",
     )
@@ -300,7 +300,7 @@ def _(lk):
 
         > $$
         > \begin{aligned}
-        > \Longrightarrow \quad f_Z(z) &= \frac{\partial}{\partial z} (\mu + \sigma z) \, f_X(\mu + \sigma z)\\[4pt]
+        > \Longrightarrow \quad f_Z(z) &= \frac{d}{dz} (\mu + \sigma z) \, f_X(\mu + \sigma z)\\[4pt]
         > &= \sigma \, \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{(\mu + \sigma z - \mu)^2}{2\sigma^2} \right) = \frac{1}{\sqrt{2\pi}} \exp(-z^2 / 2)
         > \end{aligned}
         > $$
@@ -309,7 +309,7 @@ def _(lk):
 
         > $$
         > \begin{aligned}
-        > f_X(x) &= \frac{\partial}{\partial x} \left( \frac{x - \mu}{\sigma} \right) f_Z\left( \frac{x - \mu}{\sigma} \right)\\[4pt]
+        > f_X(x) &= \frac{d}{dx} \left( \frac{x - \mu}{\sigma} \right) f_Z\left( \frac{x - \mu}{\sigma} \right)\\[4pt]
         > &= \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)
         > \end{aligned}
         > $$
@@ -366,7 +366,7 @@ def _(Figure, cut, density_axes, lk, normal_pdf, np):
     # module: functions of random variables
     # example: fairer grades
     # the scores X ~ N(50, 20^2) (blue) and the scale Y = (3/4) X + 37.5 ~ N(75, 15^2) (red); the tail of X beyond the
-    # cutoff x (shaded) has the same area as the tail of Y beyond the matching cutoff y (hatched); x chosen with the
+    # cutoff x (shaded blue) has the same area as the tail of Y beyond the matching cutoff y (shaded red); x chosen with the
     # slider
     _c = cut.value
     _y = 0.75 * _c + 37.5
@@ -376,7 +376,7 @@ def _(Figure, cut, density_axes, lk, normal_pdf, np):
     _xc = np.linspace(_c, 120, 300)
     _ax.fill_between(_xc, normal_pdf(_xc, 50, 20), color=lk.LIGHT, lw=0)
     _yc = np.linspace(min(_y, 120), 120, 300)
-    _ax.fill_between(_yc, normal_pdf(_yc, 75, 15), facecolor="none", edgecolor=lk.RED, hatch="////", lw=0)
+    _ax.fill_between(_yc, normal_pdf(_yc, 75, 15), color=lk.RED, alpha=0.18, lw=0)
     _ax.plot([_c, _c], [0, 0.031], color=lk.BLUE, lw=1.0, ls=(0, (4, 3)))
     _ax.plot([_y, _y], [0, 0.031], color=lk.RED, lw=1.0, ls=(0, (4, 3)))
     _ax.text(_c, 0.0318, "$x$", color=lk.BLUE, fontsize=12, ha="center", va="bottom")

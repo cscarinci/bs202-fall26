@@ -35,7 +35,7 @@ def _(Figure, lk, np):
         return np.exp(-w**2 / 2) / np.sqrt(2 * np.pi)
 
     def power_sketch(z0=1.5, delta=0.5):
-        # the density of Z - delta ~ N(0, 1); both tails beyond -z0 - delta and z0 - delta hatched: their area is K(mu)
+        # the density of Z - delta ~ N(0, 1); both tails beyond -z0 - delta and z0 - delta shaded: their area is K(mu)
         fig = Figure(figsize=(6.4, 2.9), layout="constrained")
         ax = fig.subplots()
         ax.axis("off")
@@ -49,7 +49,7 @@ def _(Figure, lk, np):
         for a_, b_ in ((-right, lo), (hi, right)):
             if a_ < b_:
                 w = np.linspace(a_, b_, 200)
-                ax.fill_between(w, _pdf(w), facecolor=lk.LIGHT, edgecolor=lk.BLUE, hatch="////", lw=0)
+                ax.fill_between(w, _pdf(w), color=lk.LIGHT, lw=0)
         close = hi - lo < 1.3
         for c, name, y in ((lo, r"$-z_0-\delta$", -0.03), (hi, r"$z_0-\delta$", -0.085 if close else -0.03)):
             if -right < c < right:
@@ -57,12 +57,7 @@ def _(Figure, lk, np):
                 ax.text(c, y, name, ha="center", va="top", fontsize=13)
         ax.plot(x, _pdf(x), color=lk.BLUE, lw=2)
         ax.text(-1.0, 0.36, r"$Z-\delta\sim\mathcal{N}(0,1)$", color=lk.BLUE, fontsize=14, ha="right")
-        if hi < right:
-            tip, text_at = min(max(hi, -right) + 0.35, 3.6), (2.9, 0.24)
-        else:
-            tip, text_at = max(lo, -right) - 0.35, (-2.9, 0.24)
-        ax.annotate(r"$\mathrm{area}=K(\mu)$", (tip, _pdf(tip) / 2), xytext=text_at, color=lk.BLUE, fontsize=14, ha="center",
-                    arrowprops={"arrowstyle": "-", "color": lk.BLUE, "lw": 0.9})
+        ax.text(2.9 if hi < right else -2.9, 0.24, r"$\mathrm{total\ area}=K(\mu)$", color=lk.BLUE, fontsize=14, ha="center", va="center")
         return fig
     return (power_sketch,)
 
@@ -422,7 +417,7 @@ def _(lk):
         r"""
         $n=100$, $60$ $\underbrace{\text{heads}}_{X=1}$, $40$ $\underbrace{\text{tails}}_{X=0}$ &nbsp; $\Longrightarrow$ &nbsp; $M_n=0.6$
 
-        $\leadsto$ &nbsp; test $H_0=\text{“}p=0.5\text{”}$ with $\alpha=5\%$ and with $\alpha=1\%$
+        $\leadsto$ &nbsp; test $H_0=\text{“}p=1/2\text{”}$ with $\alpha=5\%$ and with $\alpha=1\%$
 
         > $\leadsto$ &nbsp; $Z=\dfrac{0.6-0.5}{\underbrace{0.5/10}_{\mathclap{\footnotesize\sigma^2=0.25\text{ under }H_0}}}=2$
 

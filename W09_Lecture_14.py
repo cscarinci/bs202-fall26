@@ -142,7 +142,7 @@ def _(lk):
     # definition: joint distribution
     lk.definition(
         [
-            r"Let $X, Y : S \longrightarrow \mathbb{R}$ be random variables on the same $(S, P, \mathcal{E})$",
+            r"Let $X, Y : S \longrightarrow \mathbb{R}$ be random variables on the same $(S, \mathcal{E}, P)$",
             lk.aside(
                 r"The **joint distribution** of the pair $\mk{(X, Y) : S \longrightarrow \mathbb{R}^2}$ is the assignment of probabilities",
                 "a vector valued random variable",
@@ -196,8 +196,9 @@ def _(Figure, dice_counts, j_x, j_y, lk, margins):
     _main.plot([_a - 0.5, _b + 0.5, _b + 0.5, _a - 0.5, _a - 0.5], [_c - 0.5, _c - 0.5, _d + 0.5, _d + 0.5, _c - 0.5], color=lk.GREY, lw=1.0, ls=(0, (4, 3)))
     for (_x, _y), _k in _counts.items():
         _color = lk.BLUE if _a <= _x <= _b and _c <= _y <= _d else lk.GREY
-        _main.scatter(_x, _y, s=2400 * _k / _N, color=_color, lw=0, zorder=3)
-        _main.annotate(f"{_k}/{_N}", (_x, _y), textcoords="offset points", xytext=((2400 * _k / _N) ** 0.5 / 2 + 3, 0), va="center", fontsize=10, color=_color)
+        _main.scatter(_x, _y, s=1800 * _k / _N, color=_color, lw=0, zorder=3)
+        # the value right of its dot, ending before the edge of the rectangle half way to the next column
+        _main.annotate(f"{_k}/{_N}", (_x, _y), textcoords="offset points", xytext=((1800 * _k / _N) ** 0.5 / 2 + 2, 0), va="center", fontsize=9, color=_color)
     _main.set_xlim(0.4, _n + 0.9)
     _main.set_ylim(1.3, 2 * _n + 0.7)
     _main.set_xticks(_xs)
@@ -208,7 +209,7 @@ def _(Figure, dice_counts, j_x, j_y, lk, margins):
     _top.vlines(_xs, 0, [k / _N for k in _fx], color=_cx, lw=1.0)
     _top.scatter(_xs, [k / _N for k in _fx], s=18, color=_cx, zorder=3)
     for _x, _k, _col in zip(_xs, _fx, _cx):
-        _top.annotate(f"{_k}/{_N}", (_x, _k / _N), textcoords="offset points", xytext=(0, 4), ha="center", va="bottom", fontsize=10, color=_col)
+        _top.annotate(f"{_k}/{_N}", (_x, _k / _N), textcoords="offset points", xytext=(0, 4), ha="center", va="bottom", fontsize=9, color=_col)
     _top.set_ylim(0, 1.45 * max(_fx) / _N)
     _top.set_yticks([])
     _top.set_ylabel("$f_X(x)$", fontsize=12)
@@ -216,7 +217,7 @@ def _(Figure, dice_counts, j_x, j_y, lk, margins):
     _side.hlines(_ys, 0, [k / _N for k in _fy], color=_cy, lw=1.0)
     _side.scatter([k / _N for k in _fy], _ys, s=18, color=_cy, zorder=3)
     for _y, _k, _col in zip(_ys, _fy, _cy):
-        _side.annotate(f"{_k}/{_N}", (_k / _N, _y), textcoords="offset points", xytext=(5, 0), ha="left", va="center", fontsize=10, color=_col)
+        _side.annotate(f"{_k}/{_N}", (_k / _N, _y), textcoords="offset points", xytext=(5, 0), ha="left", va="center", fontsize=9, color=_col)
     _side.set_xlim(0, 1.9 * max(_fy) / _N)
     _side.set_xticks([])
     _side.set_xlabel("$f_Y(y)$", fontsize=12)
@@ -240,9 +241,9 @@ def _(Figure, dice_counts, j_x, j_y, lk, margins):
             | $2$ | $1/16$ | $0$ | $0$ | $0$ | $1/16$ |
             | $f_X(x)$ | $1/16$ | $3/16$ | $5/16$ | $7/16$ | $1$ |
 
-            <span class="lk-tab" style="--lk-tab: 21em">$\leadsto$ &nbsp; $P(X = 1, Y \leq 4) = \frac{1}{16} + 0 + 0 = \frac{1}{16}$</span>$P(Y = 5) = \frac{4}{16}$
+            <span class="lk-tab" style="--lk-tab: 21em">$\leadsto$ &nbsp; $P(X = 1, Y \leq 4) = {\large\tfrac{1}{16}} + 0 + 0 = {\large\tfrac{1}{16}}$</span>$P(Y = 5) = {\large\tfrac{4}{16}}$
 
-            <span class="lk-tab" style="--lk-tab: 21em">$\leadsto$ &nbsp; $P(X > 2, Y \leq 5) = \frac{6}{16}$</span>$P(X = 2) = \frac{3}{16}$
+            <span class="lk-tab" style="--lk-tab: 21em">$\leadsto$ &nbsp; $P(X > 2, Y \leq 5) = {\large\tfrac{6}{16}}$</span>$P(X = 2) = {\large\tfrac{3}{16}}$
             """,
             lk.interactive(
                 _fig,
@@ -312,7 +313,7 @@ def _(Figure, dice_counts, lk, m_prod):
     _corner.axis("off")
     _corner.text(0.5, 0.5, _name, color=_color, fontsize=14, ha="center", va="center", transform=_corner.transAxes)
     for (_x, _y), (_k, _N) in _cells.items():
-        _main.scatter(_x, _y, s=2400 * _k / _N, color=_color, lw=0, zorder=3)
+        _main.scatter(_x, _y, s=1800 * _k / _N, color=_color, lw=0, zorder=3)
     _main.set_xlim(0.4, 4.9)
     _main.set_ylim(1.3, 8.7)
     _main.set_xticks(_xs)
@@ -322,7 +323,7 @@ def _(Figure, dice_counts, lk, m_prod):
     _top.vlines(_xs, 0, [k / 16 for k in _fx], color=lk.GREY, lw=1.0)
     _top.scatter(_xs, [k / 16 for k in _fx], s=18, color=lk.GREY, zorder=3)
     for _x, _k in zip(_xs, _fx):
-        _top.annotate(f"{_k}/16", (_x, _k / 16), textcoords="offset points", xytext=(0, 4), ha="center", va="bottom", fontsize=10, color=lk.GREY)
+        _top.annotate(f"{_k}/16", (_x, _k / 16), textcoords="offset points", xytext=(0, 4), ha="center", va="bottom", fontsize=9, color=lk.GREY)
     _top.set_ylim(0, 1.45 * max(_fx) / 16)
     _top.set_yticks([])
     _top.set_ylabel("$f_X(x)$", fontsize=12)
@@ -330,7 +331,7 @@ def _(Figure, dice_counts, lk, m_prod):
     _side.hlines(_ys, 0, [k / 16 for k in _fy], color=lk.GREY, lw=1.0)
     _side.scatter([k / 16 for k in _fy], _ys, s=18, color=lk.GREY, zorder=3)
     for _y, _k in zip(_ys, _fy):
-        _side.annotate(f"{_k}/16", (_k / 16, _y), textcoords="offset points", xytext=(5, 0), ha="left", va="center", fontsize=10, color=lk.GREY)
+        _side.annotate(f"{_k}/16", (_k / 16, _y), textcoords="offset points", xytext=(5, 0), ha="left", va="center", fontsize=9, color=lk.GREY)
     _side.set_xlim(0, 1.9 * max(_fy) / 16)
     _side.set_xticks([])
     _side.set_xlabel("$f_Y(y)$", fontsize=12)

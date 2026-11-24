@@ -47,7 +47,7 @@ def _(Figure):
         fig = Figure(figsize=(3.0, 3.0), layout="constrained")
         ax = fig.subplots()
         ax.set_xlim(left, 7.1)
-        ax.set_ylim(0.1, 7.1)
+        ax.set_ylim(0.1, 7.2)
         ax.set_aspect("equal")
         ax.set_xticks(range(1, 7), [f"${k}$" for k in range(1, 7)])
         ax.set_yticks(range(1, 7), [f"${k}$" for k in range(1, 7)])
@@ -66,10 +66,10 @@ def _(Figure):
         y = [0.6, 0.6, 6.4, 6.4, 0.6]
         if across:
             ax.plot(y, x, color=color, lw=1.4)
-            ax.text(6.75, k, label, color=color, fontsize=13, ha="center", va="center")
+            ax.text(6.55, k, label, color=color, fontsize=13, ha="left", va="center")
         else:
             ax.plot(x, y, color=color, lw=1.4)
-            ax.text(k, 6.75, label, color=color, fontsize=13, ha="center", va="center")
+            ax.text(k, 6.5, label, color=color, fontsize=13, ha="center", va="bottom")
 
     return blank, outcome_grid, strip
 
@@ -217,7 +217,7 @@ def _(lk):
             - $P(B \mid B) = 1$
             """,
             lk.aside(r"- $P(A_1 \cup A_2 \mid B) = P(A_1 \mid B) + P(A_2 \mid B)$ &nbsp; for $(A_1 \cap B) \cap (A_2 \cap B) = \emptyset$", "also true for countably many"),
-            r"$\leadsto$ &nbsp; i.e. $P(\, \cdot \mid B)$ is a probability measure on events $A \cap B$",
+            r"$\leadsto$ &nbsp; i.e. $P(\, \cdot \mid B)$ is a probability measure on the events inside $B$",
         ],
         label="thm-conditional-measure",
     )
@@ -398,8 +398,8 @@ def _(dice_sum, lk, outcome_grid, strip):
         _j = _t - _i
         if 1 <= _j <= 6:
             _ax.plot(_i, _j, "o", ms=15, mfc=lk.LIGHT if _i % 2 == 0 else "white", mec=lk.BLUE, mew=1.4, zorder=3)
-    _i0 = max(1, _t - 6)  # the circled outcome with the largest 2nd die carries the label
-    _ax.text(_i0 + (0.45 if _i0 % 2 else -0.56), _t - _i0 + (0.36 if _i0 % 2 else 0.3), "$A$", color=lk.BLUE, fontsize=13, ha="center", va="center", zorder=5)
+    _i1 = min(6, _t - 1)  # label A below right of the circled outcome with the largest 1st die
+    _ax.text(_i1 + 0.55, _t - _i1 - 0.42, "$A$", color=lk.BLUE, fontsize=13, ha="center", va="center", zorder=5)
 
     lk.prose(
         r"$\leadsto$ &nbsp; if $A$ = “sum is 8”, relative counting changes if we know $B$ = “1st is even”",
@@ -521,7 +521,7 @@ def _(lk, outcome_grid, strip):
     for _k in (1, 3, 5):
         strip(_ax, _k, lk.BLUE, "$A$")
         strip(_ax, _k, lk.RED, "$B$", across=True)
-    _ax.text(0.42, 6.45, "$C$", color=lk.GREEN, fontsize=13, ha="center", va="center")  # at the corner of the diamond (1, 6)
+    _ax.text(0.3, 6, "$C$", color=lk.GREEN, fontsize=13, ha="center", va="center")  # left of the diamond (1, 6), outside the strip
 
     lk.example(
         [

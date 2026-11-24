@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.25.1"
-app = marimo.App(width="medium", app_title="BS202 · Lecture 8 · Poisson and exponential models", css_file="lecturekit/style.css")
+app = marimo.App(width="medium", app_title="BS202 · Lecture 8 · Poisson, exponential and gamma models", css_file="lecturekit/style.css")
 
 
 @app.cell(hide_code=True)
@@ -25,7 +25,7 @@ async def _():
 
 @app.cell(hide_code=True)
 def _(lk):
-    lk.lecture(8, "Poisson and exponential models")
+    lk.lecture(8, "Poisson, exponential and gamma models")
     return
 
 
@@ -95,7 +95,7 @@ def _(lk):
 def _(lk):
     # module: recap
     # goals
-    lk.goals("Poisson and exponential models", title="In this lecture")
+    lk.goals("Poisson, exponential and gamma models", title="In this lecture")
     return
 
 

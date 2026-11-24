@@ -296,7 +296,7 @@ def _(Figure, b_n, lk, math, np):
         _ax.spines[_s].set_visible(False)
     lk.example(
         [
-            lk.aside(r"$X \sim \mathrm{Binom}(1, p)$", r"with $E[X] = p$, $\mathrm{Var}(X) = pq$"),
+            lk.aside(r"$X \sim \mathrm{Binom}(1, p)$", r"with $E[X] = p$, $\mathrm{Var}(X) = pq$, $q = 1 - p$"),
             r"""
             $X_1, \dots, X_n \sim \mathrm{Binom}(1, p)$ iid
 

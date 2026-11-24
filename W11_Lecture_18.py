@@ -144,7 +144,7 @@ def _(lk):
                 r"""
                 $$
                 \begin{aligned}
-                \hphantom{S_n^2}\mathllap{S_n^2} = \mathrlap{\frac{1}{n - 1} \sum_{i=1}^n (X_i - M_n)^2}\hphantom{\frac{1}{n} \sum_{i=1}^n \left( \frac{X_i - M_n}{S_n} \right)^3} \qquad \mathrlap{\text{is unbiased for } \sigma^2 \text{}}\hphantom{\text{is an unbiased estimator for } \mu}\\[14pt]
+                \hphantom{S_n^2}\mathllap{S_n^2} = \mathrlap{\frac{1}{n - 1} \sum_{i=1}^n (X_i - M_n)^2}\hphantom{\frac{1}{n} \sum_{i=1}^n \left( \frac{X_i - M_n}{S_n} \right)^3} \qquad \mathrlap{\text{is unbiased for } \sigma^2 \text{}}\hphantom{\text{is an unbiased estimator for } \mu}\\[19pt]
                 \hphantom{S_n^2}\mathllap{G_n} = \mathrlap{\frac{1}{n} \sum_{i=1}^n \left( \frac{X_i - M_n}{S_n} \right)^3}\hphantom{\frac{1}{n} \sum_{i=1}^n \left( \frac{X_i - M_n}{S_n} \right)^3} \qquad \mathrlap{\text{in general is biased for } \gamma \text{}}\hphantom{\text{is an unbiased estimator for } \mu}
                 \end{aligned}
                 $$
@@ -441,11 +441,14 @@ def _(lk):
     lk.proof(
         r"""
         $$
-        \begin{alignedat}{2}
-        && \mathrm{MSE}(\hat{\theta}_n) = \int_{-\infty}^{\infty} (t - \theta)^2 f_{\hat{\theta}_n}(t) \, dt &\ge \int_{|t - \theta| \ge \varepsilon} (t - \theta)^2 f_{\hat{\theta}_n}(t) \, dt\\
-        &&&\ge \varepsilon^2 \int_{|t - \theta| \ge \varepsilon} f_{\hat{\theta}_n}(t) \, dt = \varepsilon^2 P\big(|\hat{\theta}_n - \theta| \ge \varepsilon\big)\\[10pt]
-        \Longrightarrow \quad && P\big(|\hat{\theta}_n - \theta| \ge \varepsilon\big) &\le \frac{\mathrm{SE}(\hat{\theta}_n)^2 + \mathrm{Bias}(\hat{\theta}_n)^2}{\varepsilon^2} \underset{n \to +\infty}{\longrightarrow} 0
-        \end{alignedat}
+        \begin{aligned}
+        \mathrm{MSE}(\hat{\theta}_n) = \int_{-\infty}^{\infty} (t - \theta)^2 f_{\hat{\theta}_n}(t) \, dt &\ge \int_{|t - \theta| \ge \varepsilon} (t - \theta)^2 f_{\hat{\theta}_n}(t) \, dt\\
+        &\ge \varepsilon^2 \int_{|t - \theta| \ge \varepsilon} f_{\hat{\theta}_n}(t) \, dt = \varepsilon^2 P\big(|\hat{\theta}_n - \theta| \ge \varepsilon\big)
+        \end{aligned}
+        $$
+
+        $$
+        \Longrightarrow \quad P\big(|\hat{\theta}_n - \theta| \ge \varepsilon\big) \le \frac{\mathrm{SE}(\hat{\theta}_n)^2 + \mathrm{Bias}(\hat{\theta}_n)^2}{\varepsilon^2} \underset{n \to +\infty}{\longrightarrow} 0
         $$
         """,
         title=r"similar to the LLN, for $\hat{\theta}_n$ continuous",

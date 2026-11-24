@@ -412,11 +412,11 @@ def _(Figure, lk, m_lam, m_s, m_t, np):
     _top = 1.5 * _l
     _yy = np.linspace(0, _t, 100)
     _ax.fill_between(_yy, _f(_yy), color=lk.LIGHT, lw=0)
-    # (s, s + t] gets its own blue hatch, so that it stays distinct from (0, t] also when the two overlap (t > s)
-    _yy = np.linspace(_s, _s + _t, 100)
-    _ax.fill_between(_yy, _f(_yy), facecolor="none", edgecolor=lk.BLUE, hatch="\\\\\\", lw=0)
+    # (s, s + t] and (s, oo) get flat see-through fills of their label colours, so that overlaps stay visible
     _yy = np.linspace(_s, _hi, 200)
-    _ax.fill_between(_yy, _f(_yy), facecolor="none", edgecolor=lk.GREY, hatch="///", lw=0)
+    _ax.fill_between(_yy, _f(_yy), color=lk.GREY, alpha=0.18, lw=0)
+    _yy = np.linspace(_s, _s + _t, 100)
+    _ax.fill_between(_yy, _f(_yy), color=lk.BLUE, alpha=0.25, lw=0)
     for _x in (_t, _s, _s + _t):
         _ax.plot([_x, _x], [0, _f(_x)], color=lk.GREY, lw=1.0)
     _y = np.linspace(0, _hi, 400)
@@ -438,7 +438,7 @@ def _(Figure, lk, m_lam, m_s, m_t, np):
     _ax.set_ylim(0, _top)
     _ax.set_xticks([])
     _ax.set_ylabel("$f_Y(y)$")
-    _ax.yaxis.set_major_formatter(lambda v, _p: "" if v == 0 else f"{v:g}")
+    _ax.set_yticks([_l], [r"$\lambda$"])  # the height of the curve at 0; the room above is for the labels
     for _sp in ("top", "right"):
         _ax.spines[_sp].set_visible(False)
 
@@ -449,13 +449,12 @@ def _(Figure, lk, m_lam, m_s, m_t, np):
                 r"gamma with $r = 1$",
             ),
             lk.aside(
-                r"> If $\mk{Y \sim \mathrm{Exp}(\lambda)}$",
+                r"> If $\mk{Y \sim \mathrm{Exp}(\lambda)}$, then",
                 r"$Y$ has $f_Y(y) = \mathrm{Exp}(\lambda)(y)$",
             ),
-            r"> then",
             lk.aside(
                 r"$$ P(Y \leq s + t \mid Y > s) = \mk{P(Y \leq t)} $$",
-                r"how long we have already waited<br>does not change how long we still<br>have to wait until the next occurrence",
+                r"the remaining waiting time does not depend<br>on how long we have already waited",
             ),
             lk.interactive(_fig, controls=[m_lam, m_s, m_t]),
         ],

@@ -225,7 +225,7 @@ def _(Figure, lk, math, np, w_n, w_run, w_sims):
     _xr = _peak + 1.3 * math.sqrt(_n) / _lam + 0.25
     _fr = _lam**_n * _xr ** (_n - 1) * math.exp(-_lam * _xr) / math.factorial(_n - 1)
     _bot.text(_xr, _fr + 0.04 * _ymax, r"$\mathrm{Gamma}(n, \lambda)$", color=lk.BLUE, fontsize=12, ha="left", va="bottom")
-    _bot.text(_peak + 0.35, 0.9 * _ymax, "2000 simulated values of $Y_n$", color=lk.RED, fontsize=12, ha="left", va="center")
+    _bot.text(_peak + 0.35, 0.9 * _ymax, "simulated $Y_n$", color=lk.RED, fontsize=12, ha="left", va="center")
     _bot.set_xlim(0, 10)
     _bot.set_ylim(0, _ymax)
     _bot.set_xlabel("$t$")
@@ -266,7 +266,7 @@ def _(lk):
             "Similarly",
             lk.aside(
                 r"> • &nbsp; $X_1, \dots, X_n \sim \mathrm{Binom}(1, p)$ iid &nbsp; $\Longrightarrow$ &nbsp; $X_1 + \dots + X_n \sim \mathrm{Binom}(n, p)$",
-                r"also for $\mathrm{NBinom}$",
+                r"$\mathrm{Geom}(p)$ iid $\Longrightarrow$ sum $\sim \mathrm{NBinom}(n, p)$",
             ),
             r"""
             > • &nbsp; $X_1, \dots, X_n \sim \mathrm{Pois}(\lambda)$ iid &nbsp; $\Longrightarrow$ &nbsp; $X_1 + \dots + X_n \sim \mathrm{Pois}(n\lambda)$
@@ -487,11 +487,14 @@ def _(lk):
                 [(1, r"$\sum$ for discrete $M_n$")],
                 rows=3,
             ),
-            r"""
-            $$
-            \therefore \quad P(|M_n - \mu| \ge \varepsilon) \le \frac{1}{n} \frac{\sigma^2}{\varepsilon^2} \qquad \forall \varepsilon > 0, \ \forall n \ge 1
-            $$
-            """,
+            lk.aside(
+                r"""
+                $$
+                \therefore \quad P(|M_n - \mu| \ge \varepsilon) \le \frac{1}{n} \frac{\sigma^2}{\varepsilon^2} \qquad \forall \varepsilon > 0, \ \forall n \ge 1
+                $$
+                """,
+                "Chebyshev's inequality",
+            ),
         ],
         title="of LLN",
     )
@@ -518,8 +521,8 @@ def _(Figure, lk):
     _ax.plot(1.7, 0, "o", color=lk.BLUE, ms=4, zorder=5)
     _ax.text(1.7, 0.16, "$m$", color=lk.BLUE, fontsize=12, ha="center", va="bottom")
     _ax.text(0, -0.62, r"$|m - \mu| \geq \varepsilon$", color=lk.RED, fontsize=12, ha="center", va="center")
-    lk.arrow(_ax, (-0.75, -0.55), (-1.8, -0.08), lk.RED, lw=0.9)
-    lk.arrow(_ax, (0.75, -0.55), (1.3, -0.08), lk.RED, lw=0.9)
+    lk.arrow(_ax, (-0.8, -0.62), (-1.8, -0.2), lk.RED, lw=0.9, connectionstyle="arc3,rad=-0.35")
+    lk.arrow(_ax, (0.8, -0.62), (1.4, -0.2), lk.RED, lw=0.9, connectionstyle="arc3,rad=0.35")
     lk.prose(lk.figure(_fig))
     return
 

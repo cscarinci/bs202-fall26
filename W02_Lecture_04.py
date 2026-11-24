@@ -250,7 +250,8 @@ def _(blank, lk):
     for _k, _v in enumerate(_vals):
         _ax.plot([_k + 1, _k + 1], [-0.1, 0.1], color="black", lw=0.9)
         _ax.plot(_k + 1, _v, "o", color=lk.BLUE, ms=4, zorder=4)
-        _ax.text(_k + 1, -0.3, f"${11 + _k}$", fontsize=12, ha="center", va="top")
+        if _k % 3 == 0:  # full years, every third one
+            _ax.text(_k + 1, -0.3, f"${2011 + _k}$", fontsize=12, ha="center", va="top")
     _ax.text(17.9, -0.3, "$x$", fontsize=13, ha="center", va="top")
     _ax.text(0.35, 6.3, "$y$", fontsize=13, ha="left", va="top")
     _ax.text(11.5, 4.4, r"$y = P_X(\{x\})$", color=lk.BLUE, fontsize=13, ha="right", va="center")
@@ -353,7 +354,7 @@ def _(lk):
 @app.cell(hide_code=True)
 def _(Figure, lk):
     # module: pmf
-    # illustration: the pmf of the largest face, with its graph
+    # example: the pmf of the largest face, with its graph
     _fig = Figure(figsize=(3.4, 2.4), layout="constrained")
     _ax = _fig.subplots()
     _pmf = [0, 1 / 16, 3 / 16, 5 / 16, 7 / 16, 0, 0]
@@ -369,21 +370,24 @@ def _(Figure, lk):
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
 
-    lk.prose(
-        r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j \in \{1, 2, 3, 4\} \\ i, & i = j \in \{1, 2, 3, 4\} \end{cases} $$",
-        lk.side(
-            r"""
-            $$
-            \begin{aligned}
-            f_X(1) &= P(X = 1) = P(\{(1, 1)\}) = \tfrac{1}{16}\\[8pt]
-            f_X(2) &= P(X = 2) = P(\{(2, 1), (2, 2), (1, 2)\}) = \tfrac{3}{16}\\[8pt]
-            f_X(3) &= P(\{(3, 1), (3, 2), (3, 3), (2, 3), (1, 3)\}) = \tfrac{5}{16}\\[8pt]
-            f_X(4) &= \tfrac{7}{16}, \quad f_X(5) = 0, \quad f_X(6) = 0
-            \end{aligned}
-            $$
-            """,
-            lk.figure(_fig),
-        ),
+    lk.example(
+        [
+            r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j \in \{1, 2, 3, 4\} \\ i, & i = j \in \{1, 2, 3, 4\} \end{cases} $$",
+            lk.side(
+                r"""
+                $$
+                \begin{aligned}
+                f_X(1) &= P(X = 1) = P(\{(1, 1)\}) = {\large\tfrac{1}{16}}\\[8pt]
+                f_X(2) &= P(X = 2) = P(\{(2, 1), (2, 2), (1, 2)\}) = {\large\tfrac{3}{16}}\\[8pt]
+                f_X(3) &= P(\{(3, 1), (3, 2), (3, 3), (2, 3), (1, 3)\}) = {\large\tfrac{5}{16}}\\[8pt]
+                f_X(4) &= {\large\tfrac{7}{16}}, \quad f_X(5) = 0, \quad f_X(6) = 0
+                \end{aligned}
+                $$
+                """,
+                lk.figure(_fig),
+            ),
+        ],
+        title="rolling two fair 4-sided dice, continued",
     )
     return
 
@@ -416,7 +420,7 @@ def _(lk):
 @app.cell(hide_code=True)
 def _(Figure, lk):
     # module: cdf
-    # illustration: the cdf of the largest face, its jumps, with its graph
+    # example: the cdf of the largest face, its jumps, with its graph
     _fig = Figure(figsize=(3.6, 2.6), layout="constrained")
     _bx = _fig.subplots()
     _edges = [-1, 1, 2, 3, 4, 6.4]
@@ -442,32 +446,35 @@ def _(Figure, lk):
     for _s in ("top", "right"):
         _bx.spines[_s].set_visible(False)
 
-    lk.prose(
-        r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} $$",
-        r"""
-        $$
-        \begin{aligned}
-        F_X(1) &= P(X \leq 1) = P(X = 1) = \tfrac{1}{16}\\[8pt]
-        F_X(2) &= P(X \leq 2) = P(X \leq 1) + P(X = 2) = \tfrac{1}{16} + \tfrac{3}{16} = \tfrac{1}{4}\\[8pt]
-        F_X(3) &= P(X \leq 3) = P(X \leq 2) + P(X = 3) = \tfrac{1}{4} + \tfrac{5}{16} = \tfrac{9}{16}\\[8pt]
-        F_X(4) &= \tfrac{9}{16} + \tfrac{7}{16} = 1, \quad F_X(5) = 1, \quad F_X(6) = 1
-        \end{aligned}
-        $$
-        """,
-        lk.side(
+    lk.example(
+        [
+            r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} $$",
             r"""
             $$
-            \leadsto \quad
             \begin{aligned}
-            F_X(4) - F_X(3) &= f_X(4)\\
-            F_X(3) - F_X(2) &= f_X(3)\\
-            F_X(2) - F_X(1) &= f_X(2)\\
-            F_X(1) - F_X(0) &= f_X(1)
+            F_X(1) &= P(X \leq 1) = P(X = 1) = {\large\tfrac{1}{16}}\\[8pt]
+            F_X(2) &= P(X \leq 2) = P(X \leq 1) + P(X = 2) = {\large\tfrac{1}{16}} + {\large\tfrac{3}{16}} = {\large\tfrac{1}{4}}\\[8pt]
+            F_X(3) &= P(X \leq 3) = P(X \leq 2) + P(X = 3) = {\large\tfrac{1}{4}} + {\large\tfrac{5}{16}} = {\large\tfrac{9}{16}}\\[8pt]
+            F_X(4) &= {\large\tfrac{9}{16}} + {\large\tfrac{7}{16}} = 1, \quad F_X(5) = 1, \quad F_X(6) = 1
             \end{aligned}
             $$
             """,
-            lk.figure(_fig),
-        ),
+            lk.side(
+                r"""
+                $$
+                \leadsto \quad
+                \begin{aligned}
+                F_X(4) - F_X(3) &= f_X(4)\\
+                F_X(3) - F_X(2) &= f_X(3)\\
+                F_X(2) - F_X(1) &= f_X(2)\\
+                F_X(1) - F_X(0) &= f_X(1)
+                \end{aligned}
+                $$
+                """,
+                lk.figure(_fig),
+            ),
+        ],
+        title="rolling two fair 4-sided dice, continued",
     )
     return
 
@@ -529,6 +536,9 @@ def _(Figure, lk, plain, range_a, range_b, rv_choice):
     _right.set_ylabel(f"$F_{_rv}(x)$")
     plain(_left)
     plain(_right)
+    # fraction ticks, set after plain(), which formats decimals
+    _left.set_yticks(sorted(set(_pmf)), [f"${round(_p * 16)}/16$" for _p in sorted(set(_pmf))])
+    _right.set_yticks([0.25, 0.5, 0.75, 1], [r"$1/4$", r"$1/2$", r"$3/4$", "$1$"])
 
     lk.interactive(_fig, controls=[rv_choice, range_a, range_b])
     return

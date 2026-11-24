@@ -162,7 +162,7 @@ def _(lk):
         A random variable $X$ is said to have a **binomial distribution** on $n$ trials with bias $p$ if its pmf is
 
         $$
-        f_X(x) = \binom{n}{x} p^x (1 - p)^{n-x} \qquad \text{for } x = 0, 1, 2, \dots, n
+        f_X(x) = \binom{n}{x} p^x q^{n-x} \qquad \text{for } x = 0, 1, 2, \dots, n
         $$
 
         (and $f_X(x) = 0$ otherwise)
@@ -264,7 +264,7 @@ def _(lk):
             r"$E[X] = \displaystyle\sum_{x=0}^n x \binom{n}{x} p^x q^{n-x}$ $\rule[-0.2em]{0pt}{2em}$",
             r"$\phantom{E[X]} = \displaystyle\sum_{x=0}^n x \, \frac{n!}{x! \, (n - x)!} \, p^x q^{n-x}$ $\rule[-0.2em]{0pt}{2em}$",
             r"$\phantom{E[X]} = \displaystyle\sum_{x=1}^n \frac{n!}{(x - 1)! \, (n - x)!} \, p^x q^{n-x}$ $\rule[-0.2em]{0pt}{2em}$",
-            r"$\phantom{E[X]} = np \underbrace{\displaystyle\sum_{x-1=0}^{n-1} \frac{(n - 1)!}{(x - 1)! \, (n - 1 - x + 1)!} \, p^{x-1} q^{n-1-x+1}}_{(p + q)^{n-1} = 1}$ $\rule[-2.6em]{0pt}{0pt}$",
+            r"$\phantom{E[X]} = np \underbrace{\displaystyle\sum_{x-1=0}^{n-1} \frac{(n - 1)!}{(x - 1)! \, (n - 1 - x + 1)!} \, p^{x-1} q^{n-1-x+1}}_{(p + q)^{n-1} = 1} = np$ $\rule[-2.6em]{0pt}{0pt}$",
             lk.gap(),
             r"$\mathrm{Var}(X) = E[X^2] - \underbrace{E[X]^2}_{(np)^2}$ $\rule[-2.1em]{0pt}{0pt}$",
             r"> $\leadsto$ &nbsp; $E[X^2] = E[X(X - 1)] + E[X]$",
@@ -377,6 +377,8 @@ def _(lk, math, nbp, nr, pmf_axes):
             $$
             f_Y(y) = \binom{y - 1}{r - 1} p^r q^{y-r} \qquad \text{for } y = r, r + 1, r + 2, \dots
             $$
+
+            (and $f_Y(y) = 0$ otherwise)
             """,
             lk.interactive(_fig, controls=[nr, nbp]),
         ],

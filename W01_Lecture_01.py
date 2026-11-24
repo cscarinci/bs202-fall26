@@ -86,13 +86,6 @@ def _(lk, mo):
 
 
 @app.cell(hide_code=True)
-def _(die_preset, lk, mo):
-    # the weights of the six faces, starting from the chosen die
-    weights = mo.ui.array([mo.ui.slider(0, 10, step=1, value=w, label=f"${i + 1}$", show_value=True, orientation="vertical") for i, w in enumerate(die_preset.value)])
-    return (weights,)
-
-
-@app.cell(hide_code=True)
 def _(lk):
     # module: basics
     # motivation
@@ -229,7 +222,7 @@ def _(lk):
         &\begin{cases} A \cup B = B \cup A \\ A \cap B = B \cap A \end{cases} && (\text{commutativity})\\[6pt]
         &\begin{cases} (A \cup B) \cup C = A \cup (B \cup C) \\ (A \cap B) \cap C = A \cap (B \cap C) \end{cases} && (\text{associativity})\\[6pt]
         &\begin{cases} A \cap (B \cup C) = (A \cap B) \cup (A \cap C) \\ A \cup (B \cap C) = (A \cup B) \cap (A \cup C) \end{cases} \qquad && (\text{distributivity})\\[6pt]
-        &\begin{cases} (A \cup B)^c = A^c \cap B^c \\ (A \cap B)^c = A^c \cup B^c \end{cases} && (\text{De Morgan's Law})
+        &\begin{cases} (A \cup B)^c = A^c \cap B^c \\ (A \cap B)^c = A^c \cup B^c \end{cases} && (\text{De Morgan's laws})
         \end{aligned}
         $$
         """,
@@ -428,15 +421,15 @@ def _(lk):
             + r", \dots, \{5, 6\}, \dots, "
             + _ub(r"\{1, 2, 3, 4, 5, 6\}", r"\text{“1 or 2 or … or 6”}")
             + ", "
-            + _ub(r"\emptyset", r"\text{“not (1 or … or 6)”}")
-            + r" \big\} $$",
+            + r"\underbrace{\emptyset}_{\mathrlap{\scriptstyle \text{“not (1 or … or 6)”}}}"
+            + r" \big\} \hphantom{\scriptstyle \text{“not (1 or … or 6)”}} $$",  # room on the right for the label of the empty set
             r"$P = \ ?$",
             r"fair die: &nbsp; $P(\{i\}) = \dfrac{1}{6} \quad \forall\, i = 1, \dots, 6$",
             r"""
             $$
             \begin{aligned}
             \Longrightarrow \quad & P(\{i, j\}) = P(\{i\}) + P(\{j\}) = \frac{2}{6} && \forall\, i \neq j\\[4pt]
-            \Longrightarrow \quad & P(\{i, j, k\}) = \frac{3}{6} && \forall\, i \neq j \neq k\\
+            \Longrightarrow \quad & P(\{i, j, k\}) = \frac{3}{6} && \forall\, i, j, k \text{ distinct}\\
             & \ \ \vdots
             \end{aligned}
             $$
@@ -454,12 +447,11 @@ def _(lk):
 
 
 @app.cell(hide_code=True)
-def _(Figure, die_preset, lk, mo, np, weights):
+def _(Figure, die_preset, lk, np):
     # module: axioms
-    # remark: many probability measures, with the weighted die
-    _w = np.array(weights.value, dtype=float)
-    _total = _w.sum()
-    pmf = _w / _total if _total > 0 else None  # the weights define a probability measure only when their total is positive
+    # remark: many probability measures, the pmf of the chosen die
+    _w = np.array(die_preset.value, dtype=float)
+    pmf = _w / _w.sum()
     _fig = Figure(figsize=(3.4, 2.4), layout="constrained")
     _ax = _fig.subplots()
     if pmf is not None:
@@ -474,8 +466,8 @@ def _(Figure, die_preset, lk, mo, np, weights):
     for _s in ("top", "right"):
         _ax.spines[_s].set_visible(False)
     lk.prose(
-        r"$\leadsto$ &nbsp; there can be many distinct probability measures on the same sample space / event space",
-        lk.interactive(_fig, controls=[die_preset, *weights]),
+        r"$\leadsto$ &nbsp; there can be many distinct probability measures on the same event space",
+        lk.interactive(_fig, controls=[die_preset]),
     )
     return (pmf,)
 

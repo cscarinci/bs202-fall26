@@ -151,7 +151,7 @@ def _(interval, lk, m4):
                 r"since $X$ is normal",
             ),
             r"""
-            > $\Longrightarrow$ &nbsp; $P\big(|M_4-\mu|<\overbrace{\underbrace{z\,\mathrm{SE}(M_4)}_{\footnotesize\text{error threshold}}}^{\footnotesize\varepsilon}\big)=P(|Z_4|<z)=\underbrace{\Phi(z)-\Phi(-z)}_{\footnotesize\text{confidence level}}=1-\alpha$
+            > $\Longrightarrow$ &nbsp; $P\big(|M_4-\mu|\le \overbrace{\underbrace{z\,\mathrm{SE}(M_4)}_{\footnotesize\text{error threshold}}}^{\footnotesize\varepsilon}\big)=P(|Z_4|\le z)=\underbrace{\Phi(z)-\Phi(-z)}_{\footnotesize\text{confidence level}}=1-\alpha$
 
             > $\Longrightarrow$ &nbsp; $M_4$ is within $\varepsilon=z\,\mathrm{SE}(M_4)$ from $\mu$ with probability $1-\alpha=\underbrace{\Phi(z)-\Phi(-z)}_{\footnotesize 2\Phi(z)-1}$
 
@@ -281,7 +281,7 @@ def _(lk):
             If $\sigma$ is unknown, we cannot get $\varepsilon$ from
             """,
             lk.aside(
-                r"$$P\big(|M_n-\mu|<\varepsilon\big)=1-\alpha$$",
+                r"$$P\big(|M_n-\mu|\le\varepsilon\big)=1-\alpha$$",
                 r"even for $X\sim\mathcal N(\mu,\sigma^2)$",
             ),
             r"In this case, we must use $\underbrace{S_n^2}_{\footnotesize\text{consistent for }\sigma^2}$ instead of $\sigma^2$",

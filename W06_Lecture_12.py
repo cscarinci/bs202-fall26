@@ -64,7 +64,7 @@ def _(lk):
         r"""
         Families of continuous random variables
 
-        $\leadsto$ &nbsp; uniform, beta, Gaussian, chi-squared
+        $\leadsto$ &nbsp; uniform, beta, Gaussian
         """,
         title="In this lecture",
     )
