@@ -109,7 +109,7 @@ def _(lk):
         [
             r"A **random experiment** is a *repeatable process*",
             lk.aside(r"whose <span class='lk-mark'>*outcomes cannot be predicted with certainty*</span>", "on any individual trial of the experiment"),
-            lk.aside(r"but whose <span class='lk-mark'>*set of possible outcomes is specified in advance*</span>", "all that can happen is known"),
+            lk.aside(r"but whose <span class='lk-mark'>*set of possible outcomes is specified in advance*</span>.", "all that can happen is known"),
         ],
         label="def-random-experiment",
     )
@@ -130,11 +130,10 @@ def _(lk):
     # definition: sample space, events, event space
     lk.definition(
         [
-            r"The **sample space** of a random experiment is the set of all possible outcomes &nbsp; $\leadsto$ &nbsp; denoted by $S$",
-            r"An **event** of a random experiment is a subset of outcomes satisfying some interesting property &nbsp; $\leadsto$ &nbsp; $A \subseteq S$",
-            r"> when we deal with probability (to be defined soon) we should not focus on individual outcomes…",
+            r"The **sample space** is the set of all possible outcomes &nbsp; $\leadsto$ &nbsp; denoted by $S$",
+            r"An **event** is a subset of outcomes satisfying some interesting property &nbsp; $\leadsto$ &nbsp; $A \subseteq S$",
             lk.aside(
-                r"> rather, we focus on <span class='lk-mark'>properties that we wish to see</span>",
+                r"> when we deal with probability (to be defined soon) we should not focus on individual outcomes… rather, we focus on <span class='lk-mark'>properties that we wish to see</span>",
                 r"if the outcome of the experiment has a given property,<br>we say “the property has occurred”<br>$\leadsto$ hence the term “event”!",
             ),
             r"The **event space** is the collection of all relevant events &nbsp; $\leadsto$ &nbsp; denoted $\mathcal{E}$",
@@ -345,9 +344,8 @@ def _(lk):
     # definition: probability measure
     lk.definition(
         [
-            r"Given a random experiment, we define probability as a measure of events relative to the sample space.",
-            r"Precisely: Given $(S, \mathcal{E})$, a **probability measure** is",
-            r"$P : \mathcal{E} \longrightarrow \mathbb{R}$ &nbsp; such that",
+            r"We define probability as a measure of events relative to the sample space.",
+            r"Precisely: given $(S, \mathcal{E})$, a **probability measure** is $P : \mathcal{E} \longrightarrow \mathbb{R}$ &nbsp; such that",
             r"""
             $$
             \begin{aligned}
@@ -382,7 +380,7 @@ def _(blank, lk, np):
         lk.figure(_fig),
         r"$$ P(A_1 \cup A_2 \cup A_3) = P(A_1) + P(A_2) + P(A_3) $$",
         r"$\leadsto$ &nbsp; probability is an additive notion of size of events relative to the full sample space",
-        r"$\leadsto$ &nbsp; it can be interpreted as the relative frequency of event occurrences in infinite independent trials",
+        r"$\leadsto$ &nbsp; interpreted as the relative frequency of an event in infinite independent trials",
     )
     return
 
@@ -392,7 +390,7 @@ def _(lk):
     # module: axioms
     # definition: probability space
     lk.definition(
-        lk.aside(r"We call a triple $(S, \mathcal{E}, P)$ a <span class='lk-mark'>**probability space**</span>", "abstract model of a random experiment"),
+        lk.aside(r"We call a triple $(S, \mathcal{E}, P)$ a <span class='lk-mark'>**probability space**</span>.", "abstract model of a random experiment"),
         label="def-probability-space",
     )
     return
@@ -402,7 +400,7 @@ def _(lk):
 def _(lk):
     # module: axioms
     # remark
-    lk.prose(r"$\leadsto$ &nbsp; first goal of probability theory is to study properties and give examples of such spaces!")
+    lk.prose(r"$\leadsto$ &nbsp; first goal of probability theory is to study properties and examples of such spaces!")
     return
 
 
