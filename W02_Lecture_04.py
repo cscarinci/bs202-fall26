@@ -86,14 +86,14 @@ def _(blank, lk):
     lk.recap(
         lk.aside(
             r"$\mk{P(A \mid B)} = \dfrac{P(A \cap B)}{P(B)}$",
-            r"$P(A \mid B)$ = probability of $A$ given $B$ has occurred<br>= probability of $A$ and $B$ relative to probability of $B$",
+            r"$P(A \mid B)$ = probability of $A$ given $B$<br>= probability of $A \cap B$ relative to $P(B)$",
         ),
         r"""
         > $\leadsto$ &nbsp; $P(A \cap B) = P(A \mid B) \, P(B)$
 
-        if knowledge about $B$ does not change our belief about $A$, then $A$ and $B$ are **independent**!
+        if knowing $B$ does not change our belief in $A$, then $A$ and $B$ are **independent**!
         """,
-        lk.aside(r"> $\leadsto$ &nbsp; $P(A \mid B) = P(A) \iff P(A \cap B) = P(A) \, P(B)$", "(for $P(B) > 0$)"),
+        lk.aside(r"> $\leadsto$ &nbsp; $P(A \mid B) = P(A) \iff P(A \cap B) = P(A) \, P(B)$", "for $P(B) > 0$"),
         lk.gap(),
         r"Bayes' rule: &nbsp; $P(B \mid A) = \dfrac{P(A \cap B)}{P(A)} = \dfrac{P(A \mid B) \, P(B)}{P(A \mid B) \, P(B) + P(A \mid B^c) \, P(B^c)}$ $\rule[-1em]{0pt}{2.6em}$",
         r"$\leadsto$ &nbsp; more generally: &nbsp; $P(B_j \mid A) = \dfrac{P(A \cap B_j)}{P(A)} = \dfrac{P(A \mid B_j) \, P(B_j)}{\sum_{i=1}^{k} P(A \mid B_i) \, P(B_i)}$ $\rule[-1em]{0pt}{2.6em}$",
@@ -170,7 +170,11 @@ def _(lk):
     lk.definition(
         [
             r"""
-            Given a probability space $(S, \mathcal{E}, P)$, a **random variable** on $S$ is a function &nbsp; $X : S \longrightarrow \mathbb{R}$, &nbsp; $o \longmapsto X(o)$
+            Given a probability space $(S, \mathcal{E}, P)$, a **random variable** on $S$ is a function
+
+            $$
+            X : S \longrightarrow \mathbb{R}, \qquad o \longmapsto X(o)
+            $$
 
             The image of $X$
 
@@ -179,8 +183,8 @@ def _(lk):
             $$
             """,
             lk.aside(
-                r"is called the <span class='lk-mark'>**state space** of $X$</span>",
-                r"it will serve as a simplified version<br>of the true sample space $S$",
+                r"is called the <span class='lk-mark'>**state space** of $X$</span>.",
+                r"simpler version of the sample space $S$",
             ),
         ],
         label="def-rv",
@@ -194,7 +198,7 @@ def _(lk):
     # example: a DGIST student at random
     lk.example(
         r"""
-        Choose a DGIST student at random
+        Choose a DGIST student at random.
 
         $S = \{ \text{3000 individual human beings} \}$
 
@@ -220,16 +224,16 @@ def _(lk):
 @app.cell(hide_code=True)
 def _(lk):
     # module: random variables
-    # remark: state space, algebra and distribution of X as simplified versions of S, E and P
+    # remark: state space, algebra and distribution of X as simpler versions of S, E and P
     lk.remark(
         [
             r"Given $X : S \longrightarrow \mathbb{R}$",
-            r"> **state space** &nbsp; $S_X = \mathrm{Im}(X) \subseteq \mathbb{R}$ &nbsp; simplified version of $S$",
+            r"> **state space** &nbsp; $S_X = \mathrm{Im}(X) \subseteq \mathbb{R}$ &nbsp; simpler version of $S$",
             lk.aside(
-                r"> **algebra of subsets** of $S_X$ &nbsp; $\mk{\mathcal{E}_X} = \{ A \subseteq S_X \subseteq \mathbb{R} \}$ &nbsp; simplified version of $\mathcal{E}$",
+                r"> **algebra of subsets** of $S_X$ &nbsp; $\mk{\mathcal{E}_X} = \{ A \subseteq S_X \subseteq \mathbb{R} \}$ &nbsp; simpler version of $\mathcal{E}$",
                 r"collection of subsets in $\mathbb{R}$<br>(intervals and points)",
             ),
-            r"> **probability distribution** of $X : S \longrightarrow \mathbb{R}$ &nbsp; $P_X : \mathcal{E}_X \longrightarrow \mathbb{R}$ &nbsp; simplified version of $P : \mathcal{E} \longrightarrow \mathbb{R}$",
+            r"> **probability distribution** of $X$ &nbsp; $P_X : \mathcal{E}_X \longrightarrow \mathbb{R}$ &nbsp; simpler version of $P$",
             lk.aside(
                 r"> > $P_X(A) = P(\mk{\{ o \in S \mid X(o) \in A \}}) = P(X \in A)$",
                 r"outcomes whose value of $X$ belongs to $A$",
@@ -329,7 +333,7 @@ def _(lk):
     # definition: pmf and its properties
     lk.definition(
         [
-            r"Given $X : S \longrightarrow \mathbb{R}$ discrete random variable, the **probability mass function** (pmf) of $X$ is",
+            r"Given a discrete random variable $X$, the **probability mass function** (pmf) is",
             lk.aside(
                 r"$$ f_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto f_X(x) = \mk{P(X = x)} $$",
                 r"probability of $X$ having value $x$",
@@ -406,7 +410,7 @@ def _(lk):
     # definition: cdf
     lk.definition(
         [
-            r"Given $X : S \longrightarrow \mathbb{R}$ discrete random variable, the **cumulative distribution function** (cdf) of $X$ is",
+            r"Given a discrete random variable $X$, the **cumulative distribution function** (cdf) is",
             lk.aside(
                 r"$$ F_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto F_X(x) = \mk{P(X \leq x)} $$",
                 r"probability of $X$ having value at most $x$",
@@ -550,9 +554,9 @@ def _(lk):
     # consequences: pmf and cdf encode the distribution
     lk.prose(
         r"""
-        $\leadsto$ &nbsp; pmf and cdf are different ways to encode the probability distribution of a random variable $X$
+        $\leadsto$ &nbsp; pmf and cdf are two ways to encode the distribution of a random variable $X$
 
-        $\leadsto$ &nbsp; we will spend the next several lectures studying properties and examples of such functions!
+        $\leadsto$ &nbsp; in the next lectures we study properties and examples of such functions!
         """
     )
     return
@@ -572,7 +576,7 @@ def _(lk):
     # exercise: contaminated kits
     lk.exercise(
         r"""
-        A lab uses chemical kits from three suppliers
+        A lab uses chemical kits from three suppliers.
 
         > $P(S_1) = 50\%$, $P(S_2) = 30\%$, $P(S_3) = 20\%$
 
@@ -595,9 +599,9 @@ def _(lk):
     # exercise: balls without replacement
     lk.exercise(
         r"""
-        A box has 5 red, 4 blue and 3 green balls
+        A box has 5 red, 4 blue and 3 green balls.
 
-        Choose 3 without replacement. Find the probability that no ball is red
+        Choose 3 without replacement. Find the probability that no ball is red.
         """,
         label="ex-practice-2",
     )
