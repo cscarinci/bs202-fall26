@@ -137,7 +137,7 @@ def _(lk):
     # module: conditioning
     # motivation: knowledge changes probability
     lk.prose(
-        r"the probability of an event might change depending on our knowledge about the occurrence of other events!",
+        r"The probability of an event might change with our knowledge of other events!",
         r"> $\leadsto$ &nbsp; roll two fair dice:",
         r"""
         $$
@@ -157,7 +157,7 @@ def _(lk):
     # definition: conditional probability
     lk.definition(
         [
-            r"The **conditional probability** of an event $A \subseteq S$, given that an event $B$ is known to have occurred, is",
+            r"The **conditional probability** of an event $A \subseteq S$, given that $B$ has occurred, is",
             lk.aside(
                 r"$$ \mk{P(A \mid B)} = \frac{P(A \cap B)}{P(B)} \qquad (\text{provided } P(B) > 0) $$",
                 "probability of $A$ given $B$",
@@ -311,9 +311,9 @@ def _(lk):
         [
             "Here we see another possible interpretation of probability",
             "from",
-            lk.aside(r"> “relative frequency of event occurrences in infinitely many trials of an experiment”", "frequentist interpretation"),
+            lk.aside(r"> “relative frequency of events in infinitely many trials of an experiment”", "frequentist interpretation"),
             "to",
-            lk.aside(r"> “measure of belief in the likelihood of event occurrences in each trial of an experiment”", "Bayesian interpretation"),
+            lk.aside(r"> “measure of belief in the likelihood of events in each trial of an experiment”", "Bayesian interpretation"),
             lk.gap(),
             r"$\leadsto$ &nbsp; if $P(A)$ is our original measure of belief about $A$, $P(A \mid B)$ is our updated measure of belief about $A$ given new knowledge about $B$",
         ]
@@ -404,7 +404,7 @@ def _(dice_sum, lk, outcome_grid, strip):
     lk.prose(
         r"$\leadsto$ &nbsp; if $A$ = “sum is 8”, relative counting changes if we know $B$ = “1st is even”",
         r"> > $\Longrightarrow$ &nbsp; $A, B$ not independent",
-        r"<span class='lk-ghost'>$\leadsto$ &nbsp;</span> if $A$ = “sum is 7”, relative counting remains same if we know $B$ = “1st is even”",
+        r"$\leadsto$ &nbsp; if $A$ = “sum is 7”, relative counting remains same if we know $B$ = “1st is even”",
         r"> > $\Longrightarrow$ &nbsp; $A, B$ independent",
         lk.interactive(_fig, controls=[dice_sum]),
     )
@@ -434,7 +434,7 @@ def _(lk):
     # module: independence
     # theorem: complements of independent events
     lk.theorem(
-        r"If $A$ and $B$ are independent, then so are &nbsp; $A$ and $B^c$, &nbsp; $A^c$ and $B$, &nbsp; $A^c$ and $B^c$",
+        r"If $A$ and $B$ are independent, then so are &nbsp; $A$ and $B^c$, &nbsp; $A^c$ and $B$, &nbsp; $A^c$ and $B^c$.",
         label="thm-complements",
     )
     return
@@ -570,7 +570,7 @@ def _(lk):
 def _(lk):
     # module: bayes
     # motivation
-    lk.prose(r"Bayes' rule &nbsp; $\leadsto$ &nbsp; updating our level of belief in a collection of hypotheses after a new event has occurred")
+    lk.prose(r"Bayes' rule &nbsp; $\leadsto$ &nbsp; updating our belief in several hypotheses after a new event occurs")
     return
 
 
@@ -621,7 +621,7 @@ def _(lk):
     lk.prose(
         "More generally:",
         r"> If $S = B_1 \cup B_2 \cup \dots \cup B_k$ with $B_i \cap B_j = \emptyset$ for $i \neq j$",
-        lk.aside(r"> > $\leadsto$ &nbsp; $\{B_1, B_2, \dots, B_k\}$ is an exhaustive mutually exclusive collection of events", "a partition of $S$"),
+        lk.aside(r"> > $\leadsto$ &nbsp; $\{B_1, B_2, \dots, B_k\}$ are exhaustive mutually exclusive events", "a partition of $S$"),
         r"$$ P(A) = \sum_{i=1}^{k} P(A \mid B_i) \, P(B_i) \qquad (\text{law of total probability}) $$",
         r"$$ P(B_j \mid A) = \frac{P(A \mid B_j) \, P(B_j)}{\sum_{i=1}^{k} P(A \mid B_i) \, P(B_i)} \qquad (\text{Bayes' rule}) $$",
         r"$P(B_i)$ = prior, &nbsp; $P(B_i \mid A)$ = posterior, &nbsp; $P(A \mid B_i)$ = likelihood",
