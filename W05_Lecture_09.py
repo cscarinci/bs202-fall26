@@ -135,7 +135,7 @@ def _(lk):
                 r"$F_X$ = cdf",
             ),
             lk.aside(
-                r"$$ P(X \leq x) = \mk{F_X(x)} $$",
+                r"$$ P(X \leq x) = \mk{F_X(x)}. $$",
                 r"does not follow from the<br>assumption on $S_X$ only!",
             ),
         ],
@@ -178,7 +178,7 @@ def _(lk):
             ),
             r"""
             $$
-            P(a \leq X \leq b) = \int_a^b f_X(x) \, dx = F_X(b) - F_X(a)
+            P(a \leq X \leq b) = \int_a^b f_X(x) \, dx = F_X(b) - F_X(a).
             $$
             """,
         ],
@@ -250,7 +250,7 @@ def _(lk):
             &\Longrightarrow \quad \sum_{x=r}^{\infty} e^{-\lambda t} \, \frac{(\lambda t)^x}{x!} = P(Y \leq t) = F_Y(t)\\[4pt]
             &\Longrightarrow \quad f_Y(t) = \frac{d}{dt} \left( \sum_{x=r}^{\infty} e^{-\lambda t} \, \frac{(\lambda t)^x}{x!} \right) = \sum_{x=r}^{\infty} \lambda e^{-\lambda t} \left( -\frac{(\lambda t)^x}{x!} + \frac{(\lambda t)^{x-1}}{(x-1)!} \right)\\[4pt]
             &\phantom{\Longrightarrow \quad f_Y(t)} = \lambda e^{-\lambda t} \left[ \sum_{x=r}^{\infty} \frac{(\lambda t)^{x-1}}{(x-1)!} - \sum_{x=r}^{\infty} \frac{(\lambda t)^x}{x!} \right]\\[4pt]
-            &\phantom{\Longrightarrow \quad f_Y(t)} = \lambda e^{-\lambda t} \, \frac{(\lambda t)^{r-1}}{(r-1)!} = \underbrace{\frac{\lambda^r t^{r-1}}{(r-1)!} \, e^{-\lambda t}}_{\mathrm{Gamma}(r, \lambda)(t)}\\[22pt]
+            &\phantom{\Longrightarrow \quad f_Y(t)} = \lambda e^{-\lambda t} \, \frac{(\lambda t)^{r-1}}{(r-1)!} = \underbrace{\frac{\lambda^r t^{r-1}}{(r-1)!} \, e^{-\lambda t}}_{\mathrm{Gamma}(r, \lambda)(t)}.\\[22pt]
             \end{aligned}
             $$
             """,
@@ -265,7 +265,7 @@ def _(lk):
     # remark: the same derivation for the negative binomial and negative hypergeometric distributions
     lk.remark(
         [
-            r"Similar derivations of $NB(r, p)$ from $B(n, p)$ and $NHG(N, K, r)$ from $HG(N, K, n)$ are possible!",
+            r"Similarly, we can derive $NB(r, p)$ from $B(n, p)$ and $NHG(N, K, r)$ from $HG(N, K, n)$.",
             lk.aside(
                 r"$$ P(X_n \geq r) = P(Y_r \leq n) $$",
                 r"at least $r$ Hs in $n$ flips<br>= at most $n$ flips until $r$ Hs",
@@ -328,18 +328,20 @@ def _(Figure, g_a, g_b, g_lam, g_r, lk, math, np):
         _axx.xaxis.set_major_formatter(lambda v, _p: f"{v:g}")
         _axx.yaxis.set_major_formatter(lambda v, _p: f"{v:g}")
 
-    lk.definition(
-        [
-            r"""
-            A continuous random variable $Y : S \longrightarrow \mathbb{R}$ is said to have a **gamma distribution** with rate $\lambda$ and target $r$ if its pdf is
+    lk.module(
+        lk.definition(
+            [
+                r"""
+                A continuous random variable $Y : S \longrightarrow \mathbb{R}$ has a **gamma distribution** with rate $\lambda$ and target $r$ if its pdf is
 
-            $$
-            f_Y(y) = \begin{cases} \dfrac{\lambda^r y^{r-1}}{(r-1)!} \, e^{-\lambda y}, & y \in (0, +\infty)\\[8pt] 0, & y \notin (0, +\infty) \end{cases}
-            $$
-            """,
-            lk.interactive(_fig, controls=[g_lam, g_r, g_a, g_b]),
-        ],
-        label="def-gamma",
+                $$
+                f_Y(y) = \begin{cases} \dfrac{\lambda^r y^{r-1}}{(r-1)!} \, e^{-\lambda y}, & y \in (0, +\infty),\\[8pt] 0, & y \notin (0, +\infty). \end{cases}
+                $$
+                """,
+            ],
+            label="def-gamma",
+        ),
+        lk.prose(lk.interactive(_fig, controls=[g_lam, g_r, g_a, g_b])),
     )
     return
 
@@ -453,7 +455,7 @@ def _(Figure, lk, m_lam, m_s, m_t, np):
                 r"$Y$ has $f_Y(y) = \mathrm{Exp}(\lambda)(y)$",
             ),
             lk.aside(
-                r"$$ P(Y \leq s + t \mid Y > s) = \mk{P(Y \leq t)} $$",
+                r"$$ P(Y \leq s + t \mid Y > s) = \mk{P(Y \leq t)}. $$",
                 r"the remaining waiting time does not depend<br>on how long we have already waited",
             ),
             lk.interactive(_fig, controls=[m_lam, m_s, m_t]),

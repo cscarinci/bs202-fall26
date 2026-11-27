@@ -145,7 +145,7 @@ def _(lk):
         $$
         \begin{aligned}
         f_X(x) &= p^x q^{n-x} \times \underbrace{\#(\text{outcomes with } x \text{ heads})}_{\binom{n}{x}}\\[4pt]
-        &= \binom{n}{x} p^x q^{n-x}
+        &= \binom{n}{x} p^x q^{n-x}.
         \end{aligned}
         $$
         """,
@@ -159,13 +159,13 @@ def _(lk):
     # definition: binomial distribution
     lk.definition(
         r"""
-        A random variable $X$ is said to have a **binomial distribution** on $n$ trials with bias $p$ if its pmf is
+        A random variable $X$ has a **binomial distribution** on $n$ trials with bias $p$ if its pmf is
 
         $$
-        f_X(x) = \binom{n}{x} p^x q^{n-x} \qquad \text{for } x = 0, 1, 2, \dots, n
+        f_X(x) = \binom{n}{x} p^x q^{n-x}, \qquad \text{for } x = 0, 1, 2, \dots, n,
         $$
 
-        (and $f_X(x) = 0$ otherwise)
+        and $f_X(x) = 0$ otherwise.
         """,
         label="def-binomial",
     )
@@ -241,7 +241,7 @@ def _(b_redo, b_reps, bn, bp, lk, math, np, pmf_axes):
             Let $X$ be a binomial random variable on $n$ trials with bias $p$. Then
 
             $$
-            \mu_X = E[X] = np, \qquad \sigma_X^2 = \mathrm{Var}(X) = npq
+            \mu_X = E[X] = np, \qquad \sigma_X^2 = \mathrm{Var}(X) = npq.
             $$
             """,
             lk.interactive(_fig, controls=[bn, bp, b_reps, b_redo]),
@@ -333,7 +333,7 @@ def _(lk):
         $$
         \begin{aligned}
         f_Y(y) &= p^r q^{y-r} \, \underbrace{\#(\text{outcomes with } y \text{ trials})}_{\binom{y-1}{r-1}}\\[4pt]
-        &= \binom{y - 1}{r - 1} p^r q^{y-r}
+        &= \binom{y - 1}{r - 1} p^r q^{y-r}.
         \end{aligned}
         $$
         """,
@@ -369,20 +369,22 @@ def _(lk, math, nbp, nr, pmf_axes):
     elif _ys[-1] - _left <= 28:  # every second y, so that the numbers stay apart
         _ax.set_xticks(range(_left, _ys[-1] + 1, 2))
 
-    lk.definition(
-        [
-            r"""
-            A random variable $Y$ is said to have a **negative binomial distribution** with target $r$ and bias $p$ if its pmf is
+    lk.module(
+        lk.definition(
+            [
+                r"""
+                A random variable $Y$ has a **negative binomial distribution** with target $r$ and bias $p$ if its pmf is
 
-            $$
-            f_Y(y) = \binom{y - 1}{r - 1} p^r q^{y-r} \qquad \text{for } y = r, r + 1, r + 2, \dots
-            $$
+                $$
+                f_Y(y) = \binom{y - 1}{r - 1} p^r q^{y-r}, \qquad \text{for } y = r, r + 1, r + 2, \dots,
+                $$
 
-            (and $f_Y(y) = 0$ otherwise)
-            """,
-            lk.interactive(_fig, controls=[nr, nbp]),
-        ],
-        label="def-nb",
+                and $f_Y(y) = 0$ otherwise.
+                """,
+            ],
+            label="def-nb",
+        ),
+        lk.prose(lk.interactive(_fig, controls=[nr, nbp])),
     )
     return
 

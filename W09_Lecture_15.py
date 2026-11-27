@@ -105,7 +105,7 @@ def _(lk):
                 $$
                 \begin{aligned}
                 \mk{E[u(X, Y)]} &= \sum_x \sum_y u(x, y) \, f_{X,Y}(x, y)\\[4pt]
-                \text{or} \quad &= \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} u(x, y) \, f_{X,Y}(x, y) \, dx \, dy
+                \text{or} \quad &= \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} u(x, y) \, f_{X,Y}(x, y) \, dx \, dy.
                 \end{aligned}
                 $$
                 """,
@@ -177,7 +177,7 @@ def _(lk):
         Given $X, Y$ random variables on $(S, \mathcal{E}, P)$
 
         $$
-        \sigma_{X,Y} = \mathrm{Cov}(X, Y) = E[(X - \mu_X)(Y - \mu_Y)]
+        \sigma_{X,Y} = \mathrm{Cov}(X, Y) = E[(X - \mu_X)(Y - \mu_Y)],
         $$
 
         is called the **covariance** of $X$ and $Y$
@@ -258,7 +258,7 @@ def _(lk):
                 \begin{aligned}
                 \mathrm{Cov}(X, Y) &= \mathrm{Cov}(Y, X)\\
                 \mathrm{Cov}(aX + bY, Z) &= a \, \mathrm{Cov}(X, Z) + b \, \mathrm{Cov}(Y, Z)\\
-                \mathrm{Cov}(X, Y) &= 0 \quad \text{if } X, Y \text{ are independent}
+                \mathrm{Cov}(X, Y) &= 0, \quad \text{if } X, Y \text{ are independent}.
                 \end{aligned}
                 $$
                 """,
@@ -279,7 +279,9 @@ def _(lk):
         r"""
         $\leadsto$ &nbsp; $\mathrm{Cov}$ is like an inner product and independent random variables are orthogonal!
 
-        <span class="lk-ghost">$\leadsto$ &nbsp;</span>$\mathrm{Var}$ is like length squared! &nbsp; (However, some non-zero random variables have zero variance!)
+        <span class="lk-ghost">$\leadsto$ &nbsp;</span>$\mathrm{Var}$ is like length squared!
+
+        <span class="lk-ghost">$\leadsto$ &nbsp;</span>(However, some non-zero random variables have zero variance!)
         """
     )
     return
@@ -340,7 +342,7 @@ def _(Figure, d_x, lk, np):
 
             $$
             \begin{aligned}
-            \Longrightarrow \quad & \begin{cases} f_X(x) = \displaystyle\int_{-(1 - |x|)}^{1 - |x|} \frac{1}{2} \, dy = 1 - |x|, & |x| < 1\\[14pt] f_Y(y) = \displaystyle\int_{-(1 - |y|)}^{1 - |y|} \frac{1}{2} \, dx = 1 - |y|, & |y| < 1 \end{cases}\\[10pt]
+            \Longrightarrow \quad & \begin{cases} f_X(x) = \displaystyle\int_{-(1 - |x|)}^{1 - |x|} \frac{1}{2} \, dy = 1 - |x|, & |x| < 1,\\[14pt] f_Y(y) = \displaystyle\int_{-(1 - |y|)}^{1 - |y|} \frac{1}{2} \, dx = 1 - |y|, & |y| < 1 \end{cases}\\[10pt]
             \Longrightarrow \quad & \begin{cases} \mu_X = E[X] = \displaystyle\int_{-1}^{1} x (1 - |x|) \, dx = 0\\[14pt] \mu_Y = E[Y] = \displaystyle\int_{-1}^{1} y (1 - |y|) \, dy = 0 \end{cases}\\[10pt]
             \Longrightarrow \quad & \sigma_{X,Y} = E[XY] - \mu_X \mu_Y = \int_{-1}^{1} \int_{-(1 - |x|)}^{1 - |x|} xy \, \frac{1}{2} \, dy \, dx\\[4pt]
             & \phantom{\sigma_{X,Y} = E[XY] - \mu_X \mu_Y} = \int_{-1}^{1} x \, \underbrace{\frac{y^2}{4} \bigg|_{-(1 - |x|)}^{1 - |x|}}_{=\, 0} \, dx = 0
@@ -416,7 +418,7 @@ def _(Figure, Fraction, lk):
                 &\hphantom{{}={}} + 6 \cdot \frac{3}{16} + 7 \cdot \frac{2}{16} + 8 \cdot \frac{1}{16} &&{}= \frac{80}{16}\\[4pt]
                 E[XY] &= 1 \cdot 2 \cdot \frac{1}{16} + 2 \cdot 3 \cdot \frac{2}{16} + 2 \cdot 4 \cdot \frac{1}{16}\\
                 &\hphantom{{}={}} + 3 \cdot 4 \cdot \frac{2}{16} + \dots + 4 \cdot 8 \cdot \frac{1}{16} &&{}= \frac{270}{16}\\[4pt]
-                \Longrightarrow \quad \mathrm{Cov}(X, Y) &= \sigma_{X,Y} = \frac{270 - 50 \cdot 5}{16} = \frac{5}{4} > 0
+                \Longrightarrow \quad \mathrm{Cov}(X, Y) &= \sigma_{X,Y} = \frac{270 - 50 \cdot 5}{16} = \frac{5}{4} > 0.
                 \end{alignedat}
                 $$
                 """,
@@ -448,7 +450,7 @@ def _(lk):
         Given $X, Y$ random variables on $(S, \mathcal{E}, P)$, &nbsp; $a, b \in \mathbb{R}$
 
         $$
-        \mathrm{Var}(aX + bY) = a^2 \, \mathrm{Var}(X) + b^2 \, \mathrm{Var}(Y) + 2ab \, \mathrm{Cov}(X, Y)
+        \mathrm{Var}(aX + bY) = a^2 \, \mathrm{Var}(X) + b^2 \, \mathrm{Var}(Y) + 2ab \, \mathrm{Cov}(X, Y).
         $$
         """,
         label="thm-var-sum",
@@ -483,7 +485,7 @@ def _(lk):
             lk.aside(
                 r"""
                 $$
-                \mathrm{Var}(aX + bY) = a^2 \, \mathrm{Var}(X) + b^2 \, \mathrm{Var}(Y)
+                \mathrm{Var}(aX + bY) = a^2 \, \mathrm{Var}(X) + b^2 \, \mathrm{Var}(Y).
                 $$
                 """,
                 "like Pythagoras!",
@@ -512,7 +514,7 @@ def _(lk):
             lk.aside(
                 r"""
                 $$
-                \rho_{X,Y} = \mk{\frac{\sigma_{X,Y}}{\sigma_X \, \sigma_Y}} = \textbf{correlation} \text{ between } X \text{ and } Y
+                \rho_{X,Y} = \mk{\frac{\sigma_{X,Y}}{\sigma_X \, \sigma_Y}} = \textbf{correlation} \text{ between } X \text{ and } Y.
                 $$
                 """,
                 "normalized covariance in<br>units of standard deviations<br>(for $\sigma_X, \sigma_Y > 0$)",
@@ -613,14 +615,14 @@ def _(Figure, g_a, g_b, g_xy, lk, math, np, v_rho, v_sx, v_sy):
     lk.theorem(
         [
             r"Given $X, Y$ random variables on $(S, \mathcal{E}, P)$ with $\sigma_X, \sigma_Y > 0$",
-            lk.aside(r"$$\rho_{X,Y} \in [-1, 1]$$", "cosine of the “angle”<br>between $X$, $Y$"),
+            lk.aside(r"$$\rho_{X,Y} \in [-1, 1],$$", "cosine of the “angle”<br>between $X$, $Y$"),
             "and",
             lk.aside(
                 r"""
                 $$
                 \begin{aligned}
-                \rho_{X,Y} = 1 \quad &\Longleftrightarrow \quad Y = aX + b \ \text{ with } a > 0\\[2pt]
-                \rho_{X,Y} = -1 \quad &\Longleftrightarrow \quad Y = aX + b \ \text{ with } a < 0
+                \rho_{X,Y} = 1 \quad &\Longleftrightarrow \quad Y = aX + b, \ \text{ with } a > 0\\[2pt]
+                \rho_{X,Y} = -1 \quad &\Longleftrightarrow \quad Y = aX + b, \ \text{ with } a < 0.
                 \end{aligned}
                 $$
                 """,
@@ -717,7 +719,7 @@ def _(lk):
         Let $X, Y$ have joint pmf
 
         $$
-        f_{X,Y}(x, y) = \begin{cases} 0.4 & \text{if } (x, y) = (0, 0) \text{ or } (1, 1)\\ 0.1 & \text{if } (x, y) = (0, 1) \text{ or } (1, 0)\\ 0 & \text{otherwise} \end{cases}
+        f_{X,Y}(x, y) = \begin{cases} 0.4, & \text{if } (x, y) = (0, 0) \text{ or } (1, 1),\\ 0.1, & \text{if } (x, y) = (0, 1) \text{ or } (1, 0),\\ 0, & \text{otherwise}. \end{cases}
         $$
 
         Find:

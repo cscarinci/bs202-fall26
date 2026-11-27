@@ -39,7 +39,7 @@ TITLES = {  # lecture number -> title shown on the index
     9: "Continuous random variables; gamma and exponential distributions",
     10: "Guided Practice 1",
     11: "Expectations for continuous random variables; moment generating functions",
-    12: "Uniform, beta and Gaussian distributions",
+    12: "Uniform, beta and normal distributions",
     13: "The standard normal distribution; functions of random variables; quantiles",
     14: "Joint and conditional distributions",
     15: "Covariance and correlation",

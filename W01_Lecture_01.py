@@ -350,7 +350,7 @@ def _(lk):
             $$
             \begin{aligned}
             &\bullet \ \ P(S) = 1\\
-            &\bullet \ \ P(A) \geq 0 \quad \text{for every event } A \in \mathcal{E}\\
+            &\bullet \ \ P(A) \geq 0, \quad \text{for every event } A \in \mathcal{E}\\
             &\bullet \ \ P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots
             \end{aligned}
             $$
@@ -435,7 +435,7 @@ def _(lk):
             r"> in particular: &nbsp; $P(\{\text{even faces}\}) = \dfrac{3}{6}$",
             lk.gap(),
             r"not fair die (one example): &nbsp; $P(\{6\}) = 1$, &nbsp; $P(\{i\}) = 0$ for $i \neq 6$",
-            r"$$ \Longrightarrow \quad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6 \\ 1, & i = 6 \text{ or } j = 6 \end{cases} $$",
+            r"$$ \Longrightarrow \quad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6, \\ 1, & i = 6 \text{ or } j = 6. \end{cases} $$",
             r"> $P(\{\text{even faces}\}) = 1$",
         ],
         title="rolling one die",

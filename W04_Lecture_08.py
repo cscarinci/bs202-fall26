@@ -128,7 +128,7 @@ def _(lk):
         > 2\. &nbsp; the average rate of occurrences is a constant $\lambda > 0$, and for small subintervals of length $h$ we have:
 
         $$
-        P\binom{\text{exactly one}}{\text{occurrence}} \approx \lambda h, \qquad P\binom{\text{two or more}}{\text{occurrences}} \approx 0
+        P\binom{\text{exactly one}}{\text{occurrence}} \approx \lambda h, \qquad P\binom{\text{two or more}}{\text{occurrences}} \approx 0.
         $$
 
         > 3\. &nbsp; measures the number $X$ of occurrences in a fixed interval of length $t$
@@ -237,11 +237,11 @@ def _(lk):
     # definition: Poisson distribution
     lk.definition(
         [
-            r"A random variable $X$ is said to have a **Poisson distribution** with rate $\lambda$ over an interval of length $t$ if its pmf is",
+            r"A random variable $X$ has a **Poisson distribution** with rate $\lambda$ over an interval of length $t$ if its pmf is",
             lk.aside(
                 r"""
                 $$
-                \mk{f_X(x)} = \begin{cases} e^{-\lambda t} \, \dfrac{(\lambda t)^x}{x!}, & x = 0, 1, 2, \dots\\[8pt] 0, & x \neq 0, 1, 2, \dots \end{cases}
+                \mk{f_X(x)} = \begin{cases} e^{-\lambda t} \, \dfrac{(\lambda t)^x}{x!}, & x = 0, 1, 2, \dots,\\[8pt] 0, & x \neq 0, 1, 2, \dots \end{cases}
                 $$
                 """,
                 r"$f_X(x) = \mathrm{Pois}(\lambda t)(x)$<br>single parameter",
@@ -259,7 +259,9 @@ def _(lk):
     lk.example(
         [
             r"""
-            In Hyeonpung, there is an average of 2 car accidents per month. What is more likely this month?
+            In Hyeonpung, there is an average of 2 car accidents per month.
+
+            What is more likely this month?
 
             > $A$ = there will be no accidents
 
@@ -290,7 +292,7 @@ def _(lk):
         $X$ a Poisson random variable with rate $\lambda$ over a period $t$
 
         $$
-        E[X] = \lambda t, \qquad \mathrm{Var}(X) = \lambda t, \qquad \mathrm{Skew}(X) = \frac{1}{\sqrt{\lambda t}}
+        E[X] = \lambda t, \qquad \mathrm{Var}(X) = \lambda t, \qquad \mathrm{Skew}(X) = \frac{1}{\sqrt{\lambda t}}.
         $$
         """,
         label="thm-poisson-moments",
@@ -354,7 +356,7 @@ def _(Figure, an, ap, binom_pmf, lk, math, pmf_axis, pois_pmf, stems):
             $\mathrm{Pois}(\lambda t)$ is also useful as an approximation for $B(n, p)$ for large $n$, small $p$, with $\lambda t = np$
 
             $$
-            B(n, p)(x) \approx \mathrm{Pois}(np)(x)
+            B(n, p)(x) \approx \mathrm{Pois}(np)(x).
             $$
             """,
             lk.interactive(_fig, controls=[an, ap]),
@@ -384,7 +386,7 @@ def _(lk):
         > 2\. &nbsp; the average rate of occurrences is a constant $\lambda > 0$, and for small subintervals of length $h$ we have:
 
         $$
-        P\binom{\text{exactly one}}{\text{occurrence}} \approx \lambda h, \qquad P\binom{\text{two or more}}{\text{occurrences}} \approx 0
+        P\binom{\text{exactly one}}{\text{occurrence}} \approx \lambda h, \qquad P\binom{\text{two or more}}{\text{occurrences}} \approx 0.
         $$
 
         > 3\. &nbsp; measures the length $Y$ until a fixed number $r$ of occurrences is achieved

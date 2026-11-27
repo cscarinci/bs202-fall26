@@ -106,11 +106,11 @@ def _(lk):
     # definition: expectation value of u(X)
     lk.definition(
         [
-            r"Given $X : S \longrightarrow \mathbb{R}$ continuous random variable and $u : \mathbb{R} \longrightarrow \mathbb{R}$ a single variable function",
+            r"Given $X : S \longrightarrow \mathbb{R}$ continuous random variable and $u : \mathbb{R} \longrightarrow \mathbb{R}$",
             lk.aside(
                 r"""
                 $$
-                \mk{E[u(X)]} = \int_{-\infty}^{+\infty} u(x) \, f_X(x) \, dx = \underbrace{\int_{S_X}}_{f_X(x) = 0 \ \forall \, x \notin S_X} u(x) \, f_X(x) \, dx
+                \mk{E[u(X)]} = \int_{-\infty}^{+\infty} u(x) \, f_X(x) \, dx = \underbrace{\int_{S_X}}_{f_X(x) = 0 \ \forall \, x \notin S_X} u(x) \, f_X(x) \, dx.
                 $$
                 """,
                 r"$E[u(X)]$ = expectation value of $u(X)$",
@@ -140,7 +140,7 @@ def _(lk):
         $$
         \begin{aligned}
         E[a \, u(X) + b \, v(X)] &= a \, E[u(X)] + b \, E[v(X)]\\[4pt]
-        E[c] &= c
+        E[c] &= c.
         \end{aligned}
         $$
         """,
@@ -163,7 +163,7 @@ def _(lk):
         E[(X - \mu_X)^2] &= \mathrm{Var}(X) = \sigma_X^2 && \text{is the \textbf{variance} of } X\\[2pt]
         &= \int_{-\infty}^{\infty} (x - \mu_X)^2 \, f_X(x) \, dx\\[6pt]
         E\left[ \left( \frac{X - \mu_X}{\sigma_X} \right)^3 \right] &= \mathrm{Skew}(X) = \gamma_X && \text{is the \textbf{skewness} of } X\\[2pt]
-        &= \int_{-\infty}^{\infty} \left( \frac{x - \mu_X}{\sigma_X} \right)^3 f_X(x) \, dx
+        &= \int_{-\infty}^{\infty} \left( \frac{x - \mu_X}{\sigma_X} \right)^3 f_X(x) \, dx.
         \end{aligned}
         $$
 
@@ -185,7 +185,7 @@ def _(lk):
 def _(lk):
     # module: expectations
     # remark: discrete case
-    lk.remark("Moments and central moments are defined similarly for discrete random variables")
+    lk.remark("Moments and central moments are defined similarly for discrete random variables.")
     return
 
 
@@ -228,7 +228,7 @@ def _(Figure, gp_r, lk, math, np):
             ),
             r"""
             $$
-            E[X] = r / \lambda, \qquad \mathrm{Var}(X) = r / \lambda^2, \qquad \mathrm{Skew}(X) = 2 / \sqrt{r}
+            E[X] = r / \lambda, \qquad \mathrm{Var}(X) = r / \lambda^2, \qquad \mathrm{Skew}(X) = 2 / \sqrt{r}.
             $$
             """,
             lk.interactive(_fig, controls=[gp_r]),
@@ -303,7 +303,7 @@ def _(lk):
             lk.aside(
                 r"""
                 $$
-                m_X(t) = \mk{E[e^{tX}]}
+                m_X(t) = \mk{E[e^{tX}]}.
                 $$
                 """,
                 "expectation of exponential of $t$ times $X$",
@@ -348,7 +348,7 @@ def _(lk):
             $$
             \begin{aligned}
             m_X(t) &= \int_0^{\infty} e^{tx} \frac{\lambda^r x^{r - 1}}{(r - 1)!} e^{-\lambda x} \, dx\\[4pt]
-            &= \int_0^{\infty} \frac{\lambda^r x^{r - 1}}{(r - 1)!} e^{-(\lambda - t) x} \, dx = \frac{\lambda^r}{(\lambda - t)^r} \quad \text{for } t < \lambda
+            &= \int_0^{\infty} \frac{\lambda^r x^{r - 1}}{(r - 1)!} e^{-(\lambda - t) x} \, dx = \frac{\lambda^r}{(\lambda - t)^r}, \quad \text{for } t < \lambda
             \end{aligned}
             $$
             """,
@@ -367,7 +367,7 @@ def _(lk):
         Given a random variable $X$ with mgf $m_X(t)$, then
 
         $$
-        E[X^k] = \hat{\mu}_{X,k} = \frac{d^k}{dt^k} \Big|_{t=0} m_X(t)
+        E[X^k] = \hat{\mu}_{X,k} = \frac{d^k}{dt^k} \Big|_{t=0} m_X(t).
         $$
 
         Also, writing $K_X(t) = \ln(m_X(t))$, we have
@@ -391,12 +391,13 @@ def _(lk):
 
         $$
         \begin{aligned}
+        &\begin{aligned}
         \frac{d}{dt} m_X(t) &= \frac{d}{dt} E[e^{tX}] = E\left[ \frac{d}{dt} e^{tX} \right] = E[e^{tX} X]\\[4pt]
         \frac{d^2}{dt^2} m_X(t) &= E[e^{tX} X^2] \quad \cdots \quad \frac{d^k}{dt^k} m_X(t) = E[e^{tX} X^k]
+        \end{aligned}\\[6pt]
+        &\Longrightarrow\quad m_X^{(k)}(0) = E[X^k].
         \end{aligned}
         $$
-
-        > $\Longrightarrow$ &nbsp; $m_X^{(k)}(0) = E[X^k]$
 
         Similarly,
 
@@ -488,7 +489,7 @@ def _(Figure, lk, mg_bn, mg_bp, mg_dist, mg_gl, mg_gr, mg_pl, np):
             K_X''(t) &= \frac{n}{(q + pe^t)^2} \left( pe^t (q + pe^t) - (pe^t)^2 \right) = \frac{npqe^t}{(q + pe^t)^2}\\[2pt]
             &\qquad \leadsto \quad \sigma_X^2 = K_X''(0) = npq\\[8pt]
             K_X'''(t) &= \frac{n}{(q + pe^t)^3} \left( pqe^t (q + pe^t) - 2pqe^t \cdot pe^t \right) = \frac{n}{(q + pe^t)^3} \left( pqe^t (q - pe^t) \right)\\[2pt]
-            &\qquad \leadsto \quad \gamma_X = \frac{K'''(0)}{\sigma_X^3} = \frac{npq (q - p)}{(npq)^{3/2}} = \frac{q - p}{\sqrt{npq}}
+            &\qquad \leadsto \quad \gamma_X = \frac{K'''(0)}{\sigma_X^3} = \frac{npq (q - p)}{(npq)^{3/2}} = \frac{q - p}{\sqrt{npq}}.
             \end{aligned}
             $$
             """,
@@ -499,7 +500,7 @@ def _(Figure, lk, mg_bn, mg_bp, mg_dist, mg_gl, mg_gr, mg_pl, np):
             $$
             \begin{array}{lll}
             K_X'(t) = \lambda e^t \qquad\qquad & K_X''(t) = \lambda e^t \qquad\qquad & K_X'''(t) = \lambda e^t\\[6pt]
-            \mu_X = \lambda & \sigma_X^2 = \lambda & \gamma_X = \dfrac{\lambda}{\lambda^{3/2}} = 1 / \sqrt{\lambda}
+            \mu_X = \lambda & \sigma_X^2 = \lambda & \gamma_X = \dfrac{\lambda}{\lambda^{3/2}} = 1 / \sqrt{\lambda}.
             \end{array}
             $$
             """,
@@ -510,7 +511,7 @@ def _(Figure, lk, mg_bn, mg_bp, mg_dist, mg_gl, mg_gr, mg_pl, np):
             $$
             \begin{array}{lll}
             K_X'(t) = \dfrac{r}{\lambda - t} \qquad\qquad & K_X''(t) = \dfrac{r}{(\lambda - t)^2} \qquad\qquad & K_X'''(t) = \dfrac{2r}{(\lambda - t)^3}\\[14pt]
-            \mu_X = r / \lambda & \sigma_X^2 = r / \lambda^2 & \gamma_X = \dfrac{2r / \lambda^3}{(r / \lambda^2)^{3/2}} = 2 / \sqrt{r}
+            \mu_X = r / \lambda & \sigma_X^2 = r / \lambda^2 & \gamma_X = \dfrac{2r / \lambda^3}{(r / \lambda^2)^{3/2}} = 2 / \sqrt{r}.
             \end{array}
             $$
             """,

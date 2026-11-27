@@ -159,7 +159,7 @@ def _(lk):
         [
             r"The **conditional probability** of an event $A \subseteq S$, given that $B$ has occurred, is",
             lk.aside(
-                r"$$ \mk{P(A \mid B)} = \frac{P(A \cap B)}{P(B)} \qquad (\text{provided } P(B) > 0) $$",
+                r"$$ \mk{P(A \mid B)} = \frac{P(A \cap B)}{P(B)} \qquad (\text{provided } P(B) > 0). $$",
                 "probability of $A$ given $B$",
             ),
         ],
@@ -267,7 +267,7 @@ def _(lk):
     lk.remark(
         [
             "many times it is useful to read",
-            r"$$ P(A \cap B) = P(A \mid B) \, P(B) $$",
+            r"$$ P(A \cap B) = P(A \mid B) \, P(B). $$",
             lk.aside(
                 r"> $\leadsto$ &nbsp; $P\left( \begin{array}{c} \text{sum is 8 and} \\ \text{1st is even} \end{array} \right) = "
                 + _ub(r"P\left( \begin{array}{c} \text{sum is 8 given} \\ \text{1st is even} \end{array} \right)", r"\text{2nd stage}")
@@ -344,7 +344,7 @@ def _(lk):
                 \Updownarrow\\
                 P(A \cap B) = P(A) \, P(B)\\
                 \Updownarrow\\
-                P(B \mid A) = P(B)
+                P(B \mid A) = P(B).
                 \end{gathered}
                 $$
                 """,
@@ -366,18 +366,18 @@ def _(lk):
         two fair dice &nbsp; $\leadsto$ &nbsp; $S = \{(1, 1), \dots, (6, 6)\}$
 
         $$
-        A = \text{sum is 7} \quad \underset{\text{independent}}{\longleftrightarrow} \quad B = \text{1st is even}
+        A = \text{sum is 7} \quad \underset{\text{independent}}{\longleftrightarrow} \quad B = \text{1st is even},
         $$
 
         $$
         \begin{aligned}
         A &= \{(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1)\}\\
-        B &= \{(2, 1), (2, 2), \dots, (6, 5), (6, 6)\}
+        B &= \{(2, 1), (2, 2), \dots, (6, 5), (6, 6)\},
         \end{aligned}
         $$
 
         $$
-        P(A \mid B) = \frac{P(A \cap B)}{P(B)} = \frac{3/36}{18/36} = \frac{1}{6} = \frac{6}{36} = P(A)
+        P(A \mid B) = \frac{P(A \cap B)}{P(B)} = \frac{3/36}{18/36} = \frac{1}{6} = \frac{6}{36} = P(A).
         $$
         """,
         label="ex-sum7",
@@ -471,7 +471,7 @@ def _(lk):
                 \left. \begin{aligned}
                 P(A \cap B) &= P(A) \, P(B)\\
                 P(B \cap C) &= P(B) \, P(C)\\
-                P(C \cap A) &= P(C) \, P(A)
+                P(C \cap A) &= P(C) \, P(A).
                 \end{aligned} \right\}
                 $$
                 """,
@@ -493,7 +493,7 @@ def _(lk):
         $A, B, C \subseteq S$ **mutually independent** if they are pairwise independent and
 
         $$
-        P(A \cap B \cap C) = P(A) \, P(B) \, P(C)
+        P(A \cap B \cap C) = P(A) \, P(B) \, P(C).
         $$
         """,
         label="def-mutual",
@@ -529,19 +529,19 @@ def _(lk, outcome_grid, strip):
             Roll two dice
 
             $$
-            A = \{\text{1st is odd}\} \qquad B = \{\text{2nd is odd}\} \qquad C = \{\text{sum is odd}\}
+            A = \{\text{1st is odd}\} \qquad B = \{\text{2nd is odd}\} \qquad C = \{\text{sum is odd}\},
             $$
 
             $$
             \begin{aligned}
             P(A) &= \dfrac{3 \times 6}{36} &\qquad P(A \cap B) &= \dfrac{9}{36} = P(A) \, P(B)\\[10pt]
             P(B) &= \dfrac{3 \times 6}{36} &\qquad P(B \cap C) &= \dfrac{9}{36} = P(B) \, P(C)\\[10pt]
-            P(C) &= \dfrac{18}{36} &\qquad P(C \cap A) &= \dfrac{9}{36} = P(C) \, P(A)
+            P(C) &= \dfrac{18}{36} &\qquad P(C \cap A) &= \dfrac{9}{36} = P(C) \, P(A),
             \end{aligned}
             $$
 
             $$
-            P(A \cap B \cap C) = 0
+            P(A \cap B \cap C) = 0.
             $$
             """,
             lk.figure(_fig),
@@ -570,7 +570,7 @@ def _(lk):
 def _(lk):
     # module: bayes
     # motivation
-    lk.prose(r"Bayes' rule &nbsp; $\leadsto$ &nbsp; updating our belief in several hypotheses after a new event occurs")
+    lk.prose(r"Bayes' rule &nbsp; $\leadsto$ &nbsp; updating our belief in several hypotheses after a new event occurs.")
     return
 
 
@@ -604,7 +604,7 @@ def _(lk):
             \begin{aligned}
             P(D \mid T) &= \frac{P(D \cap T)}{P(T)} = \frac{P(T \mid D) \, P(D)}{P(T)} = \frac{P(T \mid D) \, P(D)}{P(T \cap D) + P(T \cap D^c)}\\[8pt]
             &= \frac{P(T \mid D) \, P(D)}{P(T \mid D) \, P(D) + P(T \mid D^c) \, P(D^c)}\\[8pt]
-            &= \frac{0.9 \times 0.01}{0.9 \times 0.01 + 0.05 \times 0.99} = \frac{2}{13} \approx 15.4\%
+            &= \frac{0.9 \times 0.01}{0.9 \times 0.01 + 0.05 \times 0.99} = \frac{2}{13} \approx 15.4\%.
             \end{aligned}
             $$
             """,

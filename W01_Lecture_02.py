@@ -90,13 +90,13 @@ def _(lk):
             "set of all outcomes = sample space $S$",
         ),
         lk.aside(
-            r"**events** in an experiment = collections of outcomes (subsets $A \subseteq S$) <span class='lk-mark'>sharing some property</span>",
+            r"**events** = collections of outcomes (subsets $A \subseteq S$) <span class='lk-mark'>sharing some property</span>",
             "if outcome has property “$A$”<br>we say “$A$ has occurred”",
         ),
         lk.definition(
             [
                 r"A **probability measure** in an experiment is a function $P$ that assigns probabilities to each event",
-                lk.aside(r"$$ P : \mk{\mathcal{E}} \longrightarrow \mathbb{R} $$", r"$\mathcal{E}$ = collection of all relevant events"),
+                lk.aside(r"$$ P : \mk{\mathcal{E}} \longrightarrow \mathbb{R}. $$", r"$\mathcal{E}$ = collection of all relevant events"),
                 r"$P$ must satisfy 3 axioms",
                 r"""
                 $$
@@ -140,21 +140,21 @@ def _(lk):
                 $$
                 \begin{aligned}
                 \text{axioms} \quad &\Longrightarrow \quad P(\{i\}) = \frac{1}{6}, \ \ P(\{i, j\}) = \frac{2}{6}, \ \ P(\{i, j, k\}) = \frac{3}{6}, \ \dots\\[6pt]
-                &\Longrightarrow \quad P(A) = \frac{\# A}{\# S} \quad \forall\, A \in \mathcal{E}
+                &\Longrightarrow \quad P(A) = \frac{\# A}{\# S} \quad \forall\, A \in \mathcal{E}.
                 \end{aligned}
                 $$
                 """,
                 r"$\leadsto$ &nbsp; but not every die is fair…",
                 lk.aside(
-                    r"$$ P(\{i\}) = \begin{cases} 0, & i \neq 6\\ 1, & i = 6 \end{cases} \qquad \text{is also possible} $$",
+                    r"$$ P(\{i\}) = \begin{cases} 0, & i \neq 6,\\ 1, & i = 6 \end{cases} \qquad \text{is also possible} $$",
                     "different assumption",
                 ),
                 lk.aside(
                     r"""
                     $$
                     \begin{aligned}
-                    \text{axioms} \quad &\Longrightarrow \quad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6\\ 1, & i = 6 \text{ or } j = 6 \end{cases}\\[6pt]
-                    &\Longrightarrow \quad P(A) = \begin{cases} 0, & 6 \notin A\\ 1, & 6 \in A \end{cases}
+                    \text{axioms} \quad &\Longrightarrow \quad P(\{i, j\}) = \begin{cases} 0, & i \neq 6 \text{ and } j \neq 6,\\ 1, & i = 6 \text{ or } j = 6 \end{cases}\\[6pt]
+                    &\Longrightarrow \quad P(A) = \begin{cases} 0, & 6 \notin A,\\ 1, & 6 \in A \end{cases}
                     \end{aligned}
                     $$
                     """,
@@ -243,7 +243,7 @@ def _(lk):
     lk.theorem(
         [
             r"For $A, B \in \mathcal{E}$",
-            r"$$ P(A \cup B) = P(A) + P(B) - P(A \cap B) $$",
+            r"$$ P(A \cup B) = P(A) + P(B) - P(A \cap B). $$",
         ],
         label="thm-union-2",
     )
@@ -298,7 +298,7 @@ def _(lk):
             $$
             \begin{aligned}
             P(A \cup B \cup C) = {} & P(A) + P(B) + P(C)\\
-            & - P(A \cap B) - P(A \cap C) - P(B \cap C) + P(A \cap B \cap C)
+            & - P(A \cap B) - P(A \cap C) - P(B \cap C) + P(A \cap B \cap C).
             \end{aligned}
             $$
             """,
@@ -403,7 +403,7 @@ def _(lk):
     lk.theorem(
         [
             lk.aside(r"If $(S, \mathcal{E}, P)$ has <span class='lk-mark'>equally likely outcomes</span>", "very strong assumption!"),
-            r"$$ P(A) = \frac{\# A}{\# S} $$",
+            r"$$ P(A) = \frac{\# A}{\# S}. $$",
         ],
         label="thm-counting",
     )
@@ -474,7 +474,7 @@ def _(lk):
     # consequence: successive stages
     lk.prose(
         lk.aside(
-            r"$\leadsto$ &nbsp; useful to count total number of outcomes on random experiments with <span class='lk-mark'>successive stages</span>",
+            r"$\leadsto$ &nbsp; useful to count outcomes of random experiments with <span class='lk-mark'>successive stages</span>",
             "1st the coin, then the die",
         )
     )
@@ -529,7 +529,7 @@ def _(lk):
     lk.theorem(
         [
             r"Given $n$ objects and $r$ positions",
-            lk.aside(r"$$ \mk{P^n_r} = \frac{n!}{(n - r)!} = n \cdot (n - 1) \cdot (n - 2) \cdot \dots \cdot (n - r + 1) $$", "number of orderings"),
+            lk.aside(r"$$ \mk{P^n_r} = \frac{n!}{(n - r)!} = n \cdot (n - 1) \cdot (n - 2) \cdot \dots \cdot (n - r + 1). $$", "number of orderings"),
         ],
         label="thm-arrangements",
     )
@@ -684,11 +684,11 @@ def _(lk):
             $$
             \begin{aligned}
             n^r &= \# \, \text{arrangements with replacement}\\[4pt]
-            &= \underbrace{\# \left( \begin{array}{c} \text{choices in} \\ \text{1st position} \end{array} \right)}_{n} \underbrace{\# \left( \begin{array}{c} \text{choices in} \\ \text{2nd position} \end{array} \right)}_{n} \cdots \underbrace{\# \left( \begin{array}{c} \text{choices in} \\ r\text{th position} \end{array} \right)}_{n}
+            &= \underbrace{\# \left( \begin{array}{c} \text{choices in} \\ \text{1st position} \end{array} \right)}_{n} \underbrace{\# \left( \begin{array}{c} \text{choices in} \\ \text{2nd position} \end{array} \right)}_{n} \cdots \underbrace{\# \left( \begin{array}{c} \text{choices in} \\ r\text{th position} \end{array} \right)}_{n},
             \end{aligned}
             $$
             """,
-            r"$$ \binom{n + r - 1}{r} = \# \, \text{combinations with replacement} $$",
+            r"$$ \binom{n + r - 1}{r} = \# \, \text{combinations with replacement}. $$",
         ],
         label="thm-replacement",
     )
@@ -709,7 +709,7 @@ def _(lk):
     # exercise: three dice
     lk.exercise(
         r"""
-        Roll 3 fair dice
+        Roll 3 fair dice.
 
         What is the probability that at least one is 6?
         """,
@@ -724,9 +724,9 @@ def _(lk):
     # exercise: committee
     lk.exercise(
         r"""
-        A committee of 5 people is chosen from 8 blue, 6 red
+        A committee of 5 people is chosen from 8 blue, 6 red.
 
-        Assuming each selection is equally likely, what is the probability that exactly two are red?
+        If each selection is equally likely, what is the probability that exactly two are red?
         """,
         label="ex-practice-2",
     )

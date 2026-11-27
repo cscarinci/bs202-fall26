@@ -107,13 +107,13 @@ def _(lk):
         > • &nbsp; **independent** if
 
         $$
-        f_{X_1, \dots, X_n}(x_1, \dots, x_n) = f_{X_1}(x_1) \cdots f_{X_n}(x_n)
+        f_{X_1, \dots, X_n}(x_1, \dots, x_n) = f_{X_1}(x_1) \cdots f_{X_n}(x_n).
         $$
 
         > • &nbsp; **identically distributed** if
 
         $$
-        f_{X_i}(x) = f_{X_j}(x) \qquad \forall i, j
+        f_{X_i}(x) = f_{X_j}(x) \qquad \forall i, j.
         $$
         """,
         label="def-iid",
@@ -248,7 +248,7 @@ def _(Figure, lk, math, np, w_n, w_run, w_sims):
 
             > > <span class="lk-ghost">$\Longrightarrow$ &nbsp; $m_{X_1 + \dots + X_n}(t)$ </span>$= \text{mgf of } \mathrm{Gamma}(n, \lambda) = m_{Y_n}(t)$
 
-            $\therefore$ &nbsp; $X_1, \dots, X_n \sim \mathrm{Exp}(\lambda)$ iid &nbsp; $\Longrightarrow$ &nbsp; $X_1 + \dots + X_n \sim \mathrm{Gamma}(n, \lambda)$
+            $\therefore$ &nbsp; $X_1, \dots, X_n \sim \mathrm{Exp}(\lambda)$ iid &nbsp; $\Longrightarrow$ &nbsp; $X_1 + \dots + X_n \sim \mathrm{Gamma}(n, \lambda)$.
             """,
             lk.interactive(_fig, controls=[w_n]),
         ],
@@ -286,10 +286,10 @@ def _(lk):
     lk.remark(
         [
             lk.aside(
-                r"So far, $X_1, \dots, X_n$ are <span class='lk-mark'>different measurements</span> on a single random experiment $(S, \mathcal{E}, P)$",
+                r"So far, $X_1, \dots, X_n$ are <span class='lk-mark'>different measurements</span> on a single random experiment $(S, \mathcal{E}, P)$.",
                 "identically distributed does not<br>mean same measurement",
             ),
-            "Now, we want to consider the same measurement on independent repetitions of the experiment",
+            "Now we consider the same measurement on independent repetitions of the experiment.",
         ]
     )
     return
@@ -392,11 +392,11 @@ def _(Figure, lk, t_rv):
             r"""
             Roll a fair die &nbsp; $S = \{1, 2, 3, 4, 5, 6\}$
 
-            > $X : S \longrightarrow \mathbb{R}$, &nbsp; $X(k) = \begin{cases} 1, & k = 6\\ 0, & k \neq 6 \end{cases}$
+            > $X : S \longrightarrow \mathbb{R}$, &nbsp; $X(k) = \begin{cases} 1, & k = 6,\\ 0, & k \neq 6 \end{cases}$
             """,
             lk.aside(r"> $\leadsto$ &nbsp; $P(\{k\}) = {\large\tfrac{1}{6}}$ &nbsp; $\forall k \in S$", "fair"),
             r"""
-            > > $\Longrightarrow$ &nbsp; $f_X(x) = P(X = x) = \begin{cases} {\large\tfrac{1}{6}}, & x = 1\\[4pt] {\large\tfrac{5}{6}}, & x = 0 \end{cases}$
+            > > $\Longrightarrow$ &nbsp; $f_X(x) = P(X = x) = \begin{cases} {\large\tfrac{1}{6}}, & x = 1,\\[4pt] {\large\tfrac{5}{6}}, & x = 0 \end{cases}$
 
             > > <span class="lk-ghost">$\Longrightarrow$ &nbsp; $f_X(x) = P(X = x)$ </span>$= \dbinom{1}{x} \Big( \dfrac{1}{6} \Big)^x \Big( \dfrac{5}{6} \Big)^{1 - x} = \mathrm{Binom}(1, 1/6)(x)$
             """,
@@ -404,9 +404,9 @@ def _(Figure, lk, t_rv):
             r"""
             Roll a fair die twice (independently)
 
-            > $X_1, X_2 : S \times S \longrightarrow \mathbb{R}$, &nbsp; $X_1(k_1, k_2) = X(k_1) = \begin{cases} 1, & k_1 = 6\\ 0, & k_1 \neq 6 \end{cases}$
+            > $X_1, X_2 : S \times S \longrightarrow \mathbb{R}$, &nbsp; $X_1(k_1, k_2) = X(k_1) = \begin{cases} 1, & k_1 = 6,\\ 0, & k_1 \neq 6 \end{cases}$
 
-            > <span class="lk-ghost">$X_1, X_2 : S \times S \longrightarrow \mathbb{R}$, &nbsp; </span>$X_2(k_1, k_2) = X(k_2) = \begin{cases} 1, & k_2 = 6\\ 0, & k_2 \neq 6 \end{cases}$
+            > <span class="lk-ghost">$X_1, X_2 : S \times S \longrightarrow \mathbb{R}$, &nbsp; </span>$X_2(k_1, k_2) = X(k_2) = \begin{cases} 1, & k_2 = 6,\\ 0, & k_2 \neq 6 \end{cases}$
             """,
             lk.aside(r"> $\leadsto$ &nbsp; $P(\{(k_1, k_2)\}) = {\large\tfrac{1}{36}} = P(\{k_1\}) \, P(\{k_2\})$", "fair, independent"),
             r"""
@@ -418,7 +418,7 @@ def _(Figure, lk, t_rv):
 
             > $T = X_1 + X_2 : S \times S \longrightarrow \mathbb{R}$
 
-            > > $T(k_1, k_2) = X(k_1) + X(k_2) = \begin{cases} 2, & k_1 = 6, \ k_2 = 6\\ 1, & k_1 = 6, \ k_2 \neq 6 \ \text{ or } \ k_1 \neq 6, \ k_2 = 6\\ 0, & k_1 \neq 6, \ k_2 \neq 6 \end{cases}$
+            > > $T(k_1, k_2) = X(k_1) + X(k_2) = \begin{cases} 2, & k_1 = 6, \ k_2 = 6,\\ 1, & k_1 = 6, \ k_2 \neq 6 \ \text{ or } \ k_1 \neq 6, \ k_2 = 6,\\ 0, & k_1 \neq 6, \ k_2 \neq 6 \end{cases}$
 
             > > > $\Longrightarrow$ &nbsp; $f_T(2) = {\large\tfrac{1}{36}}$, &nbsp; $f_T(1) = {\large\tfrac{10}{36}}$, &nbsp; $f_T(0) = {\large\tfrac{25}{36}}$
 
@@ -441,7 +441,7 @@ def _(lk):
             Given a random sample $X_1, \dots, X_n$ from a population $X$ with $E[X] = \mu$, $\mathrm{Var}(X) = \sigma^2$
 
             $$
-            E[M_n] = \mu, \qquad \mathrm{Var}(M_n) = \frac{1}{n} \sigma^2
+            E[M_n] = \mu, \qquad \mathrm{Var}(M_n) = \frac{1}{n} \sigma^2.
             $$
 
             Moreover, for any error threshold $\varepsilon > 0$,

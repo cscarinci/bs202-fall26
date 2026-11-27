@@ -92,11 +92,13 @@ def _(lk):
     # definition: estimator
     lk.definition(
         [
+            lk.aside(
+                r"Given $X : S \longrightarrow \mathbb{R}$ with an unknown parameter $\theta$, an **estimator** for $\theta$ is any statistic",
+                r"e.g. $\theta = \mu, \sigma^2, \gamma, \dots$",
+            ),
             r"""
-            Given $X : S \longrightarrow \mathbb{R}$ with an unknown parameter $\theta$ (e.g. $\mu$, $\sigma^2$, $\gamma$, …), an **estimator** for $\theta$ is any statistic
-
             $$
-            \hat{\theta}_n = u(X_1, \dots, X_n) : S \times \dots \times S \longrightarrow \mathbb{R}
+            \hat{\theta}_n = u(X_1, \dots, X_n) : S \times \dots \times S \longrightarrow \mathbb{R},
             $$
 
             used to estimate $\theta$ from observed values of $X_i$.
@@ -119,7 +121,7 @@ def _(lk):
         We call $\hat{\theta}_n$ an **unbiased estimator** for $\theta$ if
 
         $$
-        \mathrm{Bias}(\hat{\theta}_n) = E[\hat{\theta}_n] - \theta = 0
+        \mathrm{Bias}(\hat{\theta}_n) = E[\hat{\theta}_n] - \theta = 0.
         $$
         """,
         label="def-unbiased",
@@ -173,12 +175,12 @@ def _(lk):
             &&&= \sum_{i=1}^n X_i^2 - n M_n^2\\[10pt]
             \Longrightarrow \quad && E\Big[ \sum_{i=1}^n (X_i - M_n)^2 \Big] &= \sum_{i=1}^n E[X_i^2] - n \, E[M_n^2]\\
             &&&= \sum_{i=1}^n \big( \mathrm{Var}(X_i) + E[X_i]^2 \big) - n \, \mathrm{Var}(M_n) - n \, E[M_n]^2\\
-            &&&= n \sigma^2 + n \mu^2 - n \, \sigma^2 / n - n \mu^2 = (n - 1) \, \sigma^2
+            &&&= n \sigma^2 + n \mu^2 - n \, \sigma^2 / n - n \mu^2 = (n - 1) \, \sigma^2,
             \end{alignedat}
             $$
             """,
             lk.aside(
-                r"$$\Longrightarrow \quad \mk{\frac{1}{n - 1}} \sum_{i=1}^n (X_i - M_n)^2 \ \text{ is an unbiased estimator for } \sigma^2$$",
+                r"$$\Longrightarrow \quad \mk{\frac{1}{n - 1}} \sum_{i=1}^n (X_i - M_n)^2 \ \text{ is an unbiased estimator for } \sigma^2.$$",
                 r"not $\displaystyle \frac{1}{n} \sum_{i=1}^n (X_i - M_n)^2$",
             ),
         ],
@@ -199,7 +201,7 @@ def _(lk):
 
         > $\Longrightarrow$ &nbsp; $\mathrm{Bias}(\hat{\sigma}_n^2) = {\large\tfrac{n - 1}{n}} \sigma^2 - \sigma^2 = -{\large\tfrac{1}{n}} \sigma^2$
 
-        $\leadsto$ &nbsp; sometimes we call $\hat{\sigma}_n^2$ the **biased sample variance** and $S_n^2$ the **unbiased sample variance**
+        $\leadsto$ &nbsp; we call $\hat{\sigma}_n^2$ the **biased sample variance** and $S_n^2$ the **unbiased sample variance**
         """
     )
     return
@@ -211,7 +213,7 @@ def _(lk):
     # consequence: what the bias measures
     lk.prose(
         r"""
-        $\leadsto$ &nbsp; estimates from a biased estimator are expected to differ from the true value of the parameter
+        $\leadsto$ &nbsp; estimates from a biased estimator are expected to differ from the true parameter
 
         $\leadsto$ &nbsp; $\mathrm{Bias}(\hat{\theta}_n)$ measures the expected estimate error.
         """
@@ -228,7 +230,7 @@ def _(lk):
         Given an estimator $\hat{\theta}_n$ for a parameter $\theta$, the **standard error** of $\hat{\theta}_n$ is
 
         $$
-        \mathrm{SE}(\hat{\theta}_n) = \sqrt{\mathrm{Var}(\hat{\theta}_n)}
+        \mathrm{SE}(\hat{\theta}_n) = \sqrt{\mathrm{Var}(\hat{\theta}_n)}.
         $$
         """,
         label="def-se",
@@ -329,7 +331,7 @@ def _(lk):
         The **mean squared error** of $\hat{\theta}_n$ is
 
         $$
-        \mathrm{MSE}(\hat{\theta}_n) = E\big[(\hat{\theta}_n - \theta)^2\big]
+        \mathrm{MSE}(\hat{\theta}_n) = E\big[(\hat{\theta}_n - \theta)^2\big].
         $$
         """,
         label="def-mse",
@@ -415,7 +417,7 @@ def _(lk):
         An estimator $\hat{\theta}_n$ for $\theta$ is **consistent** if
 
         $$
-        \forall \varepsilon > 0 \quad P\big(|\hat{\theta}_n - \theta| \ge \varepsilon\big) \longrightarrow 0 \quad \text{as } n \to +\infty
+        \forall \varepsilon > 0 \quad P\big(|\hat{\theta}_n - \theta| \ge \varepsilon\big) \longrightarrow 0 \quad \text{as } n \to +\infty.
         $$
         """,
         label="def-consistent",
@@ -428,7 +430,7 @@ def _(lk):
     # module: consistency
     # theorem: bias and SE to 0
     lk.theorem(
-        r"If $\mathrm{Bias}(\hat{\theta}_n) \to 0$ and $\mathrm{SE}(\hat{\theta}_n) \to 0$ as $n \to +\infty$, then $\hat{\theta}_n$ is consistent for $\theta$",
+        r"If $\mathrm{Bias}(\hat{\theta}_n) \to 0$ and $\mathrm{SE}(\hat{\theta}_n) \to 0$ as $n \to +\infty$, then $\hat{\theta}_n$ is consistent for $\theta$.",
         label="thm-consistent",
     )
     return
@@ -462,7 +464,7 @@ def _(lk):
     # theorem: continuous functions
     lk.theorem(
         r"""
-        For any continuous function $g : \mathbb{R} \longrightarrow \mathbb{R}$, if $\hat{\theta}_n$ is a consistent estimator for $\theta$,<br>then $g(\hat{\theta}_n)$ is a consistent estimator for $g(\theta)$
+        For any continuous function $g : \mathbb{R} \longrightarrow \mathbb{R}$, if $\hat{\theta}_n$ is a consistent estimator for $\theta$,<br>then $g(\hat{\theta}_n)$ is a consistent estimator for $g(\theta)$.
         """,
         label="thm-continuous",
     )

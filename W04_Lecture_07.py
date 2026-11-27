@@ -91,7 +91,7 @@ def _(lk):
         > $X(c_1 c_2 \cdots c_n) = \#(H \text{ in } n \text{ trials})$
         """,
         lk.aside(
-            r"> > $\Longrightarrow$ &nbsp; $\mk{f_X(x)} = \begin{cases} \mk{\dbinom{n}{x}} p^x q^{n-x} & \text{for } x = \underbrace{0, 1, 2, \dots, n}_{S_X}\\[8pt] 0 & \text{otherwise} \end{cases}$",
+            r"> > $\Longrightarrow$ &nbsp; $\mk{f_X(x)} = \begin{cases} \mk{\dbinom{n}{x}} p^x q^{n-x}, & \text{for } x = \underbrace{0, 1, 2, \dots, n}_{S_X},\\[8pt] 0, & \text{otherwise} \end{cases}$",
             r"$f_X(x) = B(n, p)(x)$<br>$\binom{n}{x}$ = # combinations of $x$ objects in $n$ positions",
         ),
         lk.gap(),
@@ -106,7 +106,7 @@ def _(lk):
         r"> $P(\underbrace{c_1 \cdots c_{n-1}}_{r - 1 \ H\text{s}}$" + lk.gloss(r"$c_n$", r"$c_n$ always $= H$") + r"$) = p^r q^{n-r}$",
         r"> $Y(c_1 \cdots c_{n-1} c_n) = \#(\text{trials until } r \ H)$",
         lk.aside(
-            r"> > $\Longrightarrow$ &nbsp; $\mk{f_Y(y)} = \begin{cases} \mk{\dbinom{y - 1}{r - 1}} p^r q^{y-r}, & \text{for } y = \underbrace{r, r + 1, \dots}_{S_Y}\\[8pt] 0, & \text{otherwise} \end{cases}$",
+            r"> > $\Longrightarrow$ &nbsp; $\mk{f_Y(y)} = \begin{cases} \mk{\dbinom{y - 1}{r - 1}} p^r q^{y-r}, & \text{for } y = \underbrace{r, r + 1, \dots}_{S_Y},\\[8pt] 0, & \text{otherwise} \end{cases}$",
             r"$f_Y(y) = NB(r, p)(y)$<br>$\binom{y-1}{r-1}$ = # combinations of $r - 1$ objects<br>in $y - 1$ positions",
         ),
     )
@@ -127,7 +127,7 @@ def _(lk):
         \begin{aligned}
         E[X] &= \mu_X = np, & \qquad E[Y] &= \mu_Y = r / p\\[8pt]
         \mathrm{Var}(X) &= \sigma_X^2 = npq, & \qquad \mathrm{Var}(Y) &= \sigma_Y^2 = \frac{rq}{p^2}\\[8pt]
-        \mathrm{Skew}(X) &= \gamma_X = \frac{q - p}{\sqrt{npq}}, & \qquad \mathrm{Skew}(Y) &= \gamma_Y = \frac{1 + q}{\sqrt{rq}}
+        \mathrm{Skew}(X) &= \gamma_X = \frac{q - p}{\sqrt{npq}}, & \qquad \mathrm{Skew}(Y) &= \gamma_Y = \frac{1 + q}{\sqrt{rq}}.
         \end{aligned}
         $$
         """,
@@ -185,7 +185,7 @@ def _(lk):
     # illustration: coins from a bag, the sample space, the probabilities of outcomes, two checks and the pmf
     lk.prose(
         r"""
-        $\leadsto$ &nbsp; draw colored coins from a bag with $K$ red coins and $N - K$ blue coins and without replacing the coins
+        $\leadsto$ &nbsp; draw coins from a bag with $K$ red and $N - K$ blue coins, without replacing them
 
         > count $X = \#(\text{red coins in } n \text{ draws})$
 
@@ -194,7 +194,7 @@ def _(lk):
         > $S_X = \{0, 1, \dots, n\}$ &nbsp; (if $n \leq K$ and $n \leq N - K$)
 
         $$
-        P(\{c_1 c_2 \cdots c_n\}) = \frac{\dbinom{N - n}{K - x}}{\dbinom{N}{K}} \quad \text{if } X(c_1 c_2 \cdots c_n) = x
+        P(\{c_1 c_2 \cdots c_n\}) = \frac{\dbinom{N - n}{K - x}}{\dbinom{N}{K}}, \quad \text{if } X(c_1 c_2 \cdots c_n) = x.
         $$
 
         > $\leadsto$ &nbsp; $N = 5$, $K = 3$, $n = 3$
@@ -230,12 +230,12 @@ def _(lk):
     # definition: hypergeometric distribution
     lk.definition(
         [
-            r"A random variable $X$ is said to have a **hypergeometric distribution** if its pmf is",
+            r"A random variable $X$ has a **hypergeometric distribution** if its pmf is",
             lk.aside(
-                r"$$ \mk{f_X(x)} = \frac{\dbinom{K}{x} \dbinom{N - K}{n - x}}{\dbinom{N}{n}}, \quad \text{for } x \in \mathbb{Z}, \ 0 \leq x \leq K \text{ and } 0 \leq n - x \leq N - K $$",
+                r"$$ \mk{f_X(x)} = \frac{\dbinom{K}{x} \dbinom{N - K}{n - x}}{\dbinom{N}{n}}, \quad \text{for } x \in \mathbb{Z}, \ 0 \leq x \leq K \text{ and } 0 \leq n - x \leq N - K, $$",
                 r"$f_X(x) = HG(N, K, n)(x)$",
             ),
-            r"(and $f_X(x) = 0$ otherwise)",
+            r"and $f_X(x) = 0$ otherwise.",
         ],
         label="def-hg",
     )
@@ -290,12 +290,12 @@ def _(lk):
 
             > 2\. &nbsp; each single trial has one of two outcomes with exactly $K$ possible “successes” and $N - K$ possible “failures” in total, with all combinations of the $K$ possible successes among the $N$ possible trials being equally likely
 
-            > 3\. &nbsp; measures the number $Y$ of trials until a fixed number $r$ of “successes” is achieved
+            > 3\. &nbsp; measures the number $Y$ of trials until a fixed number $r$ of “successes”
             """,
             lk.gap(),
             r"$S_Y = \{r, r + 1, \dots, N - K + r\}$ &nbsp; ($r \leq K$)",
             lk.aside(
-                r"$$ \mk{f_Y(y)} = \frac{\dbinom{y - 1}{r - 1} \dbinom{N - y}{K - r}}{\dbinom{N}{K}} $$",
+                r"$$ \mk{f_Y(y)} = \frac{\dbinom{y - 1}{r - 1} \dbinom{N - y}{K - r}}{\dbinom{N}{K}}. $$",
                 r"$f_Y(y) = NHG(N, K, r)(y)$",
             ),
         ],

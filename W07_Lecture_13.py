@@ -97,7 +97,7 @@ def _(lk):
             \begin{aligned}
             \Longrightarrow \quad f_X(x) &= \frac{1}{2\ell} \, \mathrm{Beta}(m, m) \left( \mk{\frac{x - \mu + \ell}{2\ell}} \right)\\[4pt]
             &= \frac{1}{2\ell} \, \frac{(2m - 1)!}{(m - 1)! \, (m - 1)!} \left( \frac{x - \mu + \ell}{2\ell} \right)^{m - 1} \left( 1 - \frac{x - \mu + \ell}{2\ell} \right)^{m - 1}\\[4pt]
-            &= \underbrace{\frac{1}{2\ell} \, m \binom{2m - 1}{m - 1} \frac{1}{4^{m - 1}}}_{\textstyle \longrightarrow {\large\tfrac{1}{\sqrt{2\pi\sigma^2}}}} \, \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{m - 1}}_{\textstyle \longrightarrow \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)}
+            &= \underbrace{\frac{1}{2\ell} \, m \binom{2m - 1}{m - 1} \frac{1}{4^{m - 1}}}_{\textstyle \longrightarrow {\large\tfrac{1}{\sqrt{2\pi\sigma^2}}}} \, \underbrace{\left( 1 - \frac{(x - \mu)^2}{\ell^2} \right)^{m - 1}}_{\textstyle \longrightarrow \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)}.
             \end{aligned}
             $$
             """,
@@ -170,17 +170,19 @@ def _(Figure, density_axes, lk, normal_pdf, np, z_val):
     _ax.set_xticks(range(-3, 4))
     _ax.set_xlabel("$z$")
     density_axes(_ax)
-    lk.definition(
-        [
-            r"$Z \sim \mathcal{N}(0, 1)$ &nbsp; $\Longrightarrow$ &nbsp; $f_Z(z) = \frac{1}{\sqrt{2\pi}} \exp(-z^2 / 2)$",
-            lk.aside(
-                r"> <span class='lk-ghost'>$Z \sim \mathcal{N}(0, 1)$ &nbsp; </span>$\Longrightarrow$ &nbsp; $\displaystyle \mk{F_Z(z)} = \int_{-\infty}^{z} \frac{1}{\sqrt{2\pi}} \exp(-w^2 / 2) \, dw = \Phi(z)$",
-                r"$F_Z(z) = P(Z \leq z)$, standard normal cdf<br>(no simple formula, but its values are well-known)",
-            ),
-            lk.interactive(_fig, controls=[z_val]),
-        ],
-        title="the standard normal distribution",
-        label="def-standard-normal",
+    lk.module(
+        lk.definition(
+            [
+                r"$Z \sim \mathcal{N}(0, 1)$ &nbsp; $\Longrightarrow$ &nbsp; $f_Z(z) = \frac{1}{\sqrt{2\pi}} \exp(-z^2 / 2)$",
+                lk.aside(
+                    r"> <span class='lk-ghost'>$Z \sim \mathcal{N}(0, 1)$ &nbsp; </span>$\Longrightarrow$ &nbsp; $\displaystyle \mk{F_Z(z)} = \int_{-\infty}^{z} \frac{1}{\sqrt{2\pi}} \exp(-w^2 / 2) \, dw = \Phi(z)$",
+                    r"$F_Z(z) = P(Z \leq z)$, standard normal cdf<br>(no simple formula, but its values are well-known)",
+                ),
+            ],
+            title="the standard normal distribution",
+            label="def-standard-normal",
+        ),
+        lk.prose(lk.interactive(_fig, controls=[z_val])),
     )
     return
 
@@ -235,7 +237,7 @@ def _(lk):
         r"""
         > $\Longrightarrow$ &nbsp; $F_Y(y) = P(Y \leq y) = P(u(X) \leq y) = P(X \leq u^{-1}(y)) = F_X(u^{-1}(y))$
 
-        > $\Longrightarrow$ &nbsp; $f_Y(y) = \begin{cases} F_Y(y) - F_Y(y^-) = F_X(u^{-1}(y)) - F_X(u^{-1}(y^-)) & \text{discrete}\\[6pt] \dfrac{d}{dy} F_Y(y) = \dfrac{d}{dy} F_X(u^{-1}(y)) & \text{continuous} \end{cases}$
+        > $\Longrightarrow$ &nbsp; $f_Y(y) = \begin{cases} F_Y(y) - F_Y(y^-) = F_X(u^{-1}(y)) - F_X(u^{-1}(y^-)) & \text{discrete},\\[6pt] \dfrac{d}{dy} F_Y(y) = \dfrac{d}{dy} F_X(u^{-1}(y)) & \text{continuous} \end{cases}$
 
         > <span class='lk-ghost'>$\Longrightarrow$ &nbsp; $f_Y(y)$ </span>$= \begin{cases} f_X(u^{-1}(y))\\[6pt] \dfrac{d}{dy} u^{-1}(y) \, f_X(u^{-1}(y)) \end{cases}$
         """,
@@ -251,7 +253,7 @@ def _(lk):
         r"""
         $Y = aX + b$, $a > 0$
 
-        > $\Longrightarrow$ &nbsp; $f_Y(y) = \begin{cases} f_X\left( \dfrac{y - b}{a} \right) & \text{discrete}\\[8pt] \dfrac{1}{a} \, f_X\left( \dfrac{y - b}{a} \right) & \text{continuous} \end{cases}$
+        > $\Longrightarrow$ &nbsp; $f_Y(y) = \begin{cases} f_X\left( \dfrac{y - b}{a} \right) & \text{discrete},\\[8pt] \dfrac{1}{a} \, f_X\left( \dfrac{y - b}{a} \right) & \text{continuous} \end{cases}$
         """,
         label="ex-linear",
     )
@@ -268,7 +270,7 @@ def _(lk):
 
         > $\Longrightarrow$ &nbsp; $m_Y(t) = E[e^{tY}] = E[e^{t(aX + b)}] = E[e^{taX} e^{tb}] = e^{tb} \, m_X(ta)$
 
-        > $\Longrightarrow$ &nbsp; $E[Y] = a E[X] + b$, &nbsp; $\mathrm{Var}(Y) = a^2 \, \mathrm{Var}(X)$, &nbsp; $\mathrm{Skew}(Y) = \begin{cases} \mathrm{Skew}(X), & a > 0\\ -\mathrm{Skew}(X), & a < 0 \end{cases}$
+        > $\Longrightarrow$ &nbsp; $E[Y] = a E[X] + b$, &nbsp; $\mathrm{Var}(Y) = a^2 \, \mathrm{Var}(X)$, &nbsp; $\mathrm{Skew}(Y) = \begin{cases} \mathrm{Skew}(X), & a > 0,\\ -\mathrm{Skew}(X), & a < 0 \end{cases}$
         """,
         label="thm-linear",
     )
@@ -326,7 +328,7 @@ def _(lk):
         r"""
         $F_X(x) = P(X \leq x) = P\left( Z \leq \dfrac{x - \mu}{\sigma} \right) = \Phi\left( \dfrac{x - \mu}{\sigma} \right)$
 
-        > $\Longrightarrow$ &nbsp; Gaussian cdfs are computed with $\Phi$
+        > $\Longrightarrow$ &nbsp; normal cdfs are computed with $\Phi$
         """,
         label="cor-normal-cdf",
     )
@@ -391,7 +393,7 @@ def _(Figure, cut, density_axes, lk, normal_pdf, np):
     lk.example(
         [
             r"""
-            Midterm exam was too hard… with scores $X \sim \mathcal{N}(50, 20^2)$
+            Midterm exam was too hard… with scores $X \sim \mathcal{N}(50, 20^2)$.
 
             Grading scheme was designed based on
 
@@ -491,7 +493,7 @@ def _(lk):
             r"the **$p$-quantile** of $X$ is the number $q_p \in \mathbb{R}$ such that",
             r"""
             $$
-            F_X(q_p) = \int_{-\infty}^{q_p} f_X(x) \, dx = P(X \leq q_p) = p
+            F_X(q_p) = \int_{-\infty}^{q_p} f_X(x) \, dx = P(X \leq q_p) = p.
             $$
             """,
             lk.aside(

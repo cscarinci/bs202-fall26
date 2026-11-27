@@ -123,7 +123,7 @@ def _(lk):
                 \begin{aligned}
                 L(\underbrace{\theta}_{\mathllap{\footnotesize\begin{matrix}\text{variable}\\\text{parameter}\end{matrix}\kern-1.2em}};\,\underbrace{x_1,\dots,x_n}_{\mathclap{\footnotesize\begin{matrix}\text{fixed}\\\text{data}\end{matrix}}})
                 &=\underbrace{f_{X_1\dots X_n}(x_1,\dots,x_n;\theta)}_{\footnotesize\text{joint pmf / pdf}}\\[6pt]
-                &=f_X(x_1;\theta)\cdots f_X(x_n;\theta)
+                &=f_X(x_1;\theta)\cdots f_X(x_n;\theta),
                 \end{aligned}
                 $$
                 """,
@@ -141,7 +141,7 @@ def _(lk):
             \begin{array}{c}
             \text{probability (density)}\\
             \text{of the observed data}\\
-            \text{parameterized by }\theta
+            \text{parameterized by }\theta.
             \end{array}
             $$
             """,
@@ -319,7 +319,7 @@ def _(lk):
             The **method of moments estimator** for $\theta$ is a statistic
 
             $$
-            \hat\theta_n^{\mathrm{MoM}}=u(X_1,\dots,X_n)
+            \hat\theta_n^{\mathrm{MoM}}=u(X_1,\dots,X_n),
             $$
 
             where $u(x_1,\dots,x_n)$ is the value of $\theta$ which solves
@@ -328,7 +328,7 @@ def _(lk):
                 r"""
                 $$
                 \underbrace{E[X^k]}_{\mathclap{\footnotesize\text{function of }\theta}}
-                =\underbrace{\frac1n\sum_{i=1}^n x_i^k}_{\mathclap{\footnotesize\text{determined by data}}}
+                =\underbrace{\frac1n\sum_{i=1}^n x_i^k}_{\mathclap{\footnotesize\text{determined by data}}}.
                 $$
                 """,
                 "one equation per unknown parameter<br>(usually the lowest $k$s that work)",
@@ -396,8 +396,8 @@ def _(lk):
             r"""
             MLE: &nbsp; $L(\theta;x_1,\dots,x_n)=
             \begin{cases}
-            \left({\large\tfrac{1}{\theta}}\right)^n & \text{if }\max(x_1,\dots,x_n)\in[0,\theta]\\[4pt]
-            0 & \text{otherwise}
+            \left({\large\tfrac{1}{\theta}}\right)^n, & \text{if }\max(x_1,\dots,x_n)\in[0,\theta],\\[4pt]
+            0, & \text{otherwise}
             \end{cases}$
 
             > $L'(\theta)=-n\theta^{-n-1}<0$ for $\theta>0$
@@ -423,9 +423,9 @@ def _(lk):
         r"""
         Many times MLE and MoM give the same estimator, but not always!
 
-        > <span class="lk-tab" style="--lk-tab: 3.2em">MLE:</span>always coherent with the data and usually the most accurate, but requires calculus…
+        > <span class="lk-tab" style="--lk-tab: 3.2em">MLE:</span>coherent with the data and usually most accurate, but needs calculus…
 
-        > <span class="lk-tab" style="--lk-tab: 3.2em">MoM:</span>usually easier to compute, but sometimes incoherent with the data…
+        > <span class="lk-tab" style="--lk-tab: 3.2em">MoM:</span>usually easier, but sometimes incoherent with the data…
         """
     )
     return
@@ -446,7 +446,7 @@ def _(lk):
     lk.exercise(
         [
             lk.aside(
-                r"Let $X_1,\dots,X_n\sim$ <span class='lk-mark'>$\mathrm{Beta}(\theta,1)$</span> iid, $\theta$ unknown",
+                r"Let $X_1,\dots,X_n\sim$ <span class='lk-mark'>$\mathrm{Beta}(\theta,1)$</span> iid, $\theta$ unknown.",
                 r"$f_X(x;\theta)=\theta x^{\theta-1}$, $x\in(0,1)$",
             ),
             r"""
@@ -457,7 +457,7 @@ def _(lk):
             c) compute both estimates for
 
             $$
-            X_1=0.5,\quad X_2=0.5,\quad X_3=0.8,\quad X_4=0.2
+            X_1=0.5,\quad X_2=0.5,\quad X_3=0.8,\quad X_4=0.2.
             $$
 
             **Hint:** $\ln(0.04)\approx-3.22$

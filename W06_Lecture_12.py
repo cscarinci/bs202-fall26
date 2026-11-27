@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.25.1"
-app = marimo.App(width="medium", app_title="BS202 · Lecture 12 · Uniform, beta and Gaussian distributions", css_file="lecturekit/style.css")
+app = marimo.App(width="medium", app_title="BS202 · Lecture 12 · Uniform, beta and normal distributions", css_file="lecturekit/style.css")
 
 
 @app.cell(hide_code=True)
@@ -25,7 +25,7 @@ async def _():
 
 @app.cell(hide_code=True)
 def _(lk):
-    lk.lecture(12, "Uniform, beta and Gaussian distributions")
+    lk.lecture(12, "Uniform, beta and normal distributions")
     return
 
 
@@ -64,7 +64,7 @@ def _(lk):
         r"""
         Families of continuous random variables
 
-        $\leadsto$ &nbsp; uniform, beta, Gaussian
+        $\leadsto$ &nbsp; uniform, beta, normal
         """,
         title="In this lecture",
     )
@@ -96,7 +96,7 @@ def _(lk):
         A **uniform model** is a random experiment that
 
         1. consists of a single occurrence along $(a, b)$
-        2. the probability of occurrence in any subinterval is proportional to its length (all are equally likely)
+        2. the probability of any subinterval is proportional to its length (all equally likely)
         3. measures the position of the occurrence
         """,
         label="def-uniform-model",
@@ -132,7 +132,7 @@ def _(lk):
             lk.aside(
                 r"""
                 $$
-                \mk{f_Y(y)} = \begin{cases} \dfrac{1}{b - a}, & y \in (a, b)\\[8pt] 0, & y \notin (a, b) \end{cases}
+                \mk{f_Y(y)} = \begin{cases} \dfrac{1}{b - a}, & y \in (a, b),\\[8pt] 0, & y \notin (a, b). \end{cases}
                 $$
                 """,
                 r"$= \mathrm{Unif}(a, b)(y)$",
@@ -172,7 +172,7 @@ def _(Figure, lk):
             Given $Y \sim \mathrm{Unif}(a, b)$
 
             $$
-            E[Y] = \frac{a + b}{2}, \qquad \mathrm{Var}(Y) = \frac{(b - a)^2}{12}, \qquad \mathrm{Skew}(Y) = 0
+            E[Y] = \frac{a + b}{2}, \qquad \mathrm{Var}(Y) = \frac{(b - a)^2}{12}, \qquad \mathrm{Skew}(Y) = 0.
             $$
             """,
             lk.figure(_fig),
@@ -329,23 +329,25 @@ def _(Figure, lk, math, np):
 def _(b_n, b_r, b_y, beta_scene, lk):
     # module: beta
     # definition: beta distribution
-    lk.definition(
-        [
-            lk.aside(
-                r"A random variable $Y$ has a **beta distribution** with parameters $\mk{\alpha}$ and $\mk{\beta}$ if its pdf is",
-                r"$\alpha = r$, counting from start<br>$\beta = n - r + 1$, counting from end",
-            ),
-            lk.aside(
-                r"""
-                $$
-                \mk{f_Y(y)} = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)! \, (\beta - 1)!} \, y^{\alpha - 1} (1 - y)^{\beta - 1}, \quad y \in (0, 1), \quad \alpha, \beta > 0
-                $$
-                """,
-                r"$= \mathrm{Beta}(\alpha, \beta)(y)$<br>$(k - 1)! = \Gamma(k)$ for non-integer $k$ (L11)",
-            ),
-            lk.interactive(beta_scene(b_n.value, b_r.value, b_y.value), controls=[b_n, b_r, b_y]),
-        ],
-        label="def-beta",
+    lk.module(
+        lk.definition(
+            [
+                lk.aside(
+                    r"A random variable $Y$ has a **beta distribution** with parameters $\mk{\alpha}$ and $\mk{\beta}$ if its pdf is",
+                    r"$\alpha = r$, counting from start<br>$\beta = n - r + 1$, counting from end",
+                ),
+                lk.aside(
+                    r"""
+                    $$
+                    \mk{f_Y(y)} = \frac{(\alpha + \beta - 1)!}{(\alpha - 1)! \, (\beta - 1)!} \, y^{\alpha - 1} (1 - y)^{\beta - 1}, \quad y \in (0, 1), \quad \alpha, \beta > 0.
+                    $$
+                    """,
+                    r"$= \mathrm{Beta}(\alpha, \beta)(y)$<br>$(k - 1)! = \Gamma(k)$ for non-integer $k$ (L11)",
+                ),
+            ],
+            label="def-beta",
+        ),
+        lk.prose(lk.interactive(beta_scene(b_n.value, b_r.value, b_y.value), controls=[b_n, b_r, b_y])),
     )
     return
 
@@ -412,7 +414,7 @@ def _(lk):
             \begin{aligned}
             E[Y] &= \frac{\alpha}{\alpha + \beta} = \frac{r}{n + 1}\\[12pt]
             \mathrm{Var}(Y) &= \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)} = \frac{r (n - r + 1)}{(n + 1)^2 (n + 2)}\\[12pt]
-            \mathrm{Skew}(Y) &= \frac{2 (\beta - \alpha) \sqrt{\alpha + \beta + 1}}{(\alpha + \beta + 2) \sqrt{\alpha \beta}} = \frac{2 (n + 1 - 2r) \sqrt{n + 2}}{(n + 3) \sqrt{r (n - r + 1)}}
+            \mathrm{Skew}(Y) &= \frac{2 (\beta - \alpha) \sqrt{\alpha + \beta + 1}}{(\alpha + \beta + 2) \sqrt{\alpha \beta}} = \frac{2 (n + 1 - 2r) \sqrt{n + 2}}{(n + 3) \sqrt{r (n - r + 1)}}.
             \end{aligned}
             $$
             """,
@@ -434,19 +436,19 @@ def _(lk):
 
 @app.cell(hide_code=True)
 def _(lk):
-    # module: gaussian
+    # module: normal
     # section
-    lk.section("The Gaussian distribution")
+    lk.section("The normal distribution")
     return
 
 
 @app.cell(hide_code=True)
 def _(lk):
-    # module: gaussian
-    # definition: Gaussian model
+    # module: normal
+    # definition: normal model
     lk.definition(
         r"""
-        A **Gaussian model** is a random experiment that
+        A **normal model** is a random experiment that
 
         1. consists of a large number $n \to \infty$ of occurrences along a large interval of radius $\ell \to \infty$,<br>with fixed center $\mu$ and a fixed ratio $\ell^2 / n = \sigma^2$
         2. the location of each occurrence being independent and following a uniform distribution on $(\mu - \ell, \mu + \ell)$
@@ -459,7 +461,7 @@ def _(lk):
 
 @app.cell(hide_code=True)
 def _(Figure, g_m, lk, math, np):
-    # module: gaussian
+    # module: normal
     # prose: the pdf of the middle occurrence in the limit
     # figure: the scaled Beta(m, m) pdf (dashed) against N(0, 1), with mu = 0, sigma^2 = 1, l = sqrt(n); m chosen with
     # the slider
@@ -505,15 +507,15 @@ def _(Figure, g_m, lk, math, np):
 
 @app.cell(hide_code=True)
 def _(lk):
-    # module: gaussian
-    # definition: Gaussian distribution
+    # module: normal
+    # definition: normal distribution
     lk.definition(
         [
-            r"A random variable $X$ has **Gaussian** (Normal) **distribution** with mean $\mu$ and variance $\sigma^2$ if its pdf is",
+            r"A random variable $X$ has **normal distribution** with mean $\mu$ and variance $\sigma^2$ if its pdf is",
             lk.aside(
                 r"""
                 $$
-                \mk{f_X(x)} = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right), \quad x \in (-\infty, +\infty)
+                \mk{f_X(x)} = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{(x - \mu)^2}{2\sigma^2} \right), \quad x \in (-\infty, +\infty).
                 $$
                 """,
                 r"$= \mathcal{N}(\mu, \sigma^2)(x)$",
@@ -526,8 +528,8 @@ def _(lk):
 
 @app.cell(hide_code=True)
 def _(lk):
-    # module: gaussian
-    # theorem: mean, variance and skewness of the Gaussian distribution
+    # module: normal
+    # theorem: mean, variance and skewness of the normal distribution
     lk.theorem(
         r"""
         $X \sim \mathcal{N}(\mu, \sigma^2)$
@@ -555,9 +557,9 @@ def _(lk):
     # exercise: c x e^(-2x)
     lk.exercise(
         r"""
-        Let $X$ have pdf $f_X(x) = \begin{cases} c \, x \, e^{-2x}, & x \in (0, +\infty)\\ 0, & x \notin (0, +\infty) \end{cases}$
+        Let $X$ have pdf $f_X(x) = \begin{cases} c \, x \, e^{-2x}, & x \in (0, +\infty),\\ 0, & x \notin (0, +\infty) \end{cases}$.
 
-        Find $c$, $E[X]$ and $\mathrm{Var}(X)$
+        Find $c$, $E[X]$ and $\mathrm{Var}(X)$.
         """,
         label="ex-gamma-pdf",
     )
@@ -570,9 +572,9 @@ def _(lk):
     # exercise: c y (1 - y)^2
     lk.exercise(
         r"""
-        Let $Y$ have pdf $f_Y(y) = \begin{cases} c \, y (1 - y)^2, & y \in (0, 1)\\ 0, & y \notin (0, 1) \end{cases}$
+        Let $Y$ have pdf $f_Y(y) = \begin{cases} c \, y (1 - y)^2, & y \in (0, 1),\\ 0, & y \notin (0, 1) \end{cases}$.
 
-        Find $c$, $E[Y]$ and $\mathrm{Var}(Y)$
+        Find $c$, $E[Y]$ and $\mathrm{Var}(Y)$.
         """,
         label="ex-beta-pdf",
     )
@@ -585,9 +587,9 @@ def _(lk):
     # exercise: mgf of the standard normal
     lk.exercise(
         r"""
-        Let $Z \sim \mathcal{N}(0, 1)$, &nbsp; $f_Z(z) = {\large\tfrac{1}{\sqrt{2\pi}}} \, e^{-z^2 / 2}$, $z \in \mathbb{R}$
+        Let $Z \sim \mathcal{N}(0, 1)$, &nbsp; $f_Z(z) = {\large\tfrac{1}{\sqrt{2\pi}}} \, e^{-z^2 / 2}$, $z \in \mathbb{R}$.
 
-        Show that $m_Z(t) = e^{t^2 / 2}$, use $K_Z(t) = \ln(m_Z(t))$ to compute $E[Z]$, $\mathrm{Var}(Z)$, $\mathrm{Skew}(Z)$
+        Show that $m_Z(t) = e^{t^2 / 2}$, use $K_Z(t) = \ln(m_Z(t))$ to compute $E[Z]$, $\mathrm{Var}(Z)$, $\mathrm{Skew}(Z)$.
 
         **Hint:** $tz - z^2 / 2 = t^2 / 2 - (z - t)^2 / 2$
         """,

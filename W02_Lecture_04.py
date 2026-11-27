@@ -173,13 +173,13 @@ def _(lk):
             Given a probability space $(S, \mathcal{E}, P)$, a **random variable** on $S$ is a function
 
             $$
-            X : S \longrightarrow \mathbb{R}, \qquad o \longmapsto X(o)
+            X : S \longrightarrow \mathbb{R}, \qquad o \longmapsto X(o).
             $$
 
             The image of $X$
 
             $$
-            S_X = \mathrm{Im}(X) = \{ x \in \mathbb{R} \mid X(o) = x \text{ for some } o \in S \} \subseteq \mathbb{R}
+            S_X = \mathrm{Im}(X) = \{ x \in \mathbb{R} \mid X(o) = x \text{ for some } o \in S \} \subseteq \mathbb{R},
             $$
             """,
             lk.aside(
@@ -309,7 +309,7 @@ def _(lk):
         r"""
         > $\leadsto$ &nbsp; $S = \{ (i, j) \mid i, j \in \{1, 2, 3, 4\} \}$
 
-        $X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} \ = \text{largest face} \quad \leadsto \quad S_X = \{1, 2, 3, 4\}$
+        $X(i, j) = \begin{cases} \max(i, j), & i \neq j, \\ i, & i = j \end{cases} \ = \text{largest face} \quad \leadsto \quad S_X = \{1, 2, 3, 4\}$
 
         $Y(i, j) = i + j = \text{sum of faces} \quad \leadsto \quad S_Y = \{2, 3, \dots, 7, 8\}$
         """,
@@ -335,7 +335,7 @@ def _(lk):
         [
             r"Given a discrete random variable $X$, the **probability mass function** (pmf) is",
             lk.aside(
-                r"$$ f_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto f_X(x) = \mk{P(X = x)} $$",
+                r"$$ f_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto f_X(x) = \mk{P(X = x)}. $$",
                 r"probability of $X$ having value $x$",
             ),
             r"""
@@ -376,7 +376,7 @@ def _(Figure, lk):
 
     lk.example(
         [
-            r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j \in \{1, 2, 3, 4\} \\ i, & i = j \in \{1, 2, 3, 4\} \end{cases} $$",
+            r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j \in \{1, 2, 3, 4\}, \\ i, & i = j \in \{1, 2, 3, 4\} \end{cases} $$",
             lk.side(
                 r"""
                 $$
@@ -412,7 +412,7 @@ def _(lk):
         [
             r"Given a discrete random variable $X$, the **cumulative distribution function** (cdf) is",
             lk.aside(
-                r"$$ F_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto F_X(x) = \mk{P(X \leq x)} $$",
+                r"$$ F_X : \mathbb{R} \longrightarrow [0, 1], \qquad x \longmapsto F_X(x) = \mk{P(X \leq x)}. $$",
                 r"probability of $X$ having value at most $x$",
             ),
         ],
@@ -452,7 +452,7 @@ def _(Figure, lk):
 
     lk.example(
         [
-            r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j \\ i, & i = j \end{cases} $$",
+            r"$$ X(i, j) = \begin{cases} \max(i, j), & i \neq j, \\ i, & i = j \end{cases} $$",
             r"""
             $$
             \begin{aligned}

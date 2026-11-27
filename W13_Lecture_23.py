@@ -121,7 +121,7 @@ def _(lk):
         $\leadsto$ &nbsp; test for $H_0$ against $H_1$
 
         > $\begin{cases}
-        T=u(X_1,\dots,X_n) & \text{statistic}\\
+        T=u(X_1,\dots,X_n) & \text{statistic},\\
         R\subseteq\mathbb R & \text{rejection region}
         \end{cases}$
 
@@ -207,7 +207,7 @@ def _(lk):
         Given a test statistic $T=u(X_1,\dots,X_n)$ and rejection regions $R_\alpha$, for each $\alpha\in(0,1)$, define the **p-value** of a data set $X_1=x_1,\dots,X_n=x_n$ as
 
         $$
-        p=\min\lbrace \alpha\in(0,1)\mid u(x_1,\dots,x_n)\in R_\alpha\rbrace
+        p=\min\lbrace \alpha\in(0,1)\mid u(x_1,\dots,x_n)\in R_\alpha\rbrace.
         $$
         """,
         label="def-p-value",
@@ -334,7 +334,7 @@ def _(lk):
     lk.theorem(
         [
             r"If $X_1,\dots,X_n\sim\mathcal N(\mu,\sigma^2)$ iid then",
-            lk.aside(r"$$\mk{T_n}=\frac{M_n-\mu}{S_n/\sqrt n}$$", "Studentized mean"),
+            lk.aside(r"$$\mk{T_n}=\frac{M_n-\mu}{S_n/\sqrt n},$$", "Studentized mean"),
             lk.aside(
                 r"has distribution $\mk{t_{n-1}}$ independent of $\mu$ and $\sigma^2$.",
                 r"$t$-distribution with $n-1$ degrees of freedom",
@@ -424,7 +424,7 @@ def _(lk):
         we tested $n=16$ batteries and found
 
         $$
-        M_{16}=38\qquad\text{and}\qquad S_{16}^2=(3.2)^2
+        M_{16}=38\qquad\text{and}\qquad S_{16}^2=(3.2)^2.
         $$
 
         a) test $H_0=\text{“}\mu=40\text{”}$ against $H_1=\text{“}\mu\neq40\text{”}$ at significance level $\alpha=5\%$

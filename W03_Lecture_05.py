@@ -116,7 +116,7 @@ def _(lk):
     # module: pmf and cdf
     # definition: discrete random variable
     lk.definition(
-        r"A random variable $X : S \longrightarrow \mathbb{R}$ is **discrete** if $S_X = \mathrm{Im}\, X$ is a countable set",
+        r"A random variable $X : S \longrightarrow \mathbb{R}$ is **discrete** if $S_X = \mathrm{Im}\, X$ is a countable set.",
         label="def-discrete",
     )
     return
@@ -130,7 +130,7 @@ def _(lk):
         [
             r"The **pmf** (probability mass function) of a discrete random variable $X : S \longrightarrow \mathbb{R}$ is the function $f_X : \mathbb{R} \longrightarrow \mathbb{R}$ given by",
             lk.aside(
-                r"$$ f_X(x) = P_X(\{x\}) = \mk{P(X = x)} $$",
+                r"$$ f_X(x) = P_X(\{x\}) = \mk{P(X = x)}. $$",
                 r"probability that the measurement<br>of $X$ is exactly equal to $x$",
             ),
         ],
@@ -143,7 +143,7 @@ def _(lk):
 def _(lk):
     # module: pmf and cdf
     # remark: the notation of WMS
-    lk.remark(r"WMS denotes $f_X(x) = p(x)$")
+    lk.remark(r"WMS denotes $f_X(x) = p(x)$.")
     return
 
 
@@ -175,7 +175,7 @@ def _(lk):
         [
             r"The **cdf** (cumulative distribution function) of a random variable $X : S \longrightarrow \mathbb{R}$ is the function $F_X : \mathbb{R} \longrightarrow \mathbb{R}$ given by",
             lk.aside(
-                r"$$ F_X(x) = \mk{P(X \leq x)} $$",
+                r"$$ F_X(x) = \mk{P(X \leq x)}. $$",
                 r"probability that the measurement<br>of $X$ is valued at most $x$",
             ),
         ],
@@ -297,12 +297,12 @@ def _(lk):
     # definition: expectation of u(X)
     lk.definition(
         [
-            r"Let $X$ be a discrete random variable with pmf $f_X$",
+            r"Let $X$ be a discrete random variable with pmf $f_X$.",
             lk.aside(
                 r"Given any function $u : \mathbb{R} \longrightarrow \mathbb{R}$, we define the **expectation** of $\mk{u(X)} = u \circ X : S \longrightarrow \mathbb{R}$",
                 r"function of $X$,<br>or composition of $u$ and $X$",
             ),
-            lk.aside(r"$$ E[u(X)] = \sum_{x} u(x) \, f_X(x) $$", "(when the sum converges)"),
+            lk.aside(r"$$ E[u(X)] = \sum_{x} u(x) \, f_X(x). $$", "(when the sum converges)"),
         ],
         label="def-expectation",
     )
@@ -405,7 +405,7 @@ def _(Figure, coin_p, lk, math, plain, stems):
 
     lk.example(
         [
-            r"Toss a coin 4 times, &nbsp; $X$ = number of heads",
+            r"Toss a coin 4 times, &nbsp; $X$ = number of heads.",
             lk.side(
                 r"""
                 fair coin: $P(\{H\}) = P(\{T\}) = \frac{1}{2}$
@@ -444,7 +444,7 @@ def _(lk):
         $$
         \begin{gathered}
         E[a \, u(X) + b \, v(X)] = a \, E[u(X)] + b \, E[v(X)]\\[6pt]
-        E[c] = c
+        E[c] = c.
         \end{gathered}
         $$
         """,

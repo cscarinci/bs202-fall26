@@ -142,17 +142,17 @@ def _(lk):
     # definition: joint distribution
     lk.definition(
         [
-            r"Let $X, Y : S \longrightarrow \mathbb{R}$ be random variables on the same $(S, \mathcal{E}, P)$",
+            r"Let $X, Y : S \longrightarrow \mathbb{R}$ be random variables on the same $(S, \mathcal{E}, P)$.",
             lk.aside(
                 r"The **joint distribution** of the pair $\mk{(X, Y) : S \longrightarrow \mathbb{R}^2}$ is the assignment of probabilities",
                 "a vector valued random variable",
             ),
             r"""
             $$
-            P_{X,Y}(A) = P((X, Y) \in A), \quad \text{for } A \subseteq \mathbb{R}^2
+            P_{X,Y}(A) = P((X, Y) \in A), \quad \text{for } A \subseteq \mathbb{R}^2.
             $$
 
-            The **state space** of $(X, Y)$ is $S_{X,Y} = \mathrm{Im}(X, Y) \subseteq \mathbb{R}^2$
+            The **state space** of $(X, Y)$ is $S_{X,Y} = \mathrm{Im}(X, Y) \subseteq \mathbb{R}^2$.
             """,
             lk.gap(),
             r"$\leadsto$ &nbsp; we call $(X, Y)$ **discrete** if $S_{X,Y}$ is countable",
@@ -275,7 +275,7 @@ def _(lk):
                 $$
                 \begin{aligned}
                 \mk{f_X(x)} &= \sum_y f_{X,Y}(x, y) \quad \text{or} \quad \int_{-\infty}^{\infty} f_{X,Y}(x, y) \, dy\\[4pt]
-                \mk{f_Y(y)} &= \sum_x f_{X,Y}(x, y) \quad \text{or} \quad \int_{-\infty}^{\infty} f_{X,Y}(x, y) \, dx
+                \mk{f_Y(y)} &= \sum_x f_{X,Y}(x, y) \quad \text{or} \quad \int_{-\infty}^{\infty} f_{X,Y}(x, y) \, dx.
                 \end{aligned}
                 $$
                 """,
@@ -364,9 +364,9 @@ def _(lk):
     # definition: conditional pmf/pdf
     lk.definition(
         [
-            r"Given $x \in S_X$, with $f_X(x) > 0$, we define the **conditional pmf/pdf** of $Y$ given $X = x$ as",
+            r"For $x \in S_X$, with $f_X(x) > 0$, we define the **conditional pmf/pdf** of $Y$ given $X = x$ as",
             lk.aside(
-                r"$$ f_{Y|X}(\mk{y} \mid \mk{x}) = \frac{f_{X,Y}(x, y)}{f_X(x)} $$",
+                r"$$ f_{Y|X}(\mk{y} \mid \mk{x}) = \frac{f_{X,Y}(x, y)}{f_X(x)}. $$",
                 r"$x$ = given value of $X$<br>$y$ = possible values of $Y$",
             ),
         ],
@@ -466,7 +466,7 @@ def _(lk):
                 \begin{aligned}
                 & f_{Y|X}(y \mid x) = f_Y(y)\\[8pt]
                 \Longleftrightarrow \quad & f_{X,Y}(x, y) = f_X(x) \, f_Y(y)\\[8pt]
-                \Longleftrightarrow \quad & f_{X|Y}(x \mid y) = f_X(x)
+                \Longleftrightarrow \quad & f_{X|Y}(x \mid y) = f_X(x).
                 \end{aligned}
                 $$
                 """,
@@ -488,7 +488,7 @@ def _(lk):
         If $X, Y$ are independent
 
         $$
-        P(X \in A \text{ and } Y \in B) = P(X \in A) \cdot P(Y \in B)
+        P(X \in A \text{ and } Y \in B) = P(X \in A) \cdot P(Y \in B),
         $$
 
         for any $A \subseteq \mathbb{R}$ and $B \subseteq \mathbb{R}$
@@ -541,7 +541,7 @@ def _(Figure, a_a, a_b, density, lk, margins, math, np):
 
             $Y$ = arrival time of 2nd customer
 
-            > $\Longrightarrow$ &nbsp; $f_{X,Y}(x, y) = \begin{cases} \lambda^2 e^{-\lambda y}, & 0 < x < y\\ 0, & \text{otherwise} \end{cases}$
+            > $\Longrightarrow$ &nbsp; $f_{X,Y}(x, y) = \begin{cases} \lambda^2 e^{-\lambda y}, & 0 < x < y,\\ 0, & \text{otherwise} \end{cases}$
             """,
             r"""
             > > $\leadsto$ &nbsp; $f_X(x) = \mathrm{Gamma}(1, \lambda)(x) = \lambda e^{-\lambda x}$
@@ -618,7 +618,7 @@ def _(lk):
             $$
             \begin{aligned}
             E[u(Y) \mid X = x] &= \sum_y u(y) \, f_{Y|X}(y \mid x)\\[4pt]
-            \text{or} \quad &= \int_{-\infty}^{\infty} u(y) \, f_{Y|X}(y \mid x) \, dy
+            \text{or} \quad &= \int_{-\infty}^{\infty} u(y) \, f_{Y|X}(y \mid x) \, dy.
             \end{aligned}
             $$
             """,

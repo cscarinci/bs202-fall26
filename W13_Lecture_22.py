@@ -124,16 +124,16 @@ def _(lk):
     lk.definition(
         [
             r"""
-            Given a population $X$, a **hypothesis** about $X$ is any statement $H$ about some of its parameters.
+            Given a population $X$, a **hypothesis** about $X$ is any statement $H$ about its parameters.
 
             Usually, if $\theta$ is an unknown parameter and $\theta_0\in\mathbb R$ is a given value, we call
             """,
             lk.aside(
-                r"$$H_0=\text{“}\theta=\theta_0\text{”}\qquad\mk{\rlap{\text{the null-hypothesis}}\hphantom{\text{the alternative hypothesis}}}$$",
+                r"$$H_0=\text{“}\theta=\theta_0\text{”}\qquad\mk{\rlap{\text{the null-hypothesis}}\hphantom{\text{the alternative hypothesis}}},$$",
                 "the default claim",
             ),
             lk.aside(
-                r"$$H_1=\text{“}\theta\neq\theta_0\text{”}\qquad\mk{\text{the alternative hypothesis}}$$",
+                r"$$H_1=\text{“}\theta\neq\theta_0\text{”}\qquad\mk{\text{the alternative hypothesis}}.$$",
                 "usually the negative claim",
             ),
         ],
@@ -240,7 +240,7 @@ def _(lk):
     lk.definition(
         [
             r"""
-            A test can be wrong in two different ways
+            A test can be wrong in two different ways.
 
             - rejects $H_0$, but $H_0$ is true &nbsp; (**type I error**)
             """,
@@ -263,7 +263,7 @@ def _(lk):
         The **power** of a test $(T,R)$ is the function
 
         $$
-        K(\theta)=P(T\in R;\theta)
+        K(\theta)=P(T\in R;\theta),
         $$
 
         measuring the probability of rejecting $H_0=\text{“}\theta=\theta_0\text{”}$.
@@ -285,7 +285,7 @@ def _(lk):
             <span class="lk-tab" style="--lk-tab: 4.6em">If $\theta\neq\theta_0$</span>$\Longrightarrow$ &nbsp; $K(\theta)=1-P(\text{type II error};\theta)$
 
             $\leadsto$ &nbsp; ideally, we would like our test to have &nbsp; $K(\theta)=\begin{cases}
-            0, & \theta=\theta_0\\
+            0, & \theta=\theta_0,\\
             1, & \theta\neq\theta_0
             \end{cases}$
             """,
@@ -354,7 +354,7 @@ def _(delta_val, lk, math, power_sketch, z0_val):
                 \begin{aligned}
                 K(\mu_0)&=P(|Z|\ge z_0;\mu=\mu_0)\\
                 &=1-\Phi(z_0)+\Phi(-z_0)=2(1-\Phi(z_0))\le\alpha\\
-                &\Longleftrightarrow\quad z_0\ge \mk{z_{1-\alpha/2}}
+                &\Longleftrightarrow\quad z_0\ge \mk{z_{1-\alpha/2}}.
                 \end{aligned}
                 $$
                 """,
@@ -369,7 +369,7 @@ def _(delta_val, lk, math, power_sketch, z0_val):
             \begin{aligned}
             K(\mu)&=P(|Z|\ge z_0;\mu)\\
             &=1-P(-z_0-\delta<Z-\delta<z_0-\delta;\mu)\\
-            &=1-\Phi(z_0-\delta)+\Phi(-z_0-\delta)
+            &=1-\Phi(z_0-\delta)+\Phi(-z_0-\delta).
             \end{aligned}
             $$
             """,

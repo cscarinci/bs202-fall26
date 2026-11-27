@@ -46,7 +46,7 @@ def _(lk):
     # recap
     lk.recap(
         r"""
-        Given a random variable $X : S \longrightarrow \mathbb{R}$, a random sample of size $n$ from the population $X$ is
+        Given $X : S \longrightarrow \mathbb{R}$, a random sample of size $n$ from the population $X$ is
         """,
         lk.aside(
             r"> $X_1, \dots, X_n : \underbrace{S \times \dots \times S}_{\footnotesize \begin{array}{c} \text{with independent} \\ \text{probability measures} \end{array}} \longrightarrow \mathbb{R}$, &nbsp; $X_i(o_1, \dots, o_n) = X(o_i)$",
@@ -61,7 +61,7 @@ def _(lk):
         \begin{aligned}
         M_n &= \frac{1}{n} \sum_{i=1}^n X_i && \text{sample mean}\\[6pt]
         S_n^2 &= \frac{1}{n - 1} \sum_{i=1}^n (X_i - M_n)^2 && \text{sample variance}\\[6pt]
-        G_n &= \frac{1}{n} \sum_{i=1}^n \left( \frac{X_i - M_n}{S_n} \right)^3 && \text{sample skewness}
+        G_n &= \frac{1}{n} \sum_{i=1}^n \left( \frac{X_i - M_n}{S_n} \right)^3. && \text{sample skewness}
         \end{aligned}
         $$
 
@@ -176,7 +176,7 @@ def _(lk):
         Given $X$ with $E[X] = \mu$, $\mathrm{Var}(X) = \sigma^2 > 0$ and $X_1, \dots, X_n \sim f_X$ iid, the **standardized mean** is
 
         $$
-        Z_n = \frac{M_n - \mu}{\sigma / \sqrt{n}}
+        Z_n = \frac{M_n - \mu}{\sigma / \sqrt{n}}.
         $$
         """,
         label="def-standardized",
@@ -194,7 +194,7 @@ def _(lk):
             lk.aside(
                 r"""
                 $$
-                \underbrace{P(Z_n \le z)}_{\mathllap{\text{cdf of } Z_n\kern-1.2em}} \longrightarrow \underbrace{\Phi(z)}_{\mathrlap{\kern-1.2em \text{standard normal cdf}}} \qquad \text{as } n \to +\infty, \quad \forall z \in \mathbb{R}
+                \underbrace{P(Z_n \le z)}_{\mathllap{\text{cdf of } Z_n\kern-1.2em}} \longrightarrow \underbrace{\Phi(z)}_{\mathrlap{\kern-1.2em \text{standard normal cdf}}} \qquad \text{as } n \to +\infty, \quad \forall z \in \mathbb{R}.
                 $$
                 """,
                 "central limit theorem",
@@ -255,7 +255,7 @@ def _(Figure, c_n, c_pop, c_z, lk, math, mo, np):
         _ax.spines[_s].set_visible(False)
     lk.prose(
         r"""
-        $\leadsto$ &nbsp; the distribution of the standardized mean approaches the standard normal distribution<br>for large sample sizes *for any population*!
+        $\leadsto$ &nbsp; the distribution of the standardized mean approaches the standard normal distribution for large sample sizes *for any population*!
         """,
         lk.interactive(_fig, controls=[c_pop, c_n, c_z]),
     )

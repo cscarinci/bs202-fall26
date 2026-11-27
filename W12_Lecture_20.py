@@ -162,7 +162,7 @@ def _(interval, lk, m4):
             <span class="lk-turn">$\leftrightsquigarrow$</span>
 
             $$
-            \big[M_4-\underbrace{\varepsilon}_{\footnotesize\text{found}},\,M_4+\underbrace{\varepsilon}_{\footnotesize\text{found}}\big]\ni\mu\text{ with confidence level }\underbrace{1-\alpha}_{\footnotesize\text{given}}
+            \big[M_4-\underbrace{\varepsilon}_{\footnotesize\text{found}},\,M_4+\underbrace{\varepsilon}_{\footnotesize\text{found}}\big]\ni\mu\text{ with confidence level }\underbrace{1-\alpha}_{\footnotesize\text{given}}.
             $$
 
             $\varepsilon=20$ &nbsp; $\Longrightarrow$ &nbsp; $1-\alpha=2\Phi(z)-1=2\Phi(2)-1\approx95.4\%$
@@ -217,13 +217,13 @@ def _(lk):
         Given $X_1,\dots,X_n\sim f_X$ iid with unknown parameter $\theta$,<br>a **confidence interval** for $\theta$ at level $1-\alpha$ is a pair of statistics
 
         $$
-        L_n=\ell(X_1,\dots,X_n),\quad U_n=u(X_1,\dots,X_n)
+        L_n=\ell(X_1,\dots,X_n),\quad U_n=u(X_1,\dots,X_n),
         $$
 
         such that
 
         $$
-        P(L_n\le\theta\le U_n)=1-\alpha
+        P(L_n\le\theta\le U_n)=1-\alpha.
         $$
         """,
         label="def-ci",
@@ -256,13 +256,13 @@ def _(lk):
         For $X_1,\dots,X_n\sim\mathcal N(\mu,\sigma^2)$ iid, with known $\sigma^2>0$,<br>we can find the error threshold $\varepsilon=z_{1-\alpha/2}\,\mathrm{SE}(M_n)$ since
 
         $$
-        Z_n=\frac{M_n-\mu}{\sigma/\sqrt n}=\frac{M_n-\mu}{\mathrm{SE}(M_n)}\sim\mathcal N(0,1)
+        Z_n=\frac{M_n-\mu}{\sigma/\sqrt n}=\frac{M_n-\mu}{\mathrm{SE}(M_n)}\sim\mathcal N(0,1).
         $$
 
         In general, for non-normal $X$, we need the CLT!
 
         $$
-        Z_n\longrightarrow Z\sim\mathcal N(0,1)\quad\text{for }n\to\infty
+        Z_n\longrightarrow Z\sim\mathcal N(0,1),\quad\text{for }n\to\infty
         $$
         """
     )
@@ -281,10 +281,10 @@ def _(lk):
             If $\sigma$ is unknown, we cannot get $\varepsilon$ from
             """,
             lk.aside(
-                r"$$P\big(|M_n-\mu|\le\varepsilon\big)=1-\alpha$$",
+                r"$$P\big(|M_n-\mu|\le\varepsilon\big)=1-\alpha.$$",
                 r"even for $X\sim\mathcal N(\mu,\sigma^2)$",
             ),
-            r"In this case, we must use $\underbrace{S_n^2}_{\footnotesize\text{consistent for }\sigma^2}$ instead of $\sigma^2$",
+            r"In this case, we must use $\underbrace{S_n^2}_{\footnotesize\text{consistent for }\sigma^2}$ instead of $\sigma^2$.",
         ]
     )
     return
@@ -296,7 +296,7 @@ def _(lk):
     # theorem: large-sample confidence interval for the mean
     lk.theorem(
         r"""
-        For any population $X$ with $E[X]=\mu$, $\mathrm{Var}(X)=\sigma^2>0$, both unknown, for large enough $n$,
+        For any population $X$ with $E[X]=\mu$, $\mathrm{Var}(X)=\sigma^2>0$, both unknown, for large $n$,
 
         $$
         \left[M_n-z_{1-\alpha/2}\frac{S_n}{\sqrt n},\ M_n+z_{1-\alpha/2}\frac{S_n}{\sqrt n}\right]
@@ -305,7 +305,7 @@ def _(lk):
         is an approximate confidence interval for $\mu$ at level $1-\alpha$
 
         $$
-        P\left(M_n-z_{1-\alpha/2}\frac{S_n}{\sqrt n}\le\mu\le M_n+z_{1-\alpha/2}\frac{S_n}{\sqrt n}\right)\longrightarrow1-\alpha\quad\text{for }n\to\infty
+        P\left(M_n-z_{1-\alpha/2}\frac{S_n}{\sqrt n}\le\mu\le M_n+z_{1-\alpha/2}\frac{S_n}{\sqrt n}\right)\longrightarrow1-\alpha,\quad\text{for }n\to\infty.
         $$
         """,
         label="thm-large-sample",
@@ -321,7 +321,7 @@ def _(lk):
         [
         r"""
         $X=\begin{cases}
-        1, & \text{if supports A}\\
+        1, & \text{if supports A},\\
         0, & \text{otherwise}
         \end{cases}$
         """,
@@ -394,7 +394,7 @@ def _(lk):
 
         > > $\leadsto$ &nbsp; <span class="lk-tab" style="--lk-tab: 10.6em">$\varepsilon=1.55\%$, $1-\alpha=95\%$</span>$\Longrightarrow$ &nbsp; $n-1\ge\left(\dfrac{1.96}{2\times0.0155}\right)^2\approx3997.5$
 
-        $\therefore$ &nbsp; to reduce the margin by factor $1/2$ at same confidence level we need 4 times more polled voters!
+        $\therefore$ &nbsp; to halve the margin at the same confidence level, we need 4 times more voters!
         """
     )
     return
@@ -437,7 +437,7 @@ def _(lk):
             lk.aside(
                 r"""
                 $$
-                P\Bigg(\underbrace{\frac{\hat\theta_n-E[\hat\theta_n]}{\mathrm{SE}(\hat\theta_n)}}_{\footnotesize\text{standard score of }\hat\theta_n}<z\Bigg)\longrightarrow\mk{\Phi(z)}\quad\text{as }n\to\infty
+                P\Bigg(\underbrace{\frac{\hat\theta_n-E[\hat\theta_n]}{\mathrm{SE}(\hat\theta_n)}}_{\footnotesize\text{standard score of }\hat\theta_n}<z\Bigg)\longrightarrow\mk{\Phi(z)}\quad\text{as }n\to\infty.
                 $$
                 """,
                 [(1.55, "or the other corresponding cdf")],
@@ -470,11 +470,11 @@ def _(lk):
         If $\hat\theta_n$ is asymptotically normal, and the standard error and bias are known
 
         $$
-        \mathrm{SE}(\hat\theta_n)=A_n\quad\text{and}\quad\mathrm{Bias}(\hat\theta_n)=B_n
+        \mathrm{SE}(\hat\theta_n)=A_n\quad\text{and}\quad\mathrm{Bias}(\hat\theta_n)=B_n,
         $$
 
         $$
-        \Longrightarrow\quad\left[\hat\theta_n-B_n-z_{1-\alpha/2}A_n,\ \hat\theta_n-B_n+z_{1-\alpha/2}A_n\right]
+        \Longrightarrow\quad\left[\hat\theta_n-B_n-z_{1-\alpha/2}A_n,\ \hat\theta_n-B_n+z_{1-\alpha/2}A_n\right],
         $$
 
         is an approximate confidence interval for $\theta$ at level $1-\alpha$ for sufficiently large $n$
